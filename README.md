@@ -18,6 +18,12 @@
 
 It is a **research prototype**. It is not an operational fire-behaviour system and not firefighting guidance.
 
+## Hosted
+
+The app runs at **https://fire-septum.vercel.app** (Vercel, redeployed on every push to `main`). The browser build is static; the server routes in `server/` (FIRMS proxy, OSM, receipt signing and OpenTimestamps anchoring, the register, the brief) are served by one serverless function, `api/index.js`, bundled from `api/_entry.ts` with `npm run build:api` and committed. Re-run that after changing anything in `server/`.
+
+Hosted, the register is read-only: forecasts are sealed and scored from a local run and published with the code. Live hotspots need `FIRMS_MAP_KEY` and signing needs `RECEIPT_ED25519_KEY` (PKCS#8 PEM) in the project's environment variables; `scripts/vercel-env.sh` sets both from the local files with the Vercel CLI.
+
 ## Run it
 
 ```bash

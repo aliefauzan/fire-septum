@@ -278,9 +278,15 @@ import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sig
 import { existsSync as existsSync2, mkdirSync as mkdirSync2, readFileSync as readFileSync2, writeFileSync as writeFileSync2 } from "node:fs";
 import { dirname, join as join2 } from "node:path";
 var KEY_FILE = join2(process.cwd(), ".cache", "receipt-ed25519.pem");
+var KeyMissing = class extends Error {
+  constructor() {
+    super("RECEIPT_ED25519_KEY not set");
+  }
+};
 function loadKey(pem) {
   if (pem) return createPrivateKey(pem.replace(/\\n/g, "\n"));
   if (existsSync2(KEY_FILE)) return createPrivateKey(readFileSync2(KEY_FILE, "utf8"));
+  if (process.env.VERCEL) throw new KeyMissing();
   const { privateKey } = generateKeyPairSync("ed25519");
   mkdirSync2(dirname(KEY_FILE), { recursive: true });
   writeFileSync2(KEY_FILE, privateKey.export({ type: "pkcs8", format: "pem" }), { mode: 384 });
@@ -350,7 +356,7 @@ function receiptHandler(getPem) {
       }
       return send(404, { error: "unknown endpoint" });
     } catch (e) {
-      return send(500, { error: e instanceof Error ? e.message : String(e) });
+      return send(e instanceof KeyMissing ? 503 : 500, { error: e instanceof Error ? e.message : String(e) });
     }
   };
 }

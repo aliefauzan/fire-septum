@@ -13,10 +13,15 @@ import type { Plugin } from 'vite';
 
 const KEY_FILE = join(process.cwd(), '.cache', 'receipt-ed25519.pem');
 
+class KeyMissing extends Error { constructor() { super('RECEIPT_ED25519_KEY not set'); } }
+
 /** Private key from RECEIPT_ED25519_KEY (PKCS#8 PEM), else a key generated once and kept in .cache/. */
 function loadKey(pem: string | undefined): KeyObject {
   if (pem) return createPrivateKey(pem.replace(/\\n/g, '\n'));
   if (existsSync(KEY_FILE)) return createPrivateKey(readFileSync(KEY_FILE, 'utf8'));
+  // A hosted instance cannot keep a generated key, and a key that changes on every cold start
+  // would make keyIds meaningless, so it signs only with a configured key.
+  if (process.env.VERCEL) throw new KeyMissing();
   const { privateKey } = generateKeyPairSync('ed25519');
   mkdirSync(dirname(KEY_FILE), { recursive: true });
   writeFileSync(KEY_FILE, privateKey.export({ type: 'pkcs8', format: 'pem' }), { mode: 0o600 });
@@ -89,7 +94,7 @@ export function receiptHandler(getPem: () => string | undefined) {
       }
       return send(404, { error: 'unknown endpoint' });
     } catch (e) {
-      return send(500, { error: e instanceof Error ? e.message : String(e) });
+      return send(e instanceof KeyMissing ? 503 : 500, { error: e instanceof Error ? e.message : String(e) });
     }
   };
 }
