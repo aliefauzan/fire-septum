@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FUEL_LIST } from '../sim/fuels';
 import { slopeAspect } from '../sim/landscape';
 import type { Action, EnsembleResult, Hotspot, RunResult, Scenario } from '../sim/types';
-import { drawMap, type FireView } from './render';
+import { drawMap, drawSavedLayer, type FireView } from './render';
 import type { ZoneStatus } from './status';
 
 export type Tool = 'inspect' | 'firebreak' | 'water' | 'crew' | 'inject' | 'wet' | 'ignite';
@@ -26,11 +26,16 @@ interface Props {
   onPlace?: (kind: Tool, a: [number, number], b?: [number, number]) => void;
   accent: 'base' | 'plan';
   showObserved?: boolean;
+  /** No-action ensemble to compare against, so the area the plan saves is drawn and flashed. */
+  savedFrom?: EnsembleResult | null;
+  /** Changes when a new plan result lands; restarts the flash. */
+  flashKey?: number;
 }
 
 export function MapView(p: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const saved = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState(400);
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
   const [drag, setDrag] = useState<{ from: [number, number]; to: [number, number] } | null>(null);
@@ -56,6 +61,14 @@ export function MapView(p: Props) {
       actions: p.actions, ghost: p.ghost, hotspots: p.hotspots, satellite: p.satellite, showObserved: p.showObserved,
       zoneLabels: p.zoneLabels, hoverCell: p.interactive && p.tool !== 'inspect' ? hover : null, draft: drag,
     });
+    const sc = saved.current;
+    if (sc) {
+      sc.width = size * dpr; sc.height = size * dpr;
+      const sctx = sc.getContext('2d')!;
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (p.savedFrom && p.ens && !p.busy) drawSavedLayer(sctx, size, p.scn, p.savedFrom, p.ens, p.t);
+      else sctx.clearRect(0, 0, size, size);
+    }
   });
 
   const cellAt = (e: React.PointerEvent): [number, number] => {
@@ -134,6 +147,7 @@ export function MapView(p: Props) {
           aria-label={`${p.title} map`}
           role="img"
         />
+        {p.savedFrom && <canvas key={p.flashKey ?? 0} ref={saved} className="saved-layer" style={{ width: size, height: size }} aria-hidden />}
         {tip}
       </div>
     </figure>

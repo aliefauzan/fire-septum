@@ -19,13 +19,14 @@ import { LivePanel } from './ui/LivePanel';
 import { Map3D, createCamSync } from './ui/Map3D';
 import { MapView, type Tool } from './ui/MapView';
 import { Menu, Segmented, Sheet } from './ui/Controls';
-import { OutcomeCard } from './ui/Outcome';
+import { OutcomeCard, burnedBy } from './ui/Outcome';
+import { reducedMotion } from './ui/motion';
 import { PlanPanel, RecPanel, TOOLS, ZoneTable } from './ui/Panels';
 import { RecordPanel } from './ui/Record';
 import { RegisterPanel } from './ui/Register';
 import { ResourcesPanel, type LogiStatus } from './ui/Resources';
 import type { FireView } from './ui/render';
-import { isProtected, zoneProbAt, zoneStatus } from './ui/status';
+import { fmtHa, isProtected, zoneProbAt, zoneStatus } from './ui/status';
 import { Timeline } from './ui/Timeline';
 
 const client = new SimClient();
@@ -59,6 +60,10 @@ export default function App() {
   const [planBusy, setPlanBusy] = useState(false);
   const [t, setT] = useState(12);
   const [playing, setPlaying] = useState(false);
+  // Playback stops here instead of at the horizon (used by the one-off autoplay when a forecast first appears).
+  const [playTo, setPlayTo] = useState<number | null>(null);
+  // Bumped whenever a new plan result lands, so the "saved by the plan" layer flashes once.
+  const [flashKey, setFlashKey] = useState(0);
   const [view, setView] = useState<FireView>('probability');
   const [dim, setDim] = useState<'2d' | '3d'>('2d');
   const camSync = useRef(createCamSync());
@@ -134,14 +139,31 @@ export default function App() {
   // Playback.
   useEffect(() => {
     if (!playing) return;
+    const end = playTo ?? eff.horizonH;
     const id = window.setInterval(() => {
       setT((v) => {
-        if (v >= eff.horizonH) { setPlaying(false); return v; }
-        return Math.min(eff.horizonH, v + 0.5);
+        if (v >= end) { setPlaying(false); setPlayTo(null); return v; }
+        return Math.min(end, v + 0.5);
       });
     }, 110);
     return () => window.clearInterval(id);
-  }, [playing, eff.horizonH]);
+  }, [playing, playTo, eff.horizonH]);
+
+  // Play the spread forward once when a forecast first appears for a scenario, and once more when
+  // its first plan lands and the maps split, so the fire is seen to grow rather than shown as a still.
+  const playedFor = useRef<{ scn: Scenario | null; base: boolean; plan: boolean }>({ scn: null, base: false, plan: false });
+  const autoplay = useCallback(() => {
+    if (reducedMotion()) return;
+    setT(0); setPlayTo(12); setPlaying(true);
+  }, []);
+  useEffect(() => {
+    if (booting) return;
+    const m = playedFor.current;
+    if (m.scn !== scn) { playedFor.current = { scn, base: false, plan: false }; return; }
+    if (base && !m.base) { m.base = true; autoplay(); }
+    else if (base && hasPlan && plan && plan !== base && !planBusy && !m.plan) { m.plan = true; autoplay(); }
+  });
+  useEffect(() => { if (planRaw) setFlashKey((k) => k + 1); }, [planRaw]);
 
   const loadPreset = (id: string) => {
     if (id === '__pick') { setShowLive(true); return; }
@@ -379,7 +401,9 @@ export default function App() {
     actions, ghost, hotspots: eff.hotspots, satellite,
     zoneLabels: zoneLabels(plan, hasPlan ? base : undefined), tool, interactive: true,
     onPlace, busy: planBusy || !plan, accent: 'plan', showObserved,
+    savedFrom: hasPlan ? base : null, flashKey,
   };
+  const burnNow = base && plan && hasPlan && !planBusy ? { base: burnedBy(base, t).mean, plan: burnedBy(plan, t).mean } : null;
   const isLive = presetId === 'live' || presetId === 'hindcast' || presetId === 'recorded';
   const dataChip = presetId === 'live' ? 'Live' : presetId === 'recorded' ? 'Recorded' : presetId === 'hindcast' ? 'Past day' : presetId === 'record' ? 'Saved record' : 'Example';
   const prov = eff.provenance;
@@ -454,7 +478,11 @@ export default function App() {
           <section className="card map-card" aria-label="Map">
             <div className="map-toolbar">
               {hasPlan
-                ? <span className="map-state">Same fire, same weather: left without action, right with your plan.</span>
+                ? <span className="map-state" title="Same fire, same weather: left without action, right with your plan.">
+                    {burnNow
+                      ? <>By +{t} h: <b className="base">{fmtHa(burnNow.base)} ha</b> without action, <b>{fmtHa(burnNow.plan)} ha</b> with your plan{burnNow.base - burnNow.plan >= 1 && <span className="saved-pill">{fmtHa(burnNow.base - burnNow.plan)} ha saved</span>}</>
+                      : 'Same fire, same weather: left without action, right with your plan.'}
+                  </span>
                 : <span className="map-state">{recLoading ? <><span className="spinner" aria-hidden /> Finding a starting plan…</> : noUseful ? 'No suggested action saves area here' : 'No action yet'}</span>}
               <div className="map-toolbar-end">
                 {(planBusy || !base) && <span className="spinner" aria-label="Simulating" />}
@@ -514,6 +542,7 @@ export default function App() {
             <ul className="legend" aria-label="Map key">
               <li><i className="sw burn" />{view === 'probability' ? `Chance of burning by +${t} h` : `Burning by +${t} h`}</li>
               <li><i className="sw scar" />Already burned</li>
+              {hasPlan && <li><i className="sw saved" />Saved by the plan</li>}
               <li><i className="edge" />Seen by satellite, last 24 h</li>
               {showObserved && <li><i className="ring" />Seen in the next 24 h</li>}
             </ul>

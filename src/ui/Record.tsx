@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { emissions, fmtTonnes } from '../sim/carbon';
 import type { SimClient } from '../sim/client';
 import {
@@ -6,6 +6,7 @@ import {
   type CheckResult, type RunInputs, type RunRecord,
 } from '../sim/receipt';
 import type { Action, EnsembleResult, Scenario, SimParams } from '../sim/types';
+import { reducedMotion, useTypewriter } from './motion';
 
 const short = (h: string) => `${h.slice(0, 8)}…${h.slice(-4)}`;
 
@@ -21,6 +22,29 @@ async function post<T>(path: string, body: object): Promise<T> {
   const j = await r.json();
   if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
   return j as T;
+}
+
+const SEAL_STEPS = ['Hash the inputs: fire, weather, terrain, plan, rates, seeds', 'Hash the outputs: all 40 runs', 'Sign the receipt (Ed25519)', 'Sealed'];
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, reducedMotion() ? 0 : ms));
+
+/** The sealing steps, ticked off one by one so what "seal" means is seen, not just named. */
+function SealSteps({ stage }: { stage: number }) {
+  return (
+    <ol className="seal-steps" aria-label="Sealing">
+      {SEAL_STEPS.slice(0, Math.min(SEAL_STEPS.length, stage + 1)).map((label, i) => (
+        <li key={label} className={`seal-step ${i < stage ? 'done' : 'active'}`}>
+          <span className="check-mark" aria-hidden>{i < stage ? '✓' : i + 1}</span>
+          <span>{label}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** A hash written out character by character, then shown whole. */
+function Hash({ value }: { value: string }) {
+  const shown = useTypewriter(value, 12);
+  return <code className="hash" title={value}>{shown}{shown.length < value.length && <span className="caret" aria-hidden />}</code>;
 }
 
 function Check({ ok, label, detail }: { ok: boolean | null; label: string; detail?: string }) {
@@ -45,7 +69,16 @@ export function RecordPanel(p: {
   const [checks, setChecks] = useState<CheckResult | null>(null);
   const [state, setState] = useState<'idle' | 'sealing' | 'anchoring' | 'checking'>('idle');
   const [msg, setMsg] = useState<string | null>(null);
+  const [stage, setStage] = useState(-1);
   const file = useRef<HTMLInputElement>(null);
+  // Tick the steps while the (fast) sealing runs, so each one is visible for a moment.
+  useEffect(() => {
+    if (state !== 'sealing') return;
+    setStage(0);
+    let i = 0;
+    const id = window.setInterval(() => { i = Math.min(SEAL_STEPS.length - 2, i + 1); setStage(i); }, reducedMotion() ? 1 : 450);
+    return () => window.clearInterval(id);
+  }, [state]);
   const ready = !!p.base && !!p.plan && !p.busy;
   const name = rec ? `sekatapi-${rec.receiptSha256.slice(0, 12)}` : '';
 
@@ -55,10 +88,14 @@ export function RecordPanel(p: {
     try {
       const inputs: RunInputs = { scenario: p.scn, actions: p.actions, params: p.params, seeds: p.base.seeds };
       const em = emissions(p.scn.landscape, p.base, p.actions.length ? p.plan : null, p.params.rates, p.scn.horizonH);
+      const started = performance.now();
       const { receipt, receiptSha256 } = await buildReceipt(inputs, p.base, p.plan, em, engineLabel());
       const r: RunRecord = { receipt, receiptSha256, inputs: encode(inputs) };
       try { r.signature = await post('/api/receipt/sign', { receiptSha256 }); }
       catch (e) { setMsg(`Not signed: ${e instanceof Error ? e.message : e}`); }
+      // Let every step be seen before the sealed record replaces them.
+      await wait(Math.max(0, 450 * (SEAL_STEPS.length - 1) - (performance.now() - started)));
+      setStage(SEAL_STEPS.length);
       setRec(r);
     } catch (e) {
       setMsg(e instanceof Error ? e.message : String(e));
@@ -110,13 +147,25 @@ export function RecordPanel(p: {
         </header>
         <p className="muted small">Seal this forecast and plan so anyone can check later that it was not changed, and re-run it to get the same numbers.</p>
         <button className="btn primary wide" disabled={!ready || state !== 'idle'} onClick={seal}>Seal and sign</button>
+        {state === 'sealing' && <SealSteps stage={stage} />}
       </section>
 
       {rec && res && (
         <section className="section" aria-label="Sealed record">
           <header className="section-head"><h2>{rec.receipt.scenario.title}</h2></header>
+          <div className={`sealed-badge ${rec.anchor ? 'anchored' : ''}`} role="status">
+            <span className="lock" aria-hidden>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+            </span>
+            <span>
+              <b>{rec.anchor ? 'Timestamped on Bitcoin' : rec.signature ? 'Sealed and signed' : 'Sealed'}</b>
+              {rec.anchor
+                ? <>Only the 64-character hash left this machine, via OpenTimestamps. Confirmed in a block within a few hours; then it cannot be backdated.</>
+                : <>Change one byte of the inputs and the hash below changes. Timestamp it so the date cannot be disputed either.</>}
+            </span>
+          </div>
           <dl className="kv">
-            <dt>Record</dt><dd><code title={rec.receiptSha256}>{short(rec.receiptSha256)}</code></dd>
+            <dt>Record</dt><dd><Hash value={rec.receiptSha256} /></dd>
             <dt>Inputs</dt><dd><code title={rec.receipt.inputsSha256}>{short(rec.receipt.inputsSha256)}</code></dd>
             <dt>Outputs</dt><dd><code title={rec.receipt.outputsSha256}>{short(rec.receipt.outputsSha256)}</code> · {rec.receipt.runs} runs</dd>
             <dt>Result</dt><dd>{res.burnedHa.plan} ha burned{rec.receipt.actions ? `, ${res.savedHa.mean} ha saved` : ''}{res.tco2e.avoided !== null ? `, ${fmtTonnes(res.tco2e.avoided)} t CO₂e less (model estimate)` : `, ${fmtTonnes(res.tco2e.base)} t CO₂e (model estimate)`}</dd>

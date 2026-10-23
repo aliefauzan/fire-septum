@@ -108,6 +108,38 @@ function fireLayer(o: DrawOptions): HTMLCanvasElement | null {
   return fireCanvas;
 }
 
+const savedCanvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
+
+/**
+ * Cells the plan keeps from burning by hour `t`: burned in most no-action runs, not in most plan
+ * runs. Drawn as its own layer so it can be flashed when a plan changes.
+ */
+export function drawSavedLayer(ctx: CanvasRenderingContext2D, size: number, scn: Scenario, base: EnsembleResult, plan: EnsembleResult, t: number) {
+  ctx.clearRect(0, 0, size, size);
+  if (!savedCanvas) return;
+  const l = scn.landscape;
+  const n = l.w * l.h;
+  if (base.runs[0]?.ign.length !== n || plan.runs[0]?.ign.length !== n) return;
+  savedCanvas.width = l.w; savedCanvas.height = l.h;
+  const sctx = savedCanvas.getContext('2d')!;
+  const img = sctx.createImageData(l.w, l.h);
+  const R = base.runs.length || 1, P = plan.runs.length || 1;
+  let any = false;
+  for (let k = 0; k < n; k++) {
+    let b = 0, q = 0;
+    for (const r of base.runs) if (r.ign[k] >= 0 && r.ign[k] <= t) b++;
+    for (const r of plan.runs) if (r.ign[k] >= 0 && r.ign[k] <= t) q++;
+    const d = b / R - q / P;
+    if (d < 0.25) continue;
+    any = true;
+    img.data.set([52, 199, 89, Math.min(230, 90 + 200 * d)], k * 4);
+  }
+  if (!any) return;
+  sctx.putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(savedCanvas, 0, 0, size, size);
+}
+
 function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, len: number, angleRad: number, color: string) {
   ctx.save();
   ctx.translate(x, y);
