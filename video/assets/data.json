@@ -1,0 +1,124 @@
+{
+ "source": "docs/hindcast-rerun-2026-10-21.json",
+ "pooled": {
+  "tau3": {
+   "forecastSquares": 663,
+   "hits": 112,
+   "observed": 114,
+   "csi": 0.168,
+   "distanceCsi": 0.16
+  },
+  "tau6": {
+   "forecastSquares": 390,
+   "hits": 90,
+   "observed": 114,
+   "csi": 0.217,
+   "distanceCsi": 0.17
+  }
+ },
+ "heldOutSumatra": {
+  "tau3": {
+   "csi": 0.076,
+   "distanceCsi": 0.076
+  },
+  "tau6": {
+   "csi": 0.114,
+   "distanceCsi": 0.093
+  },
+  "observedSquares": 24
+ },
+ "events": [
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-08",
+   "newSquares": 2,
+   "csi": 0.04,
+   "distanceCsi": 0.04
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-10",
+   "newSquares": 57,
+   "csi": 0.71,
+   "distanceCsi": 0.63
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-12",
+   "newSquares": 8,
+   "csi": 0.44,
+   "distanceCsi": 0.35
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-14",
+   "newSquares": 2,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-16",
+   "newSquares": 3,
+   "csi": 0.11,
+   "distanceCsi": 0.05
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-18",
+   "newSquares": 18,
+   "csi": 0.41,
+   "distanceCsi": 0.17
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-08",
+   "newSquares": 0,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-10",
+   "newSquares": 0,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-12",
+   "newSquares": 2,
+   "csi": 0.06,
+   "distanceCsi": 0.03
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-14",
+   "newSquares": 20,
+   "csi": 0.25,
+   "distanceCsi": 0.22
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-16",
+   "newSquares": 0,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-18",
+   "newSquares": 2,
+   "csi": 0.05,
+   "distanceCsi": 0.03
+  }
+ ],
+ "register": {
+  "sealed": 6,
+  "kalimantan": 3,
+  "sumatra": 3,
+  "sealedAt": "2026-10-20T16:38Z to 16:40Z (21 Oct 00:38-00:40 WITA)",
+  "scoring": "after 2026-10-21 22:40 UTC",
+  "status": "pending"
+ }
+}

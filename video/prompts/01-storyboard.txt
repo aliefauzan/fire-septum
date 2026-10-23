@@ -1,0 +1,18 @@
+You are making the storyboard for a hackathon demo video. Do NOT build or render the video yet.
+
+1. Read video/BRIEF.md completely. It is the contract: deliverable, audience, narrative beats, allowed facts, forbidden claims, visual style, assets.
+2. Read video/assets/data.json and video/assets/07-ots-terminal.txt. Look at every image in video/assets/ so you know what each screenshot shows.
+3. Read these HyperFrames references so the storyboard is buildable later:
+   - /Users/af/.claude/skills/hyperframes-core/SKILL.md (only the parts on STORYBOARD.md / SCRIPT.md plan formats and composition structure)
+   - /Users/af/.claude/skills/general-video/SKILL.md
+4. Write video/SCRIPT.md: the full voice-over, split by scene, 3:30 to 4:15 when read at about 165 words per minute (about 580 to 700 words in total). Plain, confident, honest English. Use only facts from BRIEF.md and data.json.
+5. Write video/STORYBOARD.md. For every scene give:
+   - scene number, title, start time and duration (seconds);
+   - the exact narration lines from SCRIPT.md;
+   - visuals: which asset file, the crop or zoom region in pixels on the 1920x1080 image, the camera move, callouts or highlights (with their exact text), and any chart or terminal panel to build (with the exact numbers);
+   - the caption text;
+   - the transition to the next scene.
+   Durations must add up to the total runtime.
+6. At the end of STORYBOARD.md, add a "Fact check" table: every number or claim used in the video, and the line of BRIEF.md or data.json it comes from. Remove anything you cannot source.
+
+Write only video/SCRIPT.md and video/STORYBOARD.md. Do not change any other file.

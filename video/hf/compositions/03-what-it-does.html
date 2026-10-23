@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="03-what-it-does-template">
+      <style>
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F7F8FA;
+        color: #1A1A1A;
+        font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      .stage { position: absolute; inset: 0; }
+      .card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E0E3E6;
+        border-radius: 16px;
+      }
+      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .chip {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E8590C;
+        border-radius: 10px;
+        color: #1A1A1A;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.15;
+        padding: 9px 16px;
+        z-index: 20;
+      }
+      .shotwrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .shotimg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        display: block;
+      }
+      .ovl { position: absolute; left: 0; top: 0; overflow: visible; }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+
+
+      .s3-src {
+        position: absolute; left: 120px; width: 740px; height: 120px; background: #ffffff;
+        border: 1px solid #e0e3e6; border-radius: 14px; padding: 24px 28px 20px 32px;
+      }
+      .s3-bar { position: absolute; left: 0; top: 0; width: 4px; height: 118px; background: #e8590c; transform-origin: 50% 0; }
+      .s3-src .t { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; }
+      .s3-src .s { font-size: 22px; color: #6b7075; margin-top: 8px; }
+      .s3-y1 { top: 250px; } .s3-y2 { top: 400px; } .s3-y3 { top: 550px; } .s3-y4 { top: 700px; }
+      .s3-svg { position: absolute; left: 0; top: 0; }
+      .s3-panel {
+        position: absolute; left: 1040px; top: 210px; width: 760px; height: 650px;
+        background: #ffffff; border: 1px solid #e0e3e6; border-radius: 16px;
+      }
+      .s3-ptitle { position: absolute; left: 32px; top: 32px; font-size: 28px; font-weight: 600; }
+      .s3-cell { position: absolute; width: 38px; height: 38px; border-radius: 4px; background: #edeff1; }
+      .s3-hot { background: #e8590c; }
+      .s3-stat { position: absolute; left: 410px; width: 330px; }
+      .s3-stat .v { font-size: 34px; font-weight: 600; letter-spacing: -0.01em; }
+      .s3-stat .l { font-size: 20px; color: #6b7075; margin-top: 6px; }
+      .s3-under {
+        position: absolute; left: 32px; top: 446px; font-size: 20px; color: #6b7075;
+      }
+      .s3-chip {
+        position: absolute; left: 32px; top: 486px; background: #ffffff; border: 1px solid #e8590c;
+        border-radius: 999px; padding: 12px 24px; font-size: 22px; font-weight: 500;
+      }
+  
+      </style>
+      <div id="root" data-composition-id="03-what-it-does" data-width="1920" data-height="1080" data-duration="26.7">
+        <div class="stage">
+
+          <div class="s3-src s3-y1"><div class="s3-bar" id="s03-b1"></div><div class="t">NASA FIRMS</div><div class="s">satellite hotspots &mdash; where fire is now</div></div>
+          <div class="s3-src s3-y2"><div class="s3-bar" id="s03-b2"></div><div class="t">Open-Meteo</div><div class="s">wind, humidity and rain</div></div>
+          <div class="s3-src s3-y3"><div class="s3-bar" id="s03-b3"></div><div class="t">AWS terrain</div><div class="s">elevation and slope</div></div>
+          <div class="s3-src s3-y4"><div class="s3-bar" id="s03-b4"></div><div class="t">OpenStreetMap</div><div class="s">rivers, roads, logistics</div></div>
+          <svg class="s3-svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+            <path id="s03-c1" d="M860 310 L1010 475" stroke="#c9ced2" stroke-width="2" fill="none"/>
+            <path id="s03-c2" d="M860 460 L1010 475" stroke="#c9ced2" stroke-width="2" fill="none"/>
+            <path id="s03-c3" d="M860 610 L1010 475" stroke="#c9ced2" stroke-width="2" fill="none"/>
+            <path id="s03-c4" d="M860 760 L1010 475" stroke="#c9ced2" stroke-width="2" fill="none"/>
+            <path id="s03-c5" d="M1010 475 L1032 475" stroke="#c9ced2" stroke-width="2" fill="none"/>
+            <polygon id="s03-p" points="1030,468 1046,475 1030,482" fill="#c9ced2"/>
+          </svg>
+          <div class="s3-panel">
+            <div class="s3-ptitle">One forecast</div>
+            <div id="s03-cells"></div>
+            <div class="s3-stat" style="top:106px;"><div class="v">6.4 &times; 6.4 km</div><div class="l">forecast grid</div></div>
+            <div class="s3-stat" style="top:186px;"><div class="v">100 m</div><div class="l">cell size</div></div>
+            <div class="s3-stat" style="top:266px;"><div class="v">40</div><div class="l">simulated runs</div></div>
+            <div class="s3-stat" style="top:346px;"><div class="v">24&ndash;48 h</div><div class="l">horizon</div></div>
+            <div class="s3-under">6.4 km grid &middot; 100 m cells &middot; 40 runs &middot; 24&ndash;48 h horizon</div>
+            <div class="s3-chip">40 runs, so the uncertainty is visible</div>
+          </div>
+          <div class="capwrap">
+          <span class="cap" id="c03-what-it-does-cap1"><span class="pill">SekatApi joins live open data into one fire-spread forecast.<br>NASA FIRMS satellite hotspots for where fire is now.</span></span>
+          <span class="cap" id="c03-what-it-does-cap2"><span class="pill">Open-Meteo for wind, humidity and rain.<br>AWS terrain for slope. OpenStreetMap for rivers and roads.</span></span>
+          <span class="cap" id="c03-what-it-does-cap3"><span class="pill">It runs on a six point four by six point four kilometre grid at one hundred metre cells,<br>forty simulated runs, twenty four to forty eight hours ahead.</span></span>
+          <span class="cap" id="c03-what-it-does-cap4"><span class="pill">You see the uncertainty, not one confident line.</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+  tl.set("#c03-what-it-does-cap1", { opacity: 0 }, 0);
+  tl.fromTo("#c03-what-it-does-cap1", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 0);
+  tl.to("#c03-what-it-does-cap1", { opacity: 0, duration: 0.28, ease: "none" }, 6.32);
+  tl.set("#c03-what-it-does-cap2", { opacity: 0 }, 0);
+  tl.fromTo("#c03-what-it-does-cap2", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 6.6);
+  tl.to("#c03-what-it-does-cap2", { opacity: 0, duration: 0.28, ease: "none" }, 10.72);
+  tl.set("#c03-what-it-does-cap3", { opacity: 0 }, 0);
+  tl.fromTo("#c03-what-it-does-cap3", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 11);
+  tl.to("#c03-what-it-does-cap3", { opacity: 0, duration: 0.28, ease: "none" }, 17.72);
+  tl.set("#c03-what-it-does-cap4", { opacity: 0 }, 0);
+  tl.fromTo("#c03-what-it-does-cap4", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 18);
+  tl.to("#c03-what-it-does-cap4", { opacity: 0, duration: 0.28, ease: "none" }, 24.72);
+
+  (function () {
+    var band = [[7,0],[7,1],[6,1],[6,2]];
+    var soft = [[5,2],[5,3],[6,3],[4,3],[4,4],[5,4],[7,2],[6,4],[7,3]];
+    var host = document.getElementById("s03-cells");
+    var i, r, c, el;
+    for (r = 0; r < 8; r += 1) {
+      for (c = 0; c < 8; c += 1) {
+        el = document.createElement("div");
+        el.className = "s3-cell";
+        el.style.left = 32 + c * 42 + "px";
+        el.style.top = 90 + r * 42 + "px";
+        host.appendChild(el);
+      }
+    }
+    function mark(list, cls) {
+      list.forEach(function (rc) {
+        var idx = rc[0] * 8 + rc[1];
+        host.children[idx].className = "s3-cell " + cls;
+        host.children[idx].id = "s03-cell-" + rc[0] + "-" + rc[1];
+      });
+    }
+    mark(band, "s3-hot");
+    mark(soft, "s3-hot");
+    window.__s03soft = soft;
+  })();
+  tl.fromTo(".s3-src", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", stagger: 0.32 }, 0.3);
+  tl.fromTo("#s03-b1, #s03-b2, #s03-b3, #s03-b4", { scaleY: 0 }, { scaleY: 1, duration: 0.55, ease: "power3.out", stagger: 0.32 }, 0.5);
+  tl.fromTo("#s03-c1, #s03-c2, #s03-c3, #s03-c4, #s03-c5", { strokeDashoffset: 420 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 6.0);
+  tl.fromTo("#s03-p", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 6.5);
+  tl.fromTo(".s3-panel", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 6.4);
+  tl.fromTo(".s3-cell", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power2.out", stagger: 0.06 }, 11.0);
+  tl.fromTo(".s3-stat", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.25 }, 11.6);
+  tl.fromTo(".s3-under", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 13.2);
+  tl.fromTo(".s3-chip", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 13.6);
+  (function () {
+    var soft = window.__s03soft;
+    soft.forEach(function (rc) {
+      var el = document.getElementById("s03-cell-" + rc[0] + "-" + rc[1]);
+      if (el) el.style.opacity = "0.6";
+    });
+  })();
+
+        window.__timelines["03-what-it-does"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

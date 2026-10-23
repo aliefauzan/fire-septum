@@ -1,0 +1,156 @@
+{
+ "rows": [
+  {
+   "t": 7.05,
+   "diff": 0.42,
+   "pair": "pair_t007.050.png"
+  },
+  {
+   "t": 7.0833,
+   "diff": 0.42,
+   "pair": "pair_t007.083.png"
+  },
+  {
+   "t": 7.1167,
+   "diff": 0.43,
+   "pair": "pair_t007.117.png"
+  },
+  {
+   "t": 7.15,
+   "diff": 0.43,
+   "pair": "pair_t007.150.png"
+  },
+  {
+   "t": 7.1833,
+   "diff": 0.43,
+   "pair": "pair_t007.183.png"
+  },
+  {
+   "t": 7.2167,
+   "diff": 0.43,
+   "pair": "pair_t007.217.png"
+  },
+  {
+   "t": 7.25,
+   "diff": 0.43,
+   "pair": "pair_t007.250.png"
+  },
+  {
+   "t": 7.2833,
+   "diff": 0.43,
+   "pair": "pair_t007.283.png"
+  },
+  {
+   "t": 7.3167,
+   "diff": 0.43,
+   "pair": "pair_t007.317.png"
+  },
+  {
+   "t": 7.35,
+   "diff": 0.43,
+   "pair": "pair_t007.350.png"
+  },
+  {
+   "t": 7.3833,
+   "diff": 0.42,
+   "pair": "pair_t007.383.png"
+  },
+  {
+   "t": 7.4167,
+   "diff": 0.42,
+   "pair": "pair_t007.417.png"
+  },
+  {
+   "t": 7.45,
+   "diff": 0.42,
+   "pair": "pair_t007.450.png"
+  },
+  {
+   "t": 7.4833,
+   "diff": 0.42,
+   "pair": "pair_t007.483.png"
+  },
+  {
+   "t": 7.5167,
+   "diff": 0.42,
+   "pair": "pair_t007.517.png"
+  },
+  {
+   "t": 7.55,
+   "diff": 0.42,
+   "pair": "pair_t007.550.png"
+  },
+  {
+   "t": 7.5833,
+   "diff": 0.42,
+   "pair": "pair_t007.583.png"
+  },
+  {
+   "t": 7.6167,
+   "diff": 0.42,
+   "pair": "pair_t007.617.png"
+  },
+  {
+   "t": 7.65,
+   "diff": 0.42,
+   "pair": "pair_t007.650.png"
+  },
+  {
+   "t": 7.6833,
+   "diff": 0.42,
+   "pair": "pair_t007.683.png"
+  },
+  {
+   "t": 7.7167,
+   "diff": 0.42,
+   "pair": "pair_t007.717.png"
+  },
+  {
+   "t": 7.75,
+   "diff": 0.42,
+   "pair": "pair_t007.750.png"
+  },
+  {
+   "t": 7.7833,
+   "diff": 0.42,
+   "pair": "pair_t007.783.png"
+  },
+  {
+   "t": 7.8167,
+   "diff": 0.42,
+   "pair": "pair_t007.817.png"
+  },
+  {
+   "t": 7.85,
+   "diff": 0.42,
+   "pair": "pair_t007.850.png"
+  }
+ ],
+ "worst": [
+  {
+   "t": 7.1167,
+   "diff": 0.43,
+   "pair": "pair_t007.117.png"
+  },
+  {
+   "t": 7.15,
+   "diff": 0.43,
+   "pair": "pair_t007.150.png"
+  },
+  {
+   "t": 7.1833,
+   "diff": 0.43,
+   "pair": "pair_t007.183.png"
+  },
+  {
+   "t": 7.2167,
+   "diff": 0.43,
+   "pair": "pair_t007.217.png"
+  },
+  {
+   "t": 7.25,
+   "diff": 0.43,
+   "pair": "pair_t007.250.png"
+  }
+ ]
+}

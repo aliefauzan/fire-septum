@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="04-recorded-fire-template">
+      <style>
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F7F8FA;
+        color: #1A1A1A;
+        font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      .stage { position: absolute; inset: 0; }
+      .card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E0E3E6;
+        border-radius: 16px;
+      }
+      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .chip {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E8590C;
+        border-radius: 10px;
+        color: #1A1A1A;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.15;
+        padding: 9px 16px;
+        z-index: 20;
+      }
+      .shotwrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .shotimg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        display: block;
+      }
+      .ovl { position: absolute; left: 0; top: 0; overflow: visible; }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+
+
+      .s4-shot { opacity: 1; }
+      .s4-b { position: absolute; inset: 0; opacity: 0; }
+      .s4-eyebrow { position: absolute; left: 120px; top: 324px; font-size: 22px; letter-spacing: 0.16em; font-weight: 600; color: #6b7075; }
+      .s4-count { position: absolute; left: 120px; top: 352px; font-size: 132px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+      .s4-sub { position: absolute; left: 120px; top: 516px; font-size: 28px; color: #6b7075; }
+      .s4-div { position: absolute; left: 120px; top: 596px; width: 760px; height: 1px; background: #e0e3e6; }
+      .s4-body { position: absolute; left: 120px; top: 636px; width: 860px; font-size: 26px; line-height: 1.45; }
+      .s4-sheetwrap {
+        position: absolute; left: 1150px; top: 50px; width: 520px; height: 720px;
+        transform-origin: 0 0;
+      }
+      .s4-sheetimg { position: absolute; left: 0; top: 0; width: 520px; height: 720px; display: block; border-radius: 16px; }
+      .s4-sheetovl { position: absolute; left: 0; top: 0; }
+  
+      </style>
+      <div id="root" data-composition-id="04-recorded-fire" data-width="1920" data-height="1080" data-duration="27">
+        <div class="stage">
+
+          <div class="shotwrap s4-shot" id="s04-shot" data-layout-allow-overflow>
+            <img class="shotimg" src="../assets/01-recorded-fire.png" alt="Recorded West Kalimantan fire" />
+            <svg class="ovl" width="1920" height="1080" viewBox="0 0 1920 1080">
+              <rect id="s04-r1" x="1300" y="78" width="376" height="148" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              <line id="s04-l1" x1="1488" y1="232" x2="1320" y2="300" stroke="#e8590c" stroke-width="2"/>
+              <circle id="s04-d1" cx="1320" cy="300" r="4" fill="#e8590c"/>
+              <line id="s04-l3" x1="520" y1="652" x2="520" y2="612" stroke="#e8590c" stroke-width="1"/>
+              <circle id="s04-d3" cx="520" cy="610" r="3" fill="#e8590c"/>
+              <rect id="s04-r4" x="242" y="150" width="703" height="75" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+            </svg>
+            <div class="chip" id="s04-chip2" style="right:244px; top:234px; font-size:22px;">12 of 18 new fire spots caught &middot; CSI 0.41 &middot; distance-only 0.17</div>
+            <div class="chip" id="s04-chip3" style="left:300px; top:660px; font-size:22px;">white rings = what the satellites saw next</div>
+          </div>
+
+          <div class="s4-b" id="s04-b">
+            <div class="s4-eyebrow">LIVE</div>
+            <div class="s4-count" id="s04-count">0</div>
+            <div class="s4-sub">fire detections in Kalimantan in the last 24 h</div>
+            <div class="s4-div"></div>
+            <div class="s4-body">Search Kalimantan returns the most active NASA FIRMS clusters, with detection counts and last-seen times.</div>
+            <div class="s4-sheetwrap" id="s04-sheetwrap" data-layout-allow-overflow>
+              <img class="s4-sheetimg" src="../assets/02-live-fires.png" alt="Live fires sheet for Kalimantan" />
+              <svg class="s4-sheetovl" width="520" height="720" viewBox="0 0 520 720">
+                <rect id="s04-r5" x="20" y="194" width="480" height="118" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              </svg>
+              <div class="chip" id="s04-chip4" style="left:18px; top:160px; font-size:18px;">2452 fire detections in Kalimantan in the last 24 h. Pick one:</div>
+            </div>
+          </div>
+          <div class="capwrap">
+          <span class="cap" id="c04-recorded-fire-cap1"><span class="pill">Here is a real West Kalimantan fire, frozen at the last satellite pass<br>on the eighteenth of October, twenty twenty six.</span></span>
+          <span class="cap" id="c04-recorded-fire-cap2"><span class="pill">The next day the satellites found eighteen new fire spots.<br>The forecast caught twelve: a critical success index of point four one,</span></span>
+          <span class="cap" id="c04-recorded-fire-cap3"><span class="pill">against point one seven for a distance-only baseline.<br>The white rings are what the satellites saw.</span></span>
+          <span class="cap" id="c04-recorded-fire-cap4"><span class="pill">Live, Kalimantan shows two thousand four hundred fifty two detections in the last day.</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+  tl.set("#c04-recorded-fire-cap1", { opacity: 0 }, 0);
+  tl.fromTo("#c04-recorded-fire-cap1", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 0);
+  tl.to("#c04-recorded-fire-cap1", { opacity: 0, duration: 0.28, ease: "none" }, 6.72);
+  tl.set("#c04-recorded-fire-cap2", { opacity: 0 }, 0);
+  tl.fromTo("#c04-recorded-fire-cap2", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 7);
+  tl.to("#c04-recorded-fire-cap2", { opacity: 0, duration: 0.28, ease: "none" }, 12.72);
+  tl.set("#c04-recorded-fire-cap3", { opacity: 0 }, 0);
+  tl.fromTo("#c04-recorded-fire-cap3", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 13);
+  tl.to("#c04-recorded-fire-cap3", { opacity: 0, duration: 0.28, ease: "none" }, 18.22);
+  tl.set("#c04-recorded-fire-cap4", { opacity: 0 }, 0);
+  tl.fromTo("#c04-recorded-fire-cap4", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 18.5);
+  tl.to("#c04-recorded-fire-cap4", { opacity: 0, duration: 0.28, ease: "none" }, 26.7);
+
+  tl.fromTo("#s04-shot", { scale: 1, x: 0, y: 40 }, { scale: 1.06, x: -57.6, y: 10, duration: 14, ease: "power2.inOut" }, 0);
+  tl.fromTo("#s04-r1", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 3.0);
+  tl.fromTo("#s04-l1", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 3.2);
+  tl.fromTo("#s04-d1", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power2.out" }, 3.5);
+  tl.fromTo("#s04-chip2", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 5.0);
+  tl.fromTo("#s04-r4", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 11.0);
+  tl.fromTo("#s04-chip3", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 8.5);
+  tl.fromTo("#s04-l3", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 8.7);
+  tl.fromTo("#s04-d3", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power2.out" }, 8.8);
+  tl.to("#s04-shot", { opacity: 0, duration: 0.4, ease: "none" }, 13.8);
+  tl.fromTo("#s04-b", { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "none" }, 13.9);
+  tl.fromTo("#s04-sheetwrap", { scale: 1.14 }, { scale: 1.19, duration: 13, ease: "power1.inOut" }, 14);
+  tl.fromTo("#s04-eyebrow, #s04-count, #s04-sub, #s04-div, #s04-body", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.14 }, 14.2);
+  tl.fromTo("#s04-r5", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 15.2);
+  tl.fromTo("#s04-chip4", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 15.6);
+  (function () {
+    var counter = { v: 0 };
+    var el = document.getElementById("s04-count");
+    tl.to(counter, {
+      v: 2452,
+      duration: 1.2,
+      ease: "power2.out",
+      onUpdate: function () {
+        var s = String(Math.round(counter.v));
+        el.textContent = s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      },
+    }, 14.6);
+  })();
+
+        window.__timelines["04-recorded-fire"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

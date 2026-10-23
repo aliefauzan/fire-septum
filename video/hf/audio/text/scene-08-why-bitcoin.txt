@@ -1,0 +1,1 @@
+Bitcoin here is a public clock and nothing more. One hash per forecast. No token, no wallet, no fee. A smart contract cannot make a fire model more correct — a deterministic re-run can. So the record shows four things: the receipt is unchanged, the inputs are unchanged, the signature is valid, and re-running gives the same result.

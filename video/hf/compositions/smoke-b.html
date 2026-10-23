@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="smoke-b-template">
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          background: #f7f8fa;
+          color: #1a1a1a;
+          font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        }
+        .shot {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 1920px;
+          height: 1080px;
+          transform-origin: 0 0;
+          object-fit: cover;
+        }
+        .capwrap {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 62px;
+          text-align: center;
+          z-index: 60;
+        }
+        .cap {
+          display: inline-block;
+          max-width: 1480px;
+          padding: 11px 26px;
+          border-radius: 12px;
+          background: #1a1a1a;
+          color: #ffffff;
+          font-size: 33px;
+          font-weight: 500;
+          line-height: 1.2;
+          text-align: center;
+        }
+      </style>
+      <div id="root" data-composition-id="smoke-b" data-width="1920" data-height="1080" data-duration="7">
+        <img class="shot" id="b-shot" src="../assets/01-recorded-fire.png" alt="" />
+        <div class="capwrap">
+          <span class="cap" id="b-cap-1">Caption over a screenshot</span>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#b-cap-1", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0);
+        tl.fromTo(
+          "#b-shot",
+          { scale: 1.0, x: 0, y: 40 },
+          { scale: 1.06, x: -57.6, y: 10, duration: 6, ease: "power2.inOut" },
+          0,
+        );
+        window.__timelines["smoke-b"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

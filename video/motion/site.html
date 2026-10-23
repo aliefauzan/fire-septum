@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SekatApi — forecasts on the record</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=block&text=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%20%C2%B7%26%2C.%3D%2B%3A%2F-%25()" rel="stylesheet">
+<!--
+  site.html: the real site, built from the replay's own drawings (index.html).
+  Same SVG shapes, same palette, same Inter as the replay and the app: no raster, no fake cursor.
+  What scrolled in the video is real scrolling (ScrollTrigger); what was a picture of a control is a real
+  <button>, <a>, tablist or slider. Keyboard, 375 px mobile and prefers-reduced-motion all work.
+-->
+<style>
+  :root {
+    --canvas:#F7F8FA; --surface:#FFFFFF; --ink:#1A1A1A; --ink2:#6B7075;
+    --line:#E0E3E6; --line2:#C9CED2; --accent:#E8590C; --ghost:#8A9096; --base:#EDEFF1;
+  }
+  * { box-sizing:border-box }
+  html, body { margin:0; background:var(--canvas); color:var(--ink); font:400 16px/1.55 'Inter',system-ui,-apple-system,sans-serif }
+  body { overflow-x:hidden }
+  a, button { font:inherit; color:inherit }
+  button { cursor:pointer; border:0; background:none; padding:0 }
+  :focus-visible { outline:3px solid var(--accent); outline-offset:3px; border-radius:6px }
+  .wrap { width:min(1180px, 100% - 32px); margin-inline:auto }
+  .mono { font-family:ui-monono,'SF Mono',Menlo,Consolas,monospace; font-variant-numeric:tabular-nums }
+  .eyebrow { font-size:13px; font-weight:600; letter-spacing:.16em; color:var(--ink2); text-transform:uppercase }
+  h1 { font-size:clamp(38px,7.2vw,86px); line-height:1.02; letter-spacing:-.022em; font-weight:700; margin:0 }
+  h2 { font-size:clamp(26px,3.6vw,42px); line-height:1.1; letter-spacing:-.02em; font-weight:700; margin:0 0 12px }
+  h3 { font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0 0 6px }
+  p { margin:0 0 14px; color:var(--ink2) }
+  p strong { color:var(--ink); font-weight:600 }
+
+  /* header + menu */
+  header { position:fixed; inset:0 0 auto; z-index:20; background:color-mix(in srgb, var(--canvas) 88%, transparent); backdrop-filter:blur(8px) }
+  header .wrap { display:flex; align-items:center; justify-content:space-between; height:66px }
+  .logo { font-weight:700; font-size:19px; text-decoration:none; letter-spacing:-.01em }
+  .logo em { font-style:normal; color:var(--accent) }
+  .menu-btn { width:44px; height:44px; border-radius:50%; background:var(--ink); display:grid; place-items:center; align-content:center }
+  .menu-btn span { display:block; width:18px; height:2px; background:var(--canvas); border-radius:2px; transition:transform .25s }
+  .menu-btn span + span { margin-top:-11px }
+  .menu-btn[aria-expanded="true"] span:first-child { transform:translateY(3.5px) rotate(45deg) }
+  .menu-btn[aria-expanded="true"] span:last-child { transform:translateY(-3.5px) rotate(-45deg) }
+  /* z-index above the header: the hero is transformed by GSAP, which promotes it into the positioned
+     paint layer, and it comes later in the document than this panel */
+  nav.panel { position:fixed; inset:66px 0 auto auto; width:min(340px,100%); background:var(--ink); color:var(--canvas);
+    padding:18px 24px 24px; transform:translateX(100%); visibility:hidden; border-radius:0 0 0 20px; z-index:30 }
+  nav.panel a { display:block; padding:11px 0; font-size:19px; font-weight:600; text-decoration:none; color:var(--canvas) }
+  nav.panel a:hover { color:var(--accent) }
+
+  /* hero: the replay, playing */
+  section { padding:96px 0 }
+  .hero { padding-top:118px; display:grid; gap:34px; justify-items:start }
+  .hero .stage { width:min(880px, 100%); aspect-ratio:16/9; background:var(--canvas); border:1px solid var(--line); border-radius:14px; overflow:hidden }
+  .hero .stage svg { width:100%; height:100%; display:block }
+  .hero .lede { font-size:clamp(17px,2vw,21px); max-width:62ch; color:var(--ink2) }
+  .hero .lede b { color:var(--ink); font-weight:600 }
+  .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center }
+  .btn { background:var(--ink); color:var(--canvas); border-radius:999px; padding:12px 22px; font-weight:500; text-decoration:none; display:inline-block }
+  .btn.ghost { background:transparent; color:var(--ink); border:1px solid var(--line2) }
+  .btn:active { transform:scale(.98) }
+  .tag { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ink2) }
+  .tag i { width:8px; height:8px; border-radius:50%; background:var(--accent); display:block }
+
+  /* pinned, scrubbed scene: the seal */
+  .pin { padding:0; min-height:100vh; display:grid; place-items:center; background:var(--ink); color:var(--canvas) }
+  .pin .wrap { display:grid; gap:26px; justify-items:center; text-align:center; padding:90px 0 }
+  .pin h2 { color:var(--canvas) }
+  .pin p { color:#A9AFB4; max-width:60ch }
+  .pin .scene { width:min(1080px, 100%); background:var(--canvas); border-radius:16px; padding:18px; box-shadow:0 30px 80px rgba(0,0,0,.35) }
+  .pin .scene svg { width:100%; height:auto; display:block }
+
+  /* cards */
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:18px; margin-top:26px }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px }
+  .card .inner { display:block; width:100%; height:200px; position:relative; transform-style:preserve-3d; border-radius:12px; margin-bottom:18px }
+  .card .face { position:absolute; inset:0; border-radius:12px; backface-visibility:hidden; display:grid; place-items:center; text-align:center; padding:16px }
+  .card .front { background:var(--ink); color:var(--canvas) }
+  .card .back { background:var(--accent); color:#fff; transform:rotateY(180deg) }
+  .card .front b { display:block; font-size:26px; font-weight:700; letter-spacing:-.02em }
+  .card .front small { color:#9AA0A6; font-size:13px }
+  .card .back b { display:block; font-size:26px; font-weight:700; letter-spacing:-.02em }
+  .card .back small { color:#FBE3D4; font-size:13px }
+  [role="tablist"] { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px }
+  [role="tab"] { padding:8px 14px; border-radius:999px; background:var(--canvas); border:1px solid var(--line); font-size:14px; font-weight:500 }
+  [role="tab"][aria-selected="true"] { background:var(--ink); color:var(--canvas); border-color:var(--ink) }
+  [role="tabpanel"] dl { display:grid; grid-template-columns:1fr auto; gap:6px 14px; margin:0; font-size:15px }
+  [role="tabpanel"] dt { color:var(--ink2) }
+  [role="tabpanel"] dd { margin:0; font-weight:600; text-align:right; font-variant-numeric:tabular-nums }
+  [role="tabpanel"] .note { font-size:13px; color:var(--ink2); margin:14px 0 0 }
+  .board { list-style:none; margin:14px 0 0; padding:0; font-size:14px }
+  .board li { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-top:1px solid var(--line) }
+  .board li span:last-child { color:var(--ink2); font-variant-numeric:tabular-nums }
+  .count { min-width:26px; height:26px; padding:0 8px; border-radius:13px; background:var(--accent); color:#fff; display:inline-grid; place-items:center; font-size:14px; font-weight:600 }
+  .slider { position:relative; height:40px; margin:18px 0 4px; touch-action:none; cursor:pointer }
+  .slider .rail { position:absolute; left:0; right:0; top:17px; height:6px; border-radius:3px; background:var(--line) }
+  .slider .fill { position:absolute; left:0; top:17px; height:6px; border-radius:3px; background:var(--accent); width:0 }
+  .slider .knob { position:absolute; top:5px; left:0; width:30px; height:30px; border-radius:50%; background:var(--ink); margin-left:-15px }
+  .readout { font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums }
+  .seal { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink2); margin-top:16px }
+  .seal i { width:8px; height:8px; border-radius:50%; background:var(--ghost); display:block }
+  .seal.on i { background:var(--accent) }
+
+  footer { padding:56px 0 64px; border-top:1px solid var(--line); margin-top:40px }
+  footer .cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:26px; font-size:14px; color:var(--ink2) }
+  footer h3 { color:var(--ink) }
+  footer .fine { margin-top:30px; font-size:13px; color:var(--ghost); max-width:70ch }
+  @media (max-width:700px) { section { padding:64px 0 } .pin .wrap { padding:70px 0 } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important } }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="#top">Sekat<em>Api</em></a>
+  <button class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
+</div></header>
+<nav class="panel" id="menu" aria-label="Main">
+  <a href="#problem">The problem</a>
+  <a href="#seal">The seal</a>
+  <a href="#record">The record</a>
+  <a href="#validation">Validation</a>
+</nav>
+
+<main id="top">
+  <!-- ================= hero: the replay ================= -->
+  <section class="hero" id="problem"><div class="wrap">
+    <div class="stage" aria-hidden="true">
+      <!-- the same drawing as index.html, scaled down -->
+      <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1920" height="1080" fill="#F7F8FA"/>
+        <g transform="translate(140 116)">
+          <rect x="0.5" y="0.5" width="510.36" height="47" rx="23.5" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="1"/>
+          <text x="25" y="31" font-size="20" font-weight="500" fill="#1A1A1A">Track · Climate Data &amp; Environmental Monitoring</text>
+        </g>
+        <g transform="translate(140 190)">
+          <text x="0" y="56" font-size="60" font-weight="700" letter-spacing="-1.32" word-spacing="2" fill="#1A1A1A">Environmental data is fragmented and hard</text>
+          <text x="0" y="124.39" font-size="60" font-weight="700" letter-spacing="-1.32" word-spacing="2" fill="#1A1A1A">to verify.</text>
+        </g>
+        <g transform="translate(140 396)">
+          <rect x="0.5" y="0.5" width="359" height="99" rx="13.5" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="1"/>
+          <text x="23" y="44.1" font-size="26" font-weight="600" letter-spacing="-0.26" fill="#1A1A1A">Fragmented</text>
+          <text x="23" y="76" font-size="18" fill="#6B7075">hotspots, weather, terrain, roads</text>
+        </g>
+        <g transform="translate(540 396)">
+          <rect x="0.5" y="0.5" width="359" height="99" rx="13.5" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="1"/>
+          <text x="23" y="44.1" font-size="26" font-weight="600" letter-spacing="-0.26" fill="#1A1A1A">Hard to verify</text>
+          <text x="23" y="76" font-size="18" fill="#6B7075">no shared, checkable record</text>
+        </g>
+        <g transform="translate(940 396)">
+          <rect x="0.5" y="0.5" width="359" height="99" rx="13.5" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="1"/>
+          <text x="23" y="44.1" font-size="26" font-weight="600" letter-spacing="-0.26" fill="#1A1A1A">Tunable after the fact</text>
+          <text x="23" y="76" font-size="18" fill="#6B7075">a hindcast can be made to look good</text>
+        </g>
+        <g transform="translate(140 560)">
+          <g fill="none" stroke="#C9CED2" stroke-width="2">
+            <line x1="262" y1="55" x2="312" y2="55"/>
+            <polygon points="312,48 326,55 312,62" fill="#C9CED2" stroke="none"/>
+            <line x1="582" y1="55" x2="632" y2="55"/>
+            <polygon points="632,48 646,55 632,62" fill="#C9CED2" stroke="none"/>
+            <line id="h-arrow3" x1="902" y1="55" x2="950" y2="55" stroke-dasharray="7 7"/>
+            <polygon points="950,48 964,55 950,62" fill="#C9CED2" stroke="none"/>
+          </g>
+          <g transform="translate(0 0)"><g id="h-node1">
+            <rect x="0.5" y="0.5" width="259" height="109" rx="13.5" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="1"/>
+            <text x="130" y="63" font-size="24" text-anchor="middle" fill="#1A1A1A">Hotspot map</text>
+          </g></g>
+          <g transform="translate(320 0)"><g id="h-node2">
+            <rect x="0.5" y="0.5" width="259" height="109" rx="13.5" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="1"/>
+            <text x="130" y="63" font-size="24" text-anchor="middle" fill="#1A1A1A">Forecast</text>
+          </g></g>
+          <g transform="translate(640 0)"><g id="h-node3">
+            <rect x="0.5" y="0.5" width="259" height="109" rx="13.5" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="1"/>
+            <text x="130" y="63" font-size="24" text-anchor="middle" fill="#1A1A1A">Decision</text>
+          </g></g>
+          <g transform="translate(960 0)"><g id="h-node4">
+            <rect x="1" y="1" width="258" height="108" rx="12" fill="#FFFFFF" stroke="#C9CED2" stroke-width="2" stroke-dasharray="7 7"/>
+            <text x="130" y="48" font-size="24" text-anchor="middle" fill="#8A9096">no record of what</text>
+            <text x="130" y="78" font-size="24" text-anchor="middle" fill="#8A9096">was forecast</text>
+          </g></g>
+        </g>
+        <g transform="translate(1100 686)"><rect id="h-bar" x="0" y="-1.5" width="260" height="3" fill="#E8590C"/></g>
+      </svg>
+    </div>
+    <div>
+      <p class="eyebrow">IEEE ClimateChain Global Hackathon 2026 · Climate Data &amp; Environmental Monitoring</p>
+      <h1>Forecasts on the record.</h1>
+      <p class="lede">SekatApi joins NASA FIRMS hotspots, Open-Meteo weather, AWS terrain and OpenStreetMap into one peat-fire
+        forecast, then <b>hashes, signs and timestamps it on Bitcoin before the satellites see the outcome</b>. Anyone can
+        re-run the sealed inputs and get the same result. Every forecast stays on the board, good or bad.</p>
+      <div class="row">
+        <a class="btn" href="#seal">See the seal</a>
+        <a class="btn ghost" href="#validation">Read the validation</a>
+        <span class="tag"><i></i> research prototype · free open data · runs in a browser</span>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ================= pinned, scrubbed: the seal ================= -->
+  <section class="pin" id="seal" aria-label="Sealing a forecast">
+    <div class="wrap">
+      <p class="eyebrow">Pre-registration</p>
+      <h2>Sealing is three things.</h2>
+      <p>Scroll to seal one forecast: a SHA-256 hash over every input and every simulated cell, an Ed25519 signature over
+        that hash, and an OpenTimestamps anchor committed to Bitcoin. It happens before the outcome exists.</p>
+      <div class="scene">
+        <svg viewBox="0 0 1080 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A forecast being hashed, signed and anchored on Bitcoin">
+          <rect width="1080" height="520" fill="#F7F8FA"/>
+          <!-- the forecast -->
+          <g transform="translate(40 40)">
+            <rect x="0" y="0" width="300" height="440" rx="16" fill="#FFFFFF" stroke="#E0E3E6" stroke-width="2"/>
+            <text x="24" y="44" font-size="13" font-weight="600" letter-spacing="2" fill="#8A9096">FORECAST</text>
+            <text x="24" y="78" font-size="20" font-weight="600" fill="#1A1A1A">Kalimantan · 24 h</text>
+            <g id="s-grid" transform="translate(24 100)"></g>
+            <text x="24" y="392" font-size="13" fill="#6B7075">6.4 × 6.4 km · 100 m cells</text>
+            <text x="24" y="412" font-size="13" fill="#6B7075">40 runs · 24–48 h horizon</text>
+          </g>
+          <!-- the three steps -->
+          <g transform="translate(380 40)">
+            <g transform="translate(0 0)">
+              <circle cx="22" cy="22" r="22" fill="#E8590C"/>
+              <text x="22" y="29" font-size="22" font-weight="700" text-anchor="middle" fill="#FFFFFF">1</text>
+              <text x="60" y="17" font-size="19" font-weight="600" fill="#1A1A1A">SHA-256 hash</text>
+              <text x="60" y="40" font-size="14" fill="#6B7075">over every input and every simulated cell</text>
+              <g clip-path="url(#s-hashClip)">
+                <text id="s-hash" class="mono" x="60" y="78" font-size="16" fill="#1A1A1A">7f1c4a90d2e35b68f0c9147a5d3e882b6c41f7092ae5d3b8c6140f9273acd5e1</text>
+              </g>
+              <rect id="s-hashLine" x="60" y="88" width="640" height="3" fill="#E8590C" opacity="0"/>
+            </g>
+            <g transform="translate(0 130)">
+              <circle cx="22" cy="22" r="22" fill="#E0E3E6"/>
+              <text x="22" y="29" font-size="22" font-weight="700" text-anchor="middle" fill="#FFFFFF">2</text>
+              <text x="60" y="17" font-size="19" font-weight="600" fill="#1A1A1A">Ed25519 signature</text>
+              <text x="60" y="40" font-size="14" fill="#6B7075">over that hash</text>
+              <g clip-path="url(#s-sigClip)">
+                <text id="s-sig" class="mono" x="60" y="78" font-size="16" fill="#1A1A1A">k2Q7wR0mZp1nXc8VtL4dYb6Hs3Jf9AeG5U i0OpN2rS4tV6wX8yZ</text>
+              </g>
+            </g>
+            <g transform="translate(0 260)">
+              <circle id="s-step3" cx="22" cy="22" r="22" fill="#E0E3E6"/>
+              <text x="22" y="29" font-size="22" font-weight="700" text-anchor="middle" fill="#FFFFFF">3</text>
+              <text x="60" y="17" font-size="19" font-weight="600" fill="#1A1A1A">OpenTimestamps anchor</text>
+              <text x="60" y="40" font-size="14" fill="#6B7075">committed to Bitcoin</text>
+              <g id="s-blocks" transform="translate(60 60)"></g>
+              <text id="s-txid" class="mono" x="60" y="118" font-size="14" fill="#E8590C" opacity="0">fc6c351623a8… · waiting for 6 confirmations</text>
+            </g>
+            <g id="s-stamp" opacity="0" transform="translate(0 370)">
+              <rect x="0" y="0" width="300" height="56" rx="12" fill="#1A1A1A"/>
+              <text x="150" y="36" font-size="19" font-weight="700" text-anchor="middle" fill="#FFFFFF">SEALED · ON THE RECORD</text>
+            </g>
+          </g>
+          <defs>
+            <clipPath id="s-hashClip"><rect id="s-hashClipR" x="58" y="58" width="0" height="30"/></clipPath>
+            <clipPath id="s-sigClip"><rect id="s-sigClipR" x="58" y="58" width="0" height="30"/></clipPath>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= the record ================= -->
+  <section id="record"><div class="wrap">
+    <p class="eyebrow">The record</p>
+    <h2>Good or bad, it stays on the board.</h2>
+    <p>Six forecasts were sealed on 21 Oct 2026 — three in Kalimantan, three in Sumatra — before their outcome existed.
+      They are scored against NASA FIRMS after 24 h. None of them has been scored yet, and the board says so.</p>
+    <div class="grid">
+      <div class="card">
+        <button class="inner" aria-label="Flip the record card" aria-pressed="false">
+          <span class="face front"><span><b>No record</b><small>hotspots, weather, terrain, roads</small></span></span>
+          <span class="face back"><span><b>On the record</b><small>hash · signature · Bitcoin</small></span></span>
+        </button>
+        <h3>What sealing buys</h3>
+        <p>A hindcast can be tuned until the past looks good. A pre-registered forecast cannot be: the inputs, the hash and
+          the signature are fixed before the fire spreads.</p>
+      </div>
+      <div class="card">
+        <div role="tablist" aria-label="Evidence">
+          <button role="tab" aria-selected="true" aria-controls="p-hind" id="t-hind" tabindex="0">HINDCAST</button>
+          <button role="tab" aria-selected="false" aria-controls="p-fire" id="t-fire" tabindex="-1">RECORDED FIRE</button>
+          <button role="tab" aria-selected="false" aria-controls="p-plan" id="t-plan" tabindex="-1">PLAN</button>
+        </div>
+        <div role="tabpanel" id="p-hind" aria-labelledby="t-hind">
+          <dl>
+            <dt>Pooled CSI, τ = 6 h</dt><dd>0.22</dd>
+            <dt>Distance-only baseline</dt><dd>0.17</dd>
+            <dt>Held-out Sumatra, τ = 6 h</dt><dd>0.11</dd>
+            <dt>Baseline on Sumatra</dt><dd>0.09</dd>
+            <dt>Pooled CSI, τ = 3 h</dt><dd>0.17</dd>
+            <dt>Distance-only baseline</dt><dd>0.16</dd>
+          </dl>
+          <p class="note">12 real fires, 8–18 Oct 2026. The edge over a distance-only forecast is small, and this is the
+            honest number.</p>
+        </div>
+        <div role="tabpanel" id="p-fire" aria-labelledby="t-fire" hidden>
+          <dl>
+            <dt>New fire spots caught</dt><dd>12 of 18</dd>
+            <dt>CSI</dt><dd>0.41</dd>
+            <dt>Distance-only baseline</dt><dd>0.17</dd>
+            <dt>Live detections, 24 h</dt><dd>2,452</dd>
+          </dl>
+          <p class="note">The recorded West Kalimantan fire of 18 Oct 2026, frozen at the last satellite pass.</p>
+        </div>
+        <div role="tabpanel" id="p-plan" aria-labelledby="t-plan" hidden>
+          <dl>
+            <dt>Burned with the plan</dt><dd>578 ha</dd>
+            <dt>Burned with no action</dt><dd>847 ha</dd>
+            <dt>Difference</dt><dd>−32%</dd>
+            <dt>Peat emissions factor</dt><dd>800 t CO₂e/ha</dd>
+          </dl>
+          <p class="note">A model estimate, not a measurement. The peat map is still synthetic outside OpenStreetMap
+            features, so the carbon numbers are illustrative.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Forecast register</h3>
+        <p>Sealed 21 Oct 2026, 00:38–00:40 WITA. Scored after 22:40 UTC, once the 24 h windows close.</p>
+        <ul class="board" id="board">
+          <li><span>Kalimantan · 3 forecasts</span><span>sealed</span></li>
+          <li><span>Sumatra · 3 forecasts</span><span>sealed</span></li>
+          <li><span>Scored</span><span>0</span></li>
+        </ul>
+        <div class="slider" id="win" role="slider" tabindex="0" aria-label="Hours since the forecast was sealed"
+             aria-valuemin="0" aria-valuemax="24" aria-valuenow="0" aria-valuetext="0 hours since sealing">
+          <div class="rail"></div><div class="fill" id="winFill"></div><div class="knob" id="winKnob"></div>
+        </div>
+        <p class="readout" id="winOut">0 h since sealing · scored after 22:40 UTC</p>
+        <div class="row" style="margin-top:16px">
+          <button class="btn" id="sealBtn" aria-label="Add a forecast to the register">Add a forecast to the register</button>
+          <span class="count" id="sealedCount" aria-live="polite">6</span>
+          <span class="readout">sealed</span>
+        </div>
+        <p class="seal" id="sealState"><i></i> waiting for the first 24 h windows to close</p>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ================= validation + limits ================= -->
+  <section id="validation"><div class="wrap">
+    <p class="eyebrow">Honest limits</p>
+    <h2>What this is, and what it is not.</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Is</h3>
+        <p>A research prototype. A cellular-automaton fire simulation on a 6.4 × 6.4 km grid at 100 m cells, 40 runs per
+          forecast, 24–48 h horizon. 47 automated tests pass. Re-running all 12 hindcasts a day later gives identical counts.</p>
+      </div>
+      <div class="card">
+        <h3>Is not</h3>
+        <p>Not an operational fire-behaviour system and not firefighting guidance. The peat map outside OpenStreetMap
+          features is still synthetic, so the emissions numbers are illustrative. The model's edge over a distance-only
+          forecast is small — which is exactly why every forecast goes on the record.</p>
+      </div>
+      <div class="card">
+        <h3>Who it is for</h3>
+        <p>Disaster managers and Manggala Agni commanders deciding where and when to act, provincial governments
+          requesting aircraft, researchers comparing fire models, and auditors checking what was known and when.
+          It runs in a browser on free open data; adding a region is a bounding box.</p>
+      </div>
+    </div>
+  </div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="cols">
+    <div>
+      <h3>SekatApi</h3>
+      <p>Peat-fire forecasts that cannot be faked after the fact.<br>"Sekat api" means fire barrier in Indonesian.</p>
+    </div>
+    <div>
+      <h3>Track</h3>
+      <p>Climate Data &amp; Environmental Monitoring<br>IEEE ClimateChain Global Hackathon 2026</p>
+    </div>
+    <div>
+      <h3>Links</h3>
+      <p><a href="#top">Top</a> · <a href="#problem">Problem</a> · <a href="#seal">Seal</a> · <a href="#record">Record</a><br>
+        Team [Team] · repo [repo URL]</p>
+    </div>
+  </div>
+  <p class="fine">Emissions figures are model estimates from an IPCC 2013 Wetlands Supplement Tier 1 factor, not
+    measurements, avoided emissions or credits. The register on this page is a local board: the running instance holds
+    6 sealed forecasts, 0 scored.</p>
+</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.14.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.14.2/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+
+/* ------------------------------------------------------------------ hero: the replay, as an ambient loop */
+const hero = gsap.timeline({ paused: true, repeat: -1, defaults: { ease: 'power3.out' } });
+hero.fromTo('#h-node1', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, 1.1)
+  .fromTo('#h-node2', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, 1.4)
+  .fromTo('#h-node3', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, 1.7)
+  .fromTo('#h-node4', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, 5.6)
+  .fromTo('#h-arrow3', { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 0.7, ease: 'power2.out' }, 5.6)
+  .fromTo('#h-bar', { scaleX: 0 }, { scaleX: 1, duration: 0.7, transformOrigin: '0% 50%' }, 7.1)
+  .to('#h-bar', { scaleX: 0, duration: 0.45, ease: 'power2.in', transformOrigin: '0% 50%' }, 8.35)
+  .to('#h-node4', { opacity: 0, y: 16, duration: 0.4, ease: 'power2.in' }, 8.45)
+  .to('#h-arrow3', { strokeDashoffset: 60, duration: 0.5, ease: 'power2.inOut' }, 8.45)
+  .to('#h-node3', { opacity: 0, y: 16, duration: 0.35, ease: 'power2.in' }, 8.75)
+  .to('#h-node2', { opacity: 0, y: 16, duration: 0.35, ease: 'power2.in' }, 8.95)
+  .to('#h-node1', { opacity: 0, y: 16, duration: 0.35, ease: 'power2.in' }, 9.15);
+gsap.set('#h-node1', { opacity: 0, y: 16 });
+gsap.set('#h-node2', { opacity: 0, y: 16 });
+gsap.set('#h-node3', { opacity: 0, y: 16 });
+gsap.set('#h-node4', { opacity: 0, y: 16 });
+gsap.set('#h-arrow3', { strokeDashoffset: 60 });
+gsap.set('#h-bar', { scaleX: 0, transformOrigin: '0% 50%' });
+if (!RM) hero.play(0); else hero.time(6.9);   // reduced motion: the finished chain, held still
+
+/* ------------------------------------------------------------------ pinned scene: the seal, scrubbed by the scroll */
+const grid = $('#s-grid');
+for (let i = 0; i < 64; i++) {                       // the 6.4 km grid, 8 x 8 schematic cells
+  const c = mk('rect', { x: (i % 8) * 30, y: Math.floor(i / 8) * 30, width: 28, height: 28, rx: 4, fill: '#EDEFF1' }, grid);
+  const k = [3, 9, 10, 17, 18, 19, 26, 27, 34, 35, 42, 50, 51, 58];
+  if (k.includes(i)) c.setAttribute('fill', i % 3 === 0 ? '#E8590C' : '#E8590C');
+}
+[3, 9, 17, 26, 42, 51].forEach(i => grid.children[i].setAttribute('fill', '#E8590C'));
+[10, 18, 27, 35, 50, 58].forEach(i => grid.children[i].setAttribute('fill', '#E8590C'));
+[9, 18, 27].forEach(i => grid.children[i].setAttribute('opacity', '.6'));
+
+const blocks = $('#s-blocks');
+for (let i = 0; i < 6; i++) mk('rect', { x: i * 30, y: 0, width: 24, height: 24, rx: 5, fill: '#E0E3E6' }, blocks);
+
+const sealTl = gsap.timeline({ defaults: { ease: 'none' } });
+sealTl.set('#s-hashClipR', { attr: { width: 0 } }, 0)
+  .to('#s-hashClipR', { attr: { width: 640 }, duration: 1 }, 0)
+  .set('#s-sigClipR', { attr: { width: 0 } }, 1)
+  .to('#s-sigClipR', { attr: { width: 640 }, duration: 1 }, 1)
+  .set('#s-step3', { attr: { fill: '#E8590C' } }, 2)
+  .to('#s-blocks rect', { attr: { fill: '#E8590C' }, duration: 0.2, stagger: 0.13 }, 2)
+  .to('#s-txid', { opacity: 1, duration: 0.2 }, 2.8)
+  .to('#s-hashLine', { opacity: 1, duration: 0.2 }, 2.9)
+  .fromTo('#s-stamp', { opacity: 0, scale: 0.9, transformOrigin: '0% 50%' }, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.8)' }, 3);
+ScrollTrigger.create({
+  trigger: '#seal', start: 'top top', end: '+=110%', pin: true, scrub: RM ? true : 0.6, animation: sealTl
+});
+
+/* ------------------------------------------------------------------ reveals */
+gsap.utils.toArray('section#record .card, section#validation .card').forEach((c, i) => gsap.from(c, {
+  y: RM ? 0 : 40, opacity: 0, duration: 0.6, delay: i * 0.06, ease: 'power3.out',
+  scrollTrigger: { trigger: c, start: 'top 88%', toggleActions: 'play none none reverse' }
+}));
+gsap.utils.toArray('.hero .stage, .hero h1, .hero .lede').forEach((e, i) => gsap.from(e, {
+  y: RM ? 0 : 24, opacity: 0, duration: 0.7, delay: i * 0.08, ease: 'power3.out'
+}));
+
+/* ------------------------------------------------------------------ menu */
+const menuBtn = $('.menu-btn'), menu = $('#menu');
+const menuTl = gsap.timeline({ paused: true })
+  .set(menu, { visibility: 'visible' })
+  .to(menu, { x: 0, duration: RM ? 0 : 0.35, ease: 'power3.out' });
+gsap.set(menu, { x: '100%' });
+menuBtn.addEventListener('click', () => {
+  const open = menuBtn.getAttribute('aria-expanded') !== 'true';
+  menuBtn.setAttribute('aria-expanded', open);
+  menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  open ? menuTl.play() : menuTl.reverse();
+});
+menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { if (menuBtn.getAttribute('aria-expanded') === 'true') menuBtn.click(); }));
+addEventListener('keydown', e => { if (e.key === 'Escape' && menuBtn.getAttribute('aria-expanded') === 'true') menuBtn.click(); });
+
+/* ------------------------------------------------------------------ flip card */
+document.querySelectorAll('.card .inner').forEach(b => b.addEventListener('click', () => {
+  const on = b.getAttribute('aria-pressed') !== 'true';
+  b.setAttribute('aria-pressed', on);
+  gsap.to(b, { rotationY: on ? 180 : 0, duration: RM ? 0 : 0.6, ease: 'back.out(1.4)' });
+}));
+
+/* ------------------------------------------------------------------ tabs, with arrow keys */
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+function select(tab) {
+  tabs.forEach(t => {
+    const on = t === tab;
+    t.setAttribute('aria-selected', on);
+    t.tabIndex = on ? 0 : -1;
+    document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+  });
+  tab.focus();
+}
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => select(t));
+  t.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') select(tabs[(i + 1) % tabs.length]);
+    if (e.key === 'ArrowLeft') select(tabs[(i - 1 + tabs.length) % tabs.length]);
+  });
+});
+
+/* ------------------------------------------------------------------ the 24 h window slider */
+const win = $('#win'), knob = $('#winKnob'), fill = $('#winFill'), out = $('#winOut');
+const sealState = $('#sealState');
+function setHours(v) {
+  v = Math.round(Math.max(0, Math.min(24, v)));
+  win.setAttribute('aria-valuenow', v);
+  win.setAttribute('aria-valuetext', v + ' hours since sealing');
+  const w = win.clientWidth - 30;
+  gsap.set(knob, { x: w * v / 24 });
+  fill.style.width = (w * v / 24) + 'px';
+  out.textContent = v + ' h since sealing · scored after 22:40 UTC';
+  const scored = v >= 24;
+  sealState.classList.toggle('on', scored);
+  sealState.lastChild.textContent = scored ? ' the 24 h window has closed — the forecast is due a score' : ' waiting for the first 24 h windows to close';
+}
+win.addEventListener('pointerdown', e => {
+  win.setPointerCapture(e.pointerId);
+  const move = ev => { const r = win.getBoundingClientRect(); setHours((ev.clientX - r.left - 15) / (r.width - 30) * 24); };
+  move(e); win.onpointermove = move; win.onpointerup = () => { win.onpointermove = null; };
+});
+win.addEventListener('keydown', e => {
+  const v = +win.getAttribute('aria-valuenow');
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setHours(v + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setHours(v - 1); e.preventDefault(); }
+  if (e.key === 'Home') { setHours(0); e.preventDefault(); }
+  if (e.key === 'End') { setHours(24); e.preventDefault(); }
+});
+addEventListener('resize', () => setHours(+win.getAttribute('aria-valuenow')));
+
+/* ------------------------------------------------------------------ the register counter */
+let sealed = 6;
+const board = $('#board');
+$('#sealBtn').addEventListener('click', () => {
+  sealed += 1;
+  $('#sealedCount').textContent = sealed;
+  const li = document.createElement('li');
+  li.innerHTML = '<span>Kalimantan · added just now</span><span>sealed</span>';
+  board.insertBefore(li, board.lastElementChild);
+  if (!RM) gsap.fromTo('#sealedCount', { scale: 1.5 }, { scale: 1, duration: 0.4, ease: 'back.out(3)' });
+});
+
+setHours(0);
+document.fonts.ready.then(() => { ScrollTrigger.refresh(); document.documentElement.dataset.ready = '1'; });
+</script>
+</body>
+</html>

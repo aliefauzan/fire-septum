@@ -1,0 +1,1638 @@
+[0m
+> build · minimax-m3.1-flash-free
+[0m
+[0m→ [0mRead video/prompts/02-build-render.txt
+I'll read that file first.
+[0m→ [0mRead video/BRIEF.md
+[0m
+[0m$ [0mls -la /Users/af/dumpProject/IEEE-ClimateChain/video/ && echo "---ASSETS---" && ls -la /Users/af/dumpProject/IEEE-ClimateChain/video/assets/ 2>/dev/null && echo "---PROMPTS---" && ls -la /Users/af/dumpProject/IEEE-ClimateChain/video/prompts/ 2>/dev/null
+total 136
+drwxr-xr-x@  7 af  staff    224 Oct 21 01:10 .
+drwxr-xr-x@ 26 af  staff    832 Oct 21 01:12 ..
+-rw-r--r--@  1 af  staff   6985 Oct 21 00:51 BRIEF.md
+-rw-r--r--@  1 af  staff   6539 Oct 21 01:11 SCRIPT.md
+-rw-r--r--@  1 af  staff  50133 Oct 21 01:11 STORYBOARD.md
+drwxr-xr-x@ 12 af  staff    384 Oct 21 00:50 assets
+drwxr-xr-x@  7 af  staff    224 Oct 21 01:12 prompts
+---ASSETS---
+total 4624
+drwxr-xr-x@ 12 af  staff     384 Oct 21 00:50 .
+drwxr-xr-x@  7 af  staff     224 Oct 21 01:10 ..
+-rw-r--r--@  1 af  staff  634891 Oct 21 00:48 01-recorded-fire.png
+-rw-r--r--@  1 af  staff   55461 Oct 21 00:50 02-live-fires.png
+-rw-r--r--@  1 af  staff  656465 Oct 21 00:49 03-forecast-register.png
+-rw-r--r--@  1 af  staff   74173 Oct 21 00:49 03b-register-sheet.png
+-rw-r--r--@  1 af  staff  293478 Oct 21 00:49 04-plan-before-after.png
+-rw-r--r--@  1 af  staff  303322 Oct 21 00:50 05-record-sealed.png
+-rw-r--r--@  1 af  staff   67436 Oct 21 00:50 05b-record-checks.png
+-rw-r--r--@  1 af  staff  250963 Oct 21 00:50 06-3d-terrain.png
+-rw-r--r--@  1 af  staff     910 Oct 21 00:50 07-ots-terminal.txt
+-rw-r--r--@  1 af  staff    2082 Oct 21 00:50 data.json
+---PROMPTS---
+total 144
+drwxr-xr-x@ 7 af  staff    224 Oct 21 01:12 .
+drwxr-xr-x@ 7 af  staff    224 Oct 21 01:10 ..
+-rw-r--r--@ 1 af  staff  22079 Oct 21 00:57 01-storyboard.log
+-rw-r--r--@ 1 af  staff   1652 Oct 21 00:51 01-storyboard.txt
+-rw-r--r--@ 1 af  staff  34949 Oct 21 01:11 01b-storyboard.log
+-rw-r--r--@ 1 af  staff   2644 Oct 21 00:54 02-build-render.txt
+-rw-r--r--@ 1 af  staff    155 Oct 21 01:12 02-build.log
+[0m
+[0m→ [0mRead video/SCRIPT.md
+[0m→ [0mRead video/STORYBOARD.md
+[0m
+[0m$ [0mcat /Users/af/dumpProject/IEEE-ClimateChain/video/prompts/02-build.log; echo "===DATA==="; cat /Users/af/dumpProject/IEEE-ClimateChain/video/assets/data.json; echo "===OTS==="; cat /Users/af/dumpProject/IEEE-ClimateChain/video/assets/07-ots-terminal.txt
+[0m
+> build · minimax-m3.1-flash-free
+[0m
+[0m→ [0mRead video/prompts/02-build-render.txt
+I'll read that file first.
+[0m→ [0mRead video/BRIEF.md
+[0m
+[0m$ [0mls -la /Users/af/dumpProject/IEEE-ClimateChain/video/ && echo "---ASSETS---" && ls -la /Users/af/dumpProject/IEEE-ClimateChain/video/assets/ 2>/dev/null && echo "---PROMPTS---" && ls -la /Users/af/dumpProject/IEEE-ClimateChain/video/prompts/ 2>/dev/null
+total 136
+drwxr-xr-x@  7 af  staff    224 Oct 21 01:10 .
+drwxr-xr-x@ 26 af  staff    832 Oct 21 01:12 ..
+-rw-r--r--@  1 af  staff   6985 Oct 21 00:51 BRIEF.md
+-rw-r--r--@  1 af  staff   6539 Oct 21 01:11 SCRIPT.md
+-rw-r--r--@  1 af  staff  50133 Oct 21 01:11 STORYBOARD.md
+drwxr-xr-x@ 12 af  staff    384 Oct 21 00:50 assets
+drwxr-xr-x@  7 af  staff    224 Oct 21 01:12 prompts
+---ASSETS---
+total 4624
+drwxr-xr-x@ 12 af  staff     384 Oct 21 00:50 .
+drwxr-xr-x@  7 af  staff     224 Oct 21 01:10 ..
+-rw-r--r--@  1 af  staff  634891 Oct 21 00:48 01-recorded-fire.png
+-rw-r--r--@  1 af  staff   55461 Oct 21 00:50 02-live-fires.png
+-rw-r--r--@  1 af  staff  656465 Oct 21 00:49 03-forecast-register.png
+-rw-r--r--@  1 af  staff   74173 Oct 21 00:49 03b-register-sheet.png
+-rw-r--r--@  1 af  staff  293478 Oct 21 00:49 04-plan-before-after.png
+-rw-r--r--@  1 af  staff  303322 Oct 21 00:50 05-record-sealed.png
+-rw-r--r--@  1 af  staff   67436 Oct 21 00:50 05b-record-checks.png
+-rw-r--r--@  1 af  staff  250963 Oct 21 00:50 06-3d-terrain.png
+-rw-r--r--@  1 af  staff     910 Oct 21 00:50 07-ots-terminal.txt
+-rw-r--r--@  1 af  staff    2082 Oct 21 00:50 data.json
+---PROMPTS---
+total 144
+drwxr-xr-x@ 7 af  staff    224 Oct 21 01:12 .
+drwxr-xr-x@ 7 af  staff    224 Oct 21 01:10 ..
+-rw-r--r--@ 1 af  staff  22079 Oct 21 00:57 01-storyboard.log
+-rw-r--r--@ 1 af  staff   1652 Oct 21 00:51 01-storyboard.txt
+-rw-r--r--@ 1 af  staff  34949 Oct 21 01:11 01b-storyboard.log
+-rw-r--r--@ 1 af  staff   2644 Oct 21 00:54 02-build-render.txt
+-rw-r--r--@ 1 af  staff    155 Oct 21 01:12 02-build.log
+[0m
+[0m→ [0mRead video/SCRIPT.md
+[0m→ [0mRead video/STORYBOARD.md
+===DATA===
+{
+ "source": "docs/hindcast-rerun-2026-10-21.json",
+ "pooled": {
+  "tau3": {
+   "forecastSquares": 663,
+   "hits": 112,
+   "observed": 114,
+   "csi": 0.168,
+   "distanceCsi": 0.16
+  },
+  "tau6": {
+   "forecastSquares": 390,
+   "hits": 90,
+   "observed": 114,
+   "csi": 0.217,
+   "distanceCsi": 0.17
+  }
+ },
+ "heldOutSumatra": {
+  "tau3": {
+   "csi": 0.076,
+   "distanceCsi": 0.076
+  },
+  "tau6": {
+   "csi": 0.114,
+   "distanceCsi": 0.093
+  },
+  "observedSquares": 24
+ },
+ "events": [
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-08",
+   "newSquares": 2,
+   "csi": 0.04,
+   "distanceCsi": 0.04
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-10",
+   "newSquares": 57,
+   "csi": 0.71,
+   "distanceCsi": 0.63
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-12",
+   "newSquares": 8,
+   "csi": 0.44,
+   "distanceCsi": 0.35
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-14",
+   "newSquares": 2,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-16",
+   "newSquares": 3,
+   "csi": 0.11,
+   "distanceCsi": 0.05
+  },
+  {
+   "island": "Kalimantan",
+   "day": "2026-10-18",
+   "newSquares": 18,
+   "csi": 0.41,
+   "distanceCsi": 0.17
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-08",
+   "newSquares": 0,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-10",
+   "newSquares": 0,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-12",
+   "newSquares": 2,
+   "csi": 0.06,
+   "distanceCsi": 0.03
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-14",
+   "newSquares": 20,
+   "csi": 0.25,
+   "distanceCsi": 0.22
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-16",
+   "newSquares": 0,
+   "csi": 0,
+   "distanceCsi": 0
+  },
+  {
+   "island": "Sumatra",
+   "day": "2026-10-18",
+   "newSquares": 2,
+   "csi": 0.05,
+   "distanceCsi": 0.03
+  }
+ ],
+ "register": {
+  "sealed": 6,
+  "kalimantan": 3,
+  "sumatra": 3,
+  "sealedAt": "2026-10-20T16:38Z to 16:40Z (21 Oct 00:38-00:40 WITA)",
+  "scoring": "after 2026-10-21 22:40 UTC",
+  "status": "pending"
+ }
+}===OTS===
+$ node scripts/export-proofs.mjs
+ok  2026-10-20T16:38:43.516Z  -2.964, 112.151  sekatapi-278f58dc6960.receipt.json + .ots
+ok  2026-10-20T16:38:09.494Z  -3.335, 112.671  sekatapi-445e7ddd7292.receipt.json + .ots
+ok  2026-10-20T16:39:37.890Z  -3.400, 105.229  sekatapi-5ff72728fced.receipt.json + .ots
+ok  2026-10-20T16:40:11.756Z  -2.979, 105.162  sekatapi-8b3757efb8aa.receipt.json + .ots
+ok  2026-10-20T16:38:26.453Z  -3.832, 115.073  sekatapi-8f48c87dffb9.receipt.json + .ots
+ok  2026-10-20T16:39:54.798Z  -3.509, 105.287  sekatapi-fb2db4de00fe.receipt.json + .ots
+6 forecast(s) exported to proofs/
+
+$ ots verify proofs/sekatapi-278f58dc6960.receipt.json.ots
+Assuming target filename is 'proofs/sekatapi-278f58dc6960.receipt.json'
+Calendar https://alice.btc.calendar.opentimestamps.org: Timestamped by transaction fc6c351623a80b15c8559b9937688b7a0de5606e3520772bbfc3d38b4a8e838f; waiting for 6 confirmations
+[0m
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/SKILL.md
+[0m
+[0m# [0mTodos
+[•] Read BRIEF/STORYBOARD/SCRIPT/assets + hyperframes skill references
+[ ] Scaffold hyperframes project in video/hf
+[ ] Generate narration audio (say -> aiff -> wav), measure durations
+[ ] Build 10 scene composition HTML frames
+[ ] Wire index.html: clips, audio track, captions
+[ ] Run hyperframes lint + check until clean
+[ ] Render MP4 to video/out/sekatapi-demo.mp4
+[ ] Verify with ffprobe + extract 4 frames, fix issues, re-render
+[ ] Write video/out/REPORT.md
+[0m
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-cli/SKILL.md
+[0m
+[0m$ [0mwhich node npm npx ffmpeg ffprobe say; node -v; npm -v; echo "---"; say -v Samantha 2>&1 | head -3; echo "---npm ping---"; timeout 20 npm ping 2>&1 | tail -3
+/Users/af/.nvm/versions/node/v24.14.0/bin/node
+/Users/af/.nvm/versions/node/v24.14.0/bin/npm
+/Users/af/.nvm/versions/node/v24.14.0/bin/npx
+/opt/homebrew/bin/ffmpeg
+/opt/homebrew/bin/ffprobe
+/usr/bin/say
+v24.14.0
+11.11.0
+---
+---npm ping---
+zsh:1: command not found: timeout
+[0m
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/minimal-composition.md
+[0m
+[0m$ [0mls /Users/af/.claude/skills/hyperframes-core/references/ /Users/af/.claude/skills/hyperframes-cli/references/ /Users/af/.claude/skills/hyperframes-animation/ 2>/dev/null; echo "---wc---"; wc -l /Users/af/.claude/skills/hyperframes-core/references/*.md
+/Users/af/.claude/skills/hyperframes-animation/:
+SKILL.md
+adapters
+blueprints
+blueprints-index.md
+examples
+rules
+rules-index.md
+scripts
+techniques.md
+transitions
+
+/Users/af/.claude/skills/hyperframes-cli/references/:
+beats.md
+cloud.md
+cloudrun.md
+compare-and-batch.md
+doctor-browser.md
+init-and-scaffold.md
+lambda.md
+lint-validate-inspect.md
+preview-render.md
+upgrade-info-misc.md
+
+/Users/af/.claude/skills/hyperframes-core/references/:
+brief-contract.md
+brief-format.md
+composition-patterns.md
+creator-editing-recipes.md
+data-attributes.md
+determinism-rules.md
+frame-worker-core.md
+full-screen-motion.md
+minimal-composition.md
+production-loop.md
+review-loop.md
+script-format.md
+storyboard-format.md
+sub-compositions.md
+subagent-dispatch.md
+tailwind.md
+tracks-and-clips.md
+variables-and-media.md
+---wc---
+     108 /Users/af/.claude/skills/hyperframes-core/references/brief-contract.md
+      72 /Users/af/.claude/skills/hyperframes-core/references/brief-format.md
+     263 /Users/af/.claude/skills/hyperframes-core/references/composition-patterns.md
+     367 /Users/af/.claude/skills/hyperframes-core/references/creator-editing-recipes.md
+      78 /Users/af/.claude/skills/hyperframes-core/references/data-attributes.md
+      70 /Users/af/.claude/skills/hyperframes-core/references/determinism-rules.md
+      80 /Users/af/.claude/skills/hyperframes-core/references/frame-worker-core.md
+      76 /Users/af/.claude/skills/hyperframes-core/references/full-screen-motion.md
+      69 /Users/af/.claude/skills/hyperframes-core/references/minimal-composition.md
+      26 /Users/af/.claude/skills/hyperframes-core/references/production-loop.md
+      41 /Users/af/.claude/skills/hyperframes-core/references/review-loop.md
+      52 /Users/af/.claude/skills/hyperframes-core/references/script-format.md
+     130 /Users/af/.claude/skills/hyperframes-core/references/storyboard-format.md
+     239 /Users/af/.claude/skills/hyperframes-core/references/sub-compositions.md
+      35 /Users/af/.claude/skills/hyperframes-core/references/subagent-dispatch.md
+     123 /Users/af/.claude/skills/hyperframes-core/references/tailwind.md
+      91 /Users/af/.claude/skills/hyperframes-core/references/tracks-and-clips.md
+     107 /Users/af/.claude/skills/hyperframes-core/references/variables-and-media.md
+    2027 total
+[0m
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/sub-compositions.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/tracks-and-clips.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/data-attributes.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/variables-and-media.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/determinism-rules.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/composition-patterns.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-core/references/creator-editing-recipes.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-cli/references/init-and-scaffold.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-animation/SKILL.md
+[0m
+[0m$ [0mHYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@latest init video/hf --non-interactive --example=blank --resolution=landscape --skill=general-video 2>&1 | tail -40
+Created video/hf/
+  AGENTS.md
+  CLAUDE.md
+  hyperframes.json
+  index.html
+  meta.json
+  package.json
+
+Get started:
+
+  1. Use your HyperFrames plugin, or install standalone skills:
+     npx hyperframes skills update
+
+  2. Open this project with your AI coding agent:
+     cd video/hf then start Claude Code, Cursor, or your preferred agent
+
+  3. Try a starter prompt:
+     "Using /hyperframes, create a 15-second intro about [your topic]"
+     More patterns: hyperframes.heygen.com/prompting/overview
+
+  4. Preview in the browser:
+     cd video/hf && npm run dev
+
+  5. Check the composition:
+     cd video/hf && npm run check
+
+  6. Render to MP4 when ready:
+     cd video/hf && npm run render
+
+  Full docs: hyperframes.heygen.com
+[0m
+[0m$ [0mls -la /Users/af/dumpProject/IEEE-ClimateChain/video/hf/; echo "=== index.html ==="; cat /Users/af/dumpProject/IEEE-ClimateChain/video/hf/index.html; echo "=== package.json ==="; cat /Users/af/dumpProject/IEEE-ClimateChain/video/hf/package.json; echo "=== hyperframes.json ==="; cat /Users/af/dumpProject/IEEE-ClimateChain/video/hf/hyperframes.json; echo "=== meta.json ==="; cat /Users/af/dumpProject/IEEE-ClimateChain/video/hf/meta.json
+total 80
+drwxr-xr-x@ 8 af  staff   256 Oct 21 01:12 .
+drwxr-xr-x@ 8 af  staff   256 Oct 21 01:12 ..
+-rw-r--r--@ 1 af  staff  8626 Oct 21 01:12 AGENTS.md
+-rw-r--r--@ 1 af  staff  8626 Oct 21 01:12 CLAUDE.md
+-rw-r--r--@ 1 af  staff   355 Oct 21 01:12 hyperframes.json
+-rw-r--r--@ 1 af  staff  1406 Oct 21 01:12 index.html
+-rw-r--r--@ 1 af  staff    75 Oct 21 01:12 meta.json
+-rw-r--r--@ 1 af  staff   291 Oct 21 01:12 package.json
+=== index.html ===
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0a0a0a;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      #title {
+        color: #f4f4f5;
+        font-size: 72px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="10"
+      data-width="1920"
+      data-height="1080"
+    >
+      <h1 id="title" class="clip" data-start="0" data-duration="10" data-track-index="0">Title</h1>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // Example: tl.fromTo("#title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6 }, 0);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
+=== package.json ===
+{
+  "name": "hf",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.181 preview",
+    "check": "npx --yes hyperframes@0.8.181 check",
+    "render": "npx --yes hyperframes@0.8.181 render",
+    "publish": "npx --yes hyperframes@0.8.181 publish"
+  }
+}
+=== hyperframes.json ===
+{
+  "$schema": "https://hyperframes.heygen.com/schema/hyperframes.json",
+  "registry": "https://raw.githubusercontent.com/heygen-com/hyperframes/main/registry",
+  "paths": {
+    "blocks": "compositions",
+    "components": "compositions/components",
+    "assets": "assets"
+  },
+  "media": {
+    "autoProxy": true
+  },
+  "authoringSkill": "general-video"
+}
+=== meta.json ===
+{
+  "id": "hf",
+  "name": "hf",
+  "createdAt": "2026-10-20T17:12:53.342Z"
+}
+[0m
+[0m→ [0mRead video/hf/AGENTS.md
+[0m→ [0mRead /Users/af/.claude/skills/hyperframes-cli/references/lint-validate-inspect.md
+[0m
+[0m$ [0mmkdir -p /Users/af/dumpProject/IEEE-ClimateChain/video/hf/audio/text /Users/af/dumpProject/IEEE-ClimateChain/video/hf/assets /Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions /Users/af/dumpProject/IEEE-ClimateChain/video/out && ls /Users/af/dumpProject/IEEE-ClimateChain/video/hf
+AGENTS.md
+CLAUDE.md
+assets
+audio
+compositions
+hyperframes.json
+index.html
+meta.json
+package.json
+[0m
+Now I'll generate the narration. First the text files:
+[0m← [0mWrite video/hf/audio/text/scene-01-hook.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-02-problem.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-03-what-it-does.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-04-recorded-fire.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-05-hindcast.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-06-register-rule.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-07-seal-bitcoin.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-08-why-bitcoin.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-09-decision-support.txt
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/audio/text/scene-10-impact-close.txt
+Wrote file successfully.
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf/audio
+for f in text/scene-*.txt; do
+  n=$(basename "$f" .txt)
+  say -v Samantha -r 165 -o "$n.aiff" -f "$f" 2>&1
+  ffmpeg -y -loglevel error -i "$n.aiff" -ar 44100 -ac 1 "$n.wav"
+  d=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$n.wav")
+  printf "%-28s %s\n" "$n" "$d"
+done
+scene-01-hook                18.105170
+scene-02-problem             17.954921
+scene-03-what-it-does        26.632971
+scene-04-recorded-fire       26.261859
+scene-05-hindcast            32.140998
+scene-06-register-rule       15.657914
+scene-07-seal-bitcoin        32.463129
+scene-08-why-bitcoin         20.742540
+scene-09-decision-support    31.235873
+scene-10-impact-close        26.582132
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf/audio
+for n in scene-01-hook scene-02-problem scene-03-what-it-does scene-04-recorded-fire scene-05-hindcast scene-06-register-rule scene-07-seal-bitcoin scene-08-why-bitcoin scene-09-decision-support scene-10-impact-close; do
+  printf "%-26s " "$n"
+  ffmpeg -hide_banner -nostats -i "$n.wav" -af "silencedetect=noise=-45dB:d=0.15" -f null - 2>&1 | grep -E "silence_(start|end)" | tr '\n' ' '
+  echo
+done
+scene-01-hook              [Parsed_silencedetect_0 @ 0x778cc2c900] silence_start: 1.365102 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_end: 1.568277 | silence_duration: 0.203175 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_start: 7.304399 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_end: 7.547868 | silence_duration: 0.243469 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_start: 12.207551 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_end: 12.423016 | silence_duration: 0.215465 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_start: 13.48517 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_end: 13.716259 | silence_duration: 0.231088 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_start: 16.091043 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_end: 16.299206 | silence_duration: 0.208163 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_start: 17.907075 [Parsed_silencedetect_0 @ 0x778cc2c900] silence_end: 18.10517 | silence_duration: 0.198095 
+scene-02-problem           [Parsed_silencedetect_0 @ 0x7963040900] silence_start: 3.514875 [Parsed_silencedetect_0 @ 0x7963040900] silence_end: 3.735941 | silence_duration: 0.221066 [Parsed_silencedetect_0 @ 0x7963040900] silence_start: 5.145964 [Parsed_silencedetect_0 @ 0x7963040900] silence_end: 5.349365 | silence_duration: 0.203401 [Parsed_silencedetect_0 @ 0x7963040900] silence_start: 8.581156 [Parsed_silencedetect_0 @ 0x7963040900] silence_end: 8.813719 | silence_duration: 0.232562 [Parsed_silencedetect_0 @ 0x7963040900] silence_start: 11.668481 [Parsed_silencedetect_0 @ 0x7963040900] silence_end: 11.878027 | silence_duration: 0.209546 [Parsed_silencedetect_0 @ 0x7963040900] silence_start: 14.764444 [Parsed_silencedetect_0 @ 0x7963040900] silence_end: 15.003537 | silence_duration: 0.239093 [Parsed_silencedetect_0 @ 0x7963040900] silence_start: 17.745465 [Parsed_silencedetect_0 @ 0x7963040900] silence_end: 17.954921 | silence_duration: 0.209456 
+scene-03-what-it-does      [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 3.729456 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 3.961882 | silence_duration: 0.232426 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 7.059433 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 7.288798 | silence_duration: 0.229365 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 8.435374 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 8.655986 | silence_duration: 0.220612 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 9.681156 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 9.910431 | silence_duration: 0.229274 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 11.641451 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 11.881519 | silence_duration: 0.240068 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 13.961542 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 14.169501 | silence_duration: 0.207959 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 19.116032 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 19.347732 | silence_duration: 0.231701 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 20.818413 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 21.078413 | silence_duration: 0.26 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 23.077823 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 23.315533 | silence_duration: 0.23771 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 24.666644 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 24.874172 | silence_duration: 0.207528 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_start: 26.423741 [Parsed_silencedetect_0 @ 0x79a2c04f00] silence_end: 26.632971 | silence_duration: 0.209229 
+scene-04-recorded-fire     [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 2.336825 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 2.562086 | silence_duration: 0.225261 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 5.855918 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 6.114739 | silence_duration: 0.258821 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 7.285147 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 7.530612 | silence_duration: 0.245465 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 10.79 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 11.00288 | silence_duration: 0.21288 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 12.364943 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 12.597483 | silence_duration: 0.23254 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 15.095533 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 15.301315 | silence_duration: 0.205782 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 18.422676 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 18.670771 | silence_duration: 0.248095 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 20.702993 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 20.898912 | silence_duration: 0.195918 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 21.154444 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 21.408277 | silence_duration: 0.253832 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_start: 26.05873 [Parsed_silencedetect_0 @ 0x7b7ac44900] silence_end: 26.261859 | silence_duration: 0.203129 
+scene-05-hindcast          [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 1.265102 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 1.501043 | silence_duration: 0.235941 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 3.425828 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 3.63356 | silence_duration: 0.207732 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 5.013061 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 5.256961 | silence_duration: 0.2439 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 8.243923 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 8.447528 | silence_duration: 0.203605 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 9.981111 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 10.191497 | silence_duration: 0.210385 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 13.441406 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 13.653447 | silence_duration: 0.212041 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 14.649524 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 14.869705 | silence_duration: 0.220181 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 17.428821 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 17.659433 | silence_duration: 0.230612 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 18.898413 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 19.115488 | silence_duration: 0.217075 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 21.950136 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 22.15576 | silence_duration: 0.205624 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 23.619955 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 23.864263 | silence_duration: 0.244308 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 25.031633 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 25.276508 | silence_duration: 0.244875 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 27.38093 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 27.617642 | silence_duration: 0.236712 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 28.077483 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 28.290272 | silence_duration: 0.212789 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 29.108231 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 29.315669 | silence_duration: 0.207438 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_start: 31.935896 [Parsed_silencedetect_0 @ 0x7ab0c04f00] silence_end: 32.140998 | silence_duration: 0.205102 
+scene-06-register-rule     [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_start: 2.32458 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_end: 2.574286 | silence_duration: 0.249705 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_start: 6.733061 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_end: 6.93771 | silence_duration: 0.204649 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_start: 8.996644 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_end: 9.230385 | silence_duration: 0.233741 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_start: 11.053878 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_end: 11.261542 | silence_duration: 0.207664 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_start: 12.761293 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_end: 12.965578 | silence_duration: 0.204286 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_start: 14.618141 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_end: 14.828526 | silence_duration: 0.210385 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_start: 15.450363 [Parsed_silencedetect_0 @ 0x7b78c2c900] silence_end: 15.657914 | silence_duration: 0.207551 
+scene-07-seal-bitcoin      [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 1.270567 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 1.499546 | silence_duration: 0.22898 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 6.101111 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 6.328594 | silence_duration: 0.227483 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 9.13288 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 9.361746 | silence_duration: 0.228866 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 12.147052 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 12.362381 | silence_duration: 0.215329 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 15.359819 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 15.57585 | silence_duration: 0.216032 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 16.997506 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 17.212789 | silence_duration: 0.215283 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 18.259932 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 18.478005 | silence_duration: 0.218073 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 20.048299 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 20.298776 | silence_duration: 0.250476 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 23.593832 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 23.803719 | silence_duration: 0.209887 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 24.970091 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 25.200816 | silence_duration: 0.230726 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 25.853424 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 26.075714 | silence_duration: 0.22229 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 28.376735 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 28.583787 | silence_duration: 0.207052 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 30.23449 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 30.447029 | silence_duration: 0.21254 [Parsed_silencedetect_0 @ 0x74bac44900] silence_start: 32.258231 [Parsed_silencedetect_0 @ 0x74bac44900] silence_end: 32.463129 | silence_duration: 0.204898 
+scene-08-why-bitcoin       [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 2.438005 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 2.670272 | silence_duration: 0.232268 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 4.160091 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 4.395714 | silence_duration: 0.235624 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 5.112086 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 5.318549 | silence_duration: 0.206463 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 5.941542 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 6.151678 | silence_duration: 0.210136 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 6.709478 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 6.936984 | silence_duration: 0.227506 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 10.055374 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 10.25941 | silence_duration: 0.204036 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 11.874104 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 12.085147 | silence_duration: 0.211043 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 13.862313 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 14.089297 | silence_duration: 0.226984 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 15.438345 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 15.664649 | silence_duration: 0.226304 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 17.015714 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 17.241655 | silence_duration: 0.225941 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 18.483583 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 18.691633 | silence_duration: 0.20805 [Parsed_silencedetect_0 @ 0x78f5060900] silence_start: 20.543288 [Parsed_silencedetect_0 @ 0x78f5060900] silence_end: 20.74254 | silence_duration: 0.199252 
+scene-09-decision-support  [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 2.868753 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 3.095896 | silence_duration: 0.227143 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 4.111066 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 4.338163 | silence_duration: 0.227098 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 5.61424 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 5.843379 | silence_duration: 0.229138 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 6.599728 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 6.820476 | silence_duration: 0.220748 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 7.69229 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 7.920726 | silence_duration: 0.228435 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 10.964104 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 11.17619 | silence_duration: 0.212086 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 13.45263 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 13.665737 | silence_duration: 0.213107 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 14.700317 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 14.907279 | silence_duration: 0.206961 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 16.818594 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 17.047052 | silence_duration: 0.228458 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 18.654444 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 18.876508 | silence_duration: 0.222063 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 23.768594 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 23.990272 | silence_duration: 0.221678 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 25.394875 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 25.616213 | silence_duration: 0.221338 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_start: 31.031633 [Parsed_silencedetect_0 @ 0x7c06c2c900] silence_end: 31.235873 | silence_duration: 0.20424 
+scene-10-impact-close      [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 0.860249 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 1.094195 | silence_duration: 0.233946 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 2.296667 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 2.510567 | silence_duration: 0.2139 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 4.391293 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 4.611474 | silence_duration: 0.220181 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 5.787392 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 5.995125 | silence_duration: 0.207732 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 8.046145 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 8.256735 | silence_duration: 0.21059 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 10.003401 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 10.231519 | silence_duration: 0.228118 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 12.47746 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 12.676667 | silence_duration: 0.199206 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 14.536644 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 14.741791 | silence_duration: 0.205147 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 15.846735 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 16.071973 | silence_duration: 0.225238 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 17.439388 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 17.655261 | silence_duration: 0.215873 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 19.469592 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 19.7022 | silence_duration: 0.232608 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 21.075261 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 21.319433 | silence_duration: 0.244172 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 23.728481 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 23.971088 | silence_duration: 0.242608 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 24.823787 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 25.054014 | silence_duration: 0.230227 [Parsed_silencedetect_0 @ 0x761d040900] silence_start: 26.368254 [Parsed_silencedetect_0 @ 0x761d040900] silence_end: 26.582132 | silence_duration: 0.213878
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf
+cp ../assets/01-recorded-fire.png ../assets/02-live-fires.png ../assets/03-forecast-register.png ../assets/03b-register-sheet.png ../assets/04-plan-before-after.png ../assets/05-record-sealed.png ../assets/05b-record-checks.png ../assets/06-3d-terrain.png ../assets/07-ots-terminal.txt ../assets/data.json assets/
+echo "--- asset sizes ---"
+for f in assets/*.png; do printf "%-34s " "$f"; ffprobe -v error -show_entries stream=width,height -of csv=p=0 "$f"; done
+echo "--- fonts ---"
+system_profiler SPFontsDataType 2>/dev/null | grep -i "^ *Inter" | head -5
+ls ~/Library/Fonts 2>/dev/null | head
+echo "--- net check ---"
+curl -sS -o /dev/null -w "%{http_code}\n" --max-time 10 https://fonts.googleapis.com/css2?family=Inter:wght@400;600 2>&1
+curl -sS -o /dev/null -w "%{http_code}\n" --max-time 10 https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js 2>&1
+--- asset sizes ---
+assets/01-recorded-fire.png        1920,1080
+assets/02-live-fires.png           520,720
+assets/03-forecast-register.png    1920,1080
+assets/03b-register-sheet.png      520,720
+assets/04-plan-before-after.png    1920,1080
+assets/05-record-sealed.png        1920,1080
+assets/05b-record-checks.png       380,843
+assets/06-3d-terrain.png           1920,1080
+--- fonts ---
+--- net check ---
+zsh:9: no matches found: https://fonts.googleapis.com/css2?family=Inter:wght@400
+zsh:9: command not found: 600
+200
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf
+curl -sS -o /dev/null -w "googlefonts:%{http_code}\n" --max-time 10 "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+curl -sS --max-time 20 "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.20/files/inter-latin-400-normal.woff2" -o /tmp/inter400.woff2 -w "inter400:%{http_code} size:%{size_download}\n"
+curl -sS --max-time 20 "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.20/files/inter-latin-500-normal.woff2" -o /tmp/inter500.woff2 -w "inter500:%{http_code} size:%{size_download}\n"
+curl -sS --max-time 20 "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.20/files/inter-latin-600-normal.woff2" -o /tmp/inter600.woff2 -w "inter600:%{http_code} size:%{size_download}\n"
+curl -sS --max-time 20 "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.20/files/inter-latin-700-normal.woff2" -o /tmp/inter700.woff2 -w "inter700:%{http_code} size:%{size_download}\n"
+file /tmp/inter400.woff2
+googlefonts:200
+inter400:200 size:23692
+inter500:200 size:24368
+inter600:200 size:24304
+inter700:200 size:24352
+/tmp/inter400.woff2: Web Open Font Format (Version 2), TrueType, length 23692, version 1.0
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf
+mkdir -p assets/fonts
+cp /tmp/inter400.woff2 assets/fonts/inter-400.woff2
+cp /tmp/inter500.woff2 assets/fonts/inter-500.woff2
+cp /tmp/inter600.woff2 assets/fonts/inter-600.woff2
+cp /tmp/inter700.woff2 assets/fonts/inter-700.woff2
+cd audio
+for n in scene-01-hook scene-02-problem scene-03-what-it-does scene-04-recorded-fire scene-05-hindcast scene-06-register-rule scene-07-seal-bitcoin scene-08-why-bitcoin scene-09-decision-support scene-10-impact-close; do
+  ffmpeg -y -loglevel error -i "$n.wav" -af "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-45dB,areverse" "$n.tmp.wav"
+  mv "$n.tmp.wav" "$n.wav"
+  printf "%-26s %s\n" "$n" "$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$n.wav")"
+done
+scene-01-hook              17.846349
+scene-02-problem           17.620227
+scene-03-what-it-does      26.364172
+scene-04-recorded-fire     26.000567
+scene-05-hindcast          31.869342
+scene-06-register-rule     15.395283
+scene-07-seal-bitcoin      32.194671
+scene-08-why-bitcoin       20.425714
+scene-09-decision-support  30.956463
+scene-10-impact-close      26.279184
+[0m
+[0m← [0mWrite video/hf/compositions/smoke-a.html
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/compositions/smoke-b.html
+Wrote file successfully.
+[0m
+[0m← [0mWrite video/hf/index.html
+Wrote file successfully.
+[0m
+Now let me build a 2-scene smoke test to validate the HyperFrames sub-composition mechanics before writing all 10 scenes.
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -40
+◆  Linting hf/3 files
+
+◇  0 errors, 0 warnings
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 check --snapshots 2>&1 | tail -60
+◆  Checking hf
+[hyperframes] browserGpuMode probe → hardware (WebGL renderer vendor="Google Inc. (Apple)" renderer="ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)")
+[INFO] [Compiler] Fetched 11 font face(s) for "Inter" from Google Fonts (cached to /Users/af/.cache/hyperframes/fonts/inter)
+[INFO] [Compiler] Fetched 11 font face(s) for "Inter" from Google Fonts (cached to /Users/af/.cache/hyperframes/fonts/inter)
+[INFO] [Compiler] Injected deterministic @font-face rules for 2 requested font families
+
+Lint
+  ◇ 0 errors, 0 warnings
+
+Runtime
+  ◇ 0 errors, 0 warnings
+
+Layout
+  ℹ t=6, 7.333, 8.667, 10, 11.333s container_overflow #b-shot inside #el-b > div:nth-of-type(1) overflowed bottom 40.63px — Element extends outside a clipping layout container.
+        Fix: Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.
+  0 error(s), 0 warning(s), 1 info(s)
+
+Motion
+  ◇ 0 errors, 0 warnings
+
+Contrast
+  ◇ 7/7 text checks pass WCAG AA
+
+Snapshots
+  ◇ 5 PNG(s) saved
+    .hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca/frame-00-at-0.7s.png
+    .hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca/frame-01-at-3.3s.png
+    .hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca/frame-02-at-6.0s.png
+    .hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca/frame-03-at-8.7s.png
+    .hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca/frame-04-at-11.3s.png
+
+◇  Check passed
+Report: /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/checks/5023aa73-7969-4de9-9d42-60fdbaed72f9.json
+Revision: none (unversioned)
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca && ls -la
+total 7320
+drwxr-xr-x@ 8 af  staff      256 Oct 21 01:17 .
+drwxr-xr-x@ 3 af  staff       96 Oct 21 01:17 ..
+-rw-r--r--@ 1 af  staff       41 Oct 21 01:17 .capture-owner.json
+-rw-r--r--@ 1 af  staff    63334 Oct 21 01:17 frame-00-at-0.7s.png
+-rw-r--r--@ 1 af  staff    65696 Oct 21 01:17 frame-01-at-3.3s.png
+-rw-r--r--@ 1 af  staff  1131010 Oct 21 01:17 frame-02-at-6.0s.png
+-rw-r--r--@ 1 af  staff  1221463 Oct 21 01:17 frame-03-at-8.7s.png
+-rw-r--r--@ 1 af  staff  1248395 Oct 21 01:17 frame-04-at-11.3s.png
+[0m
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca/frame-00-at-0.7s.png
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/62ef30d7-d8fa-44f8-9dfd-6bb8aca391ca/frame-02-at-6.0s.png
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf/assets
+mkdir -p /tmp/crops
+ffmpeg -y -loglevel error -i 01-recorded-fire.png -vf "crop=520:290:1240:40" /tmp/crops/s4-score.png
+ffmpeg -y -loglevel error -i 01-recorded-fire.png -vf "crop=740:120:220:90" /tmp/crops/s4-sub.png
+ffmpeg -y -loglevel error -i 04-plan-before-after.png -vf "crop=440:420:1270:50" /tmp/crops/s9-nums.png
+ffmpeg -y -loglevel error -i 04-plan-before-after.png -vf "crop=440:520:1270:470" /tmp/crops/s9-plan.png
+ffmpeg -y -loglevel error -i 06-3d-terrain.png -vf "crop=520:420:250:360" /tmp/crops/s9-3d.png
+ls -la /tmp/crops
+total 416
+drwxr-xr-x@   7 af    wheel    224 Oct 21 01:18 .
+drwxrwxrwt  202 root  wheel   6464 Oct 21 01:18 ..
+-rw-r--r--@   1 af    wheel  35064 Oct 21 01:18 s4-score.png
+-rw-r--r--@   1 af    wheel  25913 Oct 21 01:18 s4-sub.png
+-rw-r--r--@   1 af    wheel  60473 Oct 21 01:18 s9-3d.png
+-rw-r--r--@   1 af    wheel  40788 Oct 21 01:18 s9-nums.png
+-rw-r--r--@   1 af    wheel  42839 Oct 21 01:18 s9-plan.png
+[0m
+The mechanics work. Let me verify the exact source coordinates for the callouts against the real screenshots.
+[0m→ [0mRead /tmp/crops/s4-score.png
+[0m→ [0mRead /tmp/crops/s9-nums.png
+[0m→ [0mRead /tmp/crops/s9-plan.png
+[0m→ [0mRead video/hf/assets/05b-record-checks.png
+[0m→ [0mRead video/hf/assets/03b-register-sheet.png
+[0m
+[0m← [0mWrite video/hf/tools/build.mjs
+Wrote file successfully.
+[0m
+The mechanics are validated. Now let me write the scene generator with all 10 scenes.
+[0m← [0mEdit video/hf/tools/build.mjs
+Index: /Users/af/dumpProject/IEEE-ClimateChain/video/hf/tools/build.mjs
+===================================================================
+--- /Users/af/dumpProject/IEEE-ClimateChain/video/hf/tools/build.mjs
++++ /Users/af/dumpProject/IEEE-ClimateChain/video/hf/tools/build.mjs
+@@ -10,8 +10,10 @@
+ import { writeFileSync, mkdirSync } from "node:fs";
+ import { dirname, join } from "node:path";
+ import { fileURLToPath } from "node:url";
+ 
++import { SCENES as SCENE_DEFS } from "./scenes.mjs";
++
+ const HERE = dirname(fileURLToPath(import.meta.url));
+ const PROJECT = join(HERE, "..");
+ 
+ /* ------------------------------------------------------------------ tokens */
+
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node -e "
+const fs=require('fs');
+let s=fs.readFileSync('tools/build.mjs','utf8');
+// replace the inline SCENES array with a merge of imported defs
+const start=s.indexOf('const SCENES = [');
+const end=s.indexOf('];', start)+2;
+console.log('array chars', end-start);
+"
+array chars 6127
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node -e "
+const fs=require('fs');
+let s=fs.readFileSync('tools/build.mjs','utf8');
+const start=s.indexOf('const SCENES = [');
+const end=s.indexOf('];', start)+2;
+const repl = \`// narration lengths measured with ffprobe (video/hf/audio/*.wav)
+const AUDIO_DUR = {
+  \"01-hook\": 17.85,
+  \"02-problem\": 17.63,
+  \"03-what-it-does\": 26.37,
+  \"04-recorded-fire\": 26.01,
+  \"05-hindcast\": 31.88,
+  \"06-register-rule\": 15.4,
+  \"07-seal-bitcoin\": 32.2,
+  \"08-why-bitcoin\": 20.43,
+  \"09-decision-support\": 30.96,
+  \"10-impact-close\": 26.28,
+};
+
+const SCENES = SCENE_DEFS.map((s) => ({ ...s, audioDur: AUDIO_DUR[s.id] }));\`;
+s = s.slice(0,start)+repl+s.slice(end);
+fs.writeFileSync('tools/build.mjs', s);
+console.log('ok');
+"
+ok
+[0m
+[0m← [0mWrite video/hf/tools/scenes.mjs
+Wrote file successfully.
+[0m
+Now the scene definitions:
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf/assets
+ffmpeg -y -loglevel error -i 01-recorded-fire.png -vf "crop=34:34:19:11,scale=272:272:flags=neighbor" /tmp/crops/logo.png
+node -e "console.log('ok')"
+cd .. && node tools/build.mjs
+ok
+wrote compositions/01-hook.html
+wrote compositions/02-problem.html
+wrote compositions/03-what-it-does.html
+wrote compositions/04-recorded-fire.html
+wrote compositions/05-hindcast.html
+wrote compositions/06-register-rule.html
+wrote compositions/07-seal-bitcoin.html
+wrote compositions/08-why-bitcoin.html
+wrote compositions/09-decision-support.html
+wrote compositions/10-impact-close.html
+wrote index.html
+total duration: 254.7s
+  01-hook                start=      0  dur=18.2
+  02-problem             start=   18.2  dur=19
+  03-what-it-does        start=   37.2  dur=26.7
+  04-recorded-fire       start=   63.9  dur=27
+  05-hindcast            start=   90.9  dur=33
+  06-register-rule       start=  123.9  dur=18
+  07-seal-bitcoin        start=  141.9  dur=32.5
+  08-why-bitcoin         start=  174.4  dur=21
+  09-decision-support    start=  195.4  dur=31.3
+  10-impact-close        start=  226.7  dur=28
+[0m
+[0m→ [0mRead /tmp/crops/logo.png
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf/assets && ffmpeg -y -loglevel error -i 01-recorded-fire.png -vf "crop=34:34:19:11" sekatapi-mark.png && ffprobe -v error -show_entries stream=width,height -of csv=p=0 sekatapi-mark.png && cd .. && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -30
+34,34
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/07-seal-bitcoin.html:140:11] id_requires_css_escape [07-seal-bitcoin-cap5]: id="07-seal-bitcoin-cap5" starts with a digit, and the selector `#07-seal-bitcoin-cap5` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/08-why-bitcoin.html:131:11] id_requires_css_escape [08-why-bitcoin-cap1]: id="08-why-bitcoin-cap1" starts with a digit, and the selector `#08-why-bitcoin-cap1` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/08-why-bitcoin.html:132:11] id_requires_css_escape [08-why-bitcoin-cap2]: id="08-why-bitcoin-cap2" starts with a digit, and the selector `#08-why-bitcoin-cap2` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/08-why-bitcoin.html:133:11] id_requires_css_escape [08-why-bitcoin-cap3]: id="08-why-bitcoin-cap3" starts with a digit, and the selector `#08-why-bitcoin-cap3` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/09-decision-support.html:124:11] id_requires_css_escape [09-decision-support-cap1]: id="09-decision-support-cap1" starts with a digit, and the selector `#09-decision-support-cap1` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/09-decision-support.html:125:11] id_requires_css_escape [09-decision-support-cap2]: id="09-decision-support-cap2" starts with a digit, and the selector `#09-decision-support-cap2` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/09-decision-support.html:126:11] id_requires_css_escape [09-decision-support-cap3]: id="09-decision-support-cap3" starts with a digit, and the selector `#09-decision-support-cap3` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/09-decision-support.html:127:11] id_requires_css_escape [09-decision-support-cap4]: id="09-decision-support-cap4" starts with a digit, and the selector `#09-decision-support-cap4` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ⚠ [compositions/09-decision-support.html] gsap_repeated_fromto_without_baseline: 2 tl.fromTo() calls target "#s09-shot" with no stable baseline. The last-authored fromTo "from" values become the element's resting state for any seek before the first tween actually runs, because GSAP applies fromTo from-values at authoring time (immediateRender), not at tween position.
+    Fix: Add `immediateRender: false` to every fromTo except the earliest-positioned one (at 0s), so pre-first-tween seeks keep its "from" values. A hiding `tl.set(..., 0)` baseline trips gsap_timeline_set_initial_hide, and a `gsap.set` authored before the fromTo calls is overwritten by them.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/10-impact-close.html:133:11] id_requires_css_escape [10-impact-close-cap1]: id="10-impact-close-cap1" starts with a digit, and the selector `#10-impact-close-cap1` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/10-impact-close.html:134:11] id_requires_css_escape [10-impact-close-cap2]: id="10-impact-close-cap2" starts with a digit, and the selector `#10-impact-close-cap2` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/10-impact-close.html:135:11] id_requires_css_escape [10-impact-close-cap3]: id="10-impact-close-cap3" starts with a digit, and the selector `#10-impact-close-cap3` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/10-impact-close.html:136:11] id_requires_css_escape [10-impact-close-cap4]: id="10-impact-close-cap4" starts with a digit, and the selector `#10-impact-close-cap4` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+  ✗ [/Users/af/dumpProject/IEEE-ClimateChain/video/hf/compositions/10-impact-close.html:137:11] id_requires_css_escape [10-impact-close-cap5]: id="10-impact-close-cap5" starts with a digit, and the selector `#10-impact-close-cap5` used in this composition is invalid: querySelector and GSAP throw a SyntaxError, and CSS drops the rule.
+    Fix: Rename the id to start with a letter (recommended), or build selectors with `#${CSS.escape(id)}` at runtime.
+
+◇  40 error(s), 1 warning(s)
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node -e "
+const fs=require('fs');
+let s=fs.readFileSync('tools/build.mjs','utf8');
+s=s.replace('\`<span class=\"cap\" id=\"\${scene.id}-cap\${i + 1}\">\${c[2]}</span>\`','\`<span class=\"cap\" id=\"c\${scene.id}-cap\${i + 1}\">\${c[2]}</span>\`');
+s=s.replace('const sel = \`#\${scene.id}-cap\${i + 1}\`;','const sel = \`#c\${scene.id}-cap\${i + 1}\`;');
+fs.writeFileSync('tools/build.mjs',s);
+console.log(s.includes('c\${scene.id}-cap'), s.includes('#c\${scene.id}-cap'));
+"
+
+true true
+[0m
+[0m← [0mEdit video/hf/tools/scenes.mjs
+Index: /Users/af/dumpProject/IEEE-ClimateChain/video/hf/tools/scenes.mjs
+===================================================================
+--- /Users/af/dumpProject/IEEE-ClimateChain/video/hf/tools/scenes.mjs
++++ /Users/af/dumpProject/IEEE-ClimateChain/video/hf/tools/scenes.mjs
+@@ -873,9 +873,9 @@
+ tl.fromTo("#s09-r2", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 5.0);
+ tl.fromTo("#s09-chip2", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 5.4);
+ tl.fromTo("#s09-r3", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 8.0);
+ tl.fromTo("#s09-chip3", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 8.4);
+-tl.fromTo("#s09-shot", { scale: 1.08, x: -573.6, y: 183.6 }, { scale: 1.14, x: -681.6, y: -189.6, duration: 12, ease: "power2.inOut" }, 12);
++tl.fromTo("#s09-shot", { scale: 1.08, x: -573.6, y: 183.6 }, { scale: 1.14, x: -681.6, y: -189.6, duration: 12, ease: "power2.inOut", immediateRender: false }, 12);
+ tl.to(".s9-ovlA", { opacity: 0, duration: 0.4, ease: "none" }, 11.8);
+ tl.to(".s9-ovlB", { opacity: 1, duration: 0.4, ease: "none" }, 12.0);
+ tl.fromTo("#s09-r4", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 14.0);
+ tl.fromTo("#s09-chip4", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 14.4);
+
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node tools/build.mjs >/dev/null && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -30
+◆  Linting hf/13 files
+
+  ✗ [index.html] audio_src_not_found: <audio> element references file(s) not found in the project: audio/01-hook.wav, audio/02-problem.wav, audio/03-what-it-does.wav, audio/04-recorded-fire.wav, audio/05-hindcast.wav, audio/06-register-rule.wav, audio/07-seal-bitcoin.wav, audio/08-why-bitcoin.wav, audio/09-decision-support.wav, audio/10-impact-close.wav. The rendered video will be silent.
+    Fix: Add the missing files to the project directory, or update the src attributes to point to existing files.
+
+◇  1 error(s), 0 warning(s)
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node -e "
+const fs=require('fs');
+let s=fs.readFileSync('tools/build.mjs','utf8');
+s=s.replace('src=\"audio/\${scene.id}.wav\"','src=\"audio/scene-\${scene.id}.wav\"');
+fs.writeFileSync('tools/build.mjs',s);
+" && node tools/build.mjs >/dev/null && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -20
+◆  Linting hf/13 files
+
+◇  0 errors, 0 warnings
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 check --samples 12 --snapshots 2>&1 | tail -70
+ℹ t=95.512s text_occluded div.s5-panel.s5-pb > div:nth-of-type(14) inside #c05-hindcast-cap1 "τ = 3 h" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=95.512s text_occluded div.s5-note inside #c05-hindcast-cap1 "τ was chosen on Kalimantan only." — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=137.962s canvas_overflow #s06-chip2 inside #root overflowed right 33.3px "Sealed Oct 21, 12:40 AM · on Bitcoin · scored after Oct 22, 06:40 AM" — Text extends outside the composition canvas.
+        Fix: Move the text inward, reduce its size, or mark intentional off-canvas animation with data-layout-allow-overflow.
+  ℹ t=137.962s container_overflow #s06-chip1 inside #s06-sheetwrap overflowed right 99.24px — Nowrap text is wider than its container.
+        Fix: Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.
+  ℹ t=137.962s container_overflow #s06-chip2 inside #s06-sheetwrap overflowed right 202.68px — Nowrap text is wider than its container.
+        Fix: Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.
+  ℹ t=159.188s text_occluded div.s7-step.s7-s1 > div:nth-of-type(3) inside #s07-term "SHA-256 hash" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-step.s7-s1 > div:nth-of-type(4) inside #s07-term "over every input and every simulated cell" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-step.s7-s2 > div:nth-of-type(3) inside #s07-term "Ed25519 signature" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-step.s7-s2 > div:nth-of-type(4) inside #s07-term "over that hash" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-step.s7-s3 > div:nth-of-type(3) inside #s07-term "OpenTimestamps anchor" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-step.s7-s3 > div:nth-of-type(4) inside #s07-term "committed to Bitcoin" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-stats > div:nth-of-type(1) > div:nth-of-type(2) inside #s07-term "forecasts sealed" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-stats > div:nth-of-type(2) > div:nth-of-type(1) inside #s07-term "3" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-stats > div:nth-of-type(2) > div:nth-of-type(2) inside #s07-term "in Kalimantan" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-stats > div:nth-of-type(3) > div:nth-of-type(1) inside #s07-term "3" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-stats > div:nth-of-type(3) > div:nth-of-type(2) inside #s07-term "in Sumatra" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-stats > div:nth-of-type(4) > div:nth-of-type(1) inside #s07-term "21 Oct 2026" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=159.188s text_occluded div.s7-stats > div:nth-of-type(4) > div:nth-of-type(2) inside #s07-term "before the outcome existed" — Text is hidden beneath an opaque element.
+        Fix: Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.
+  ℹ t=195.702s content_overlap div.s8-q1 inside #c09-decision-support-cap1 "A smart contract cannot make a fire model more correct." — Two text blocks overlap and may render unreadable.
+        Fix: Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.
+  22 error(s), 0 warning(s), 24 info(s)
+
+Motion
+  ◇ 0 errors, 0 warnings
+
+Contrast
+  ◇ 73/73 text checks pass WCAG AA
+
+Snapshots
+  ◇ 5 PNG(s) saved
+    .hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/frame-00-at-10.6s.png
+    .hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/frame-01-at-53.1s.png
+    .hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/frame-02-at-116.7s.png
+    .hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/frame-03-at-180.4s.png
+    .hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/frame-04-at-244.1s.png
+  ◇ 12 finding crop(s) saved
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-00-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-01-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-02-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-03-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-04-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-05-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-06-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-07-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-08-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-09-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-10-content_overlap.png
+    /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-11-content_overlap.png
+
+◇  Check failed
+Report: /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/checks/27840220-0622-479c-859e-840dcd4c7170.json
+Revision: b8b8caf5-221c-445a-8fef-94c168dc1eda (recorded-revision)
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 check --samples 12 2>&1 | grep -E "✗|error" | head -40
+◇ 0 errors, 0 warnings
+  ◇ 0 errors, 0 warnings
+  ✗ t=2.878, 3.378, 4.317s content_overlap div.s1-stat.s1-b > div:nth-of-type(1) inside #c01-hook-cap1 "per day" — Two text blocks overlap and may render unreadable.
+  ✗ t=2.878, 3.378, 4.317s content_overlap div.s1-stat.s1-c > div:nth-of-type(1) inside #c01-hook-cap1 "Indonesia" — Two text blocks overlap and may render unreadable.
+  ✗ t=5.756, 6.256, 7.195, 8.634s content_overlap div.s1-stat.s1-b > div:nth-of-type(2) inside #c01-hook-cap2 "emissions, not per year" — Two text blocks overlap and may render unreadable.
+  ✗ t=5.756, 6.256, 7.195, 8.634s content_overlap div.s1-stat.s1-c > div:nth-of-type(2) inside #c01-hook-cap2 "drained tropical peat" — Two text blocks overlap and may render unreadable.
+  ✗ t=92.095, 92.595, 93.534, 94.973, 95.512s content_overlap div.s5-panel.s5-pa > div:nth-of-type(15) inside #c05-hindcast-cap1 "τ = 6 h (slowed spread)" — Two text blocks overlap and may render unreadable.
+  ✗ t=92.095, 92.595, 93.534, 94.973, 95.512s content_overlap div.s5-panel.s5-pb > div:nth-of-type(5) inside #c05-hindcast-cap1 "0" — Two text blocks overlap and may render unreadable.
+  ✗ t=92.095, 92.595, 93.534, 94.973, 95.512s content_overlap div.s5-panel.s5-pb > div:nth-of-type(14) inside #c05-hindcast-cap1 "τ = 3 h" — Two text blocks overlap and may render unreadable.
+  ✗ t=96.412, 96.912, 97.851, 99.29, 100.729, 102.168, 103.607s content_overlap div.s5-pch inside #c05-hindcast-cap2 "New 400 m squares forecast — how much fire the model predicted" — Two text blocks overlap and may render unreadable.
+  ✗ t=105.046, 105.546, 106.485, 107.924, 109.363s content_overlap div.s5-pc > div:nth-of-type(5) inside #c05-hindcast-cap3 "τ = 3 h — 663 forecast" — Two text blocks overlap and may render unreadable.
+  ✗ t=105.046, 105.546, 106.485, 107.924, 109.363s content_overlap div.s5-pc > div:nth-of-type(6) inside #c05-hindcast-cap3 "τ = 6 h — 390 forecast" — Two text blocks overlap and may render unreadable.
+  ✗ t=105.046, 105.546, 106.485, 107.924, 109.363s content_overlap div.s5-pc > div:nth-of-type(7) inside #c05-hindcast-cap3 "observed — 114" — Two text blocks overlap and may render unreadable.
+  ✗ t=105.046, 105.546, 106.485, 107.924, 109.363s content_overlap span.u inside #c05-hindcast-cap3 "about 6× too much fire" — Two text blocks overlap and may render unreadable.
+  ✗ t=143.898, 144.398, 145.337, 146.776, 148.215s content_overlap div.s7-step.s7-s3 > div:nth-of-type(2) inside #c07-seal-bitcoin-cap1 "3" — Two text blocks overlap and may render unreadable.
+  ✗ t=143.898, 144.398, 145.337, 146.776, 148.215s content_overlap div.s7-step.s7-s3 > div:nth-of-type(3) inside #c07-seal-bitcoin-cap1 "OpenTimestamps anchor" — Two text blocks overlap and may render unreadable.
+  ✗ t=159.188, 159.727, 160.227, 161.166, 161.666, 162.605, 164.044, 164.544, 165.483, 166.922, 168.361, 169.8, 171.239, 172.678, 174.117s content_overlap div.s7-step.s7-s1 > div:nth-of-type(3) inside #s07-lines > div:nth-of-type(5) "SHA-256 hash" — Two text blocks overlap and may render unreadable.
+  ✗ t=159.727, 160.227, 161.166, 161.666, 162.605s content_overlap div.s7-stats > div:nth-of-type(2) > div:nth-of-type(1) inside #c07-seal-bitcoin-cap4 "3" — Two text blocks overlap and may render unreadable.
+  ✗ t=159.727, 160.227, 161.166, 161.666, 162.605s content_overlap div.s7-stats > div:nth-of-type(3) > div:nth-of-type(1) inside #c07-seal-bitcoin-cap4 "3" — Two text blocks overlap and may render unreadable.
+  ✗ t=159.727, 160.227, 161.166, 161.666, 162.605s content_overlap div.s7-stats > div:nth-of-type(3) > div:nth-of-type(2) inside #c07-seal-bitcoin-cap4 "in Sumatra" — Two text blocks overlap and may render unreadable.
+  ✗ t=161.166, 161.666, 162.605, 164.044, 164.544, 165.483, 166.922, 168.361, 169.8, 171.239, 172.678, 174.117s content_overlap div.s7-step.s7-s1 > div:nth-of-type(4) inside #s07-lines > div:nth-of-type(7) "over every input and every simulated cell" — Two text blocks overlap and may render unreadable.
+  ✗ t=164.044, 164.544, 165.483, 166.922, 168.361, 169.8, 171.239, 172.678, 174.117s content_overlap div.s7-step.s7-s2 > div:nth-of-type(3) inside span.tx "Ed25519 signature" — Two text blocks overlap and may render unreadable.
+  ✗ t=212.969, 213.469s content_overlap #s09-chip4 inside #c09-decision-support-cap3 "Only resources the commander says exist" — Two text blocks overlap and may render unreadable.
+  ✗ t=213.469, 214.408s content_overlap #s09-chip5 inside #c09-decision-support-cap3 "Cloud seeding: speculative — kept out of the combined strategy" — Two text blocks overlap and may render unreadable.
+  22 error(s), 0 warning(s), 24 info(s)
+  ◇ 0 errors, 0 warnings
+[0m
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/finding-00-content_overlap.png
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/79814cf7-209a-4202-bbd2-f57c8bec07bd/frame-00-at-10.6s.png
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node -e "
+const fs=require('fs');
+const p='.hyperframes/artifacts/checks/27840220-0622-479c-859e-840dcd4c7170.json';
+const j=JSON.parse(fs.readFileSync(p,'utf8'));
+const L=(j.layout&&j.layout.findings)||(j.findings)||[];
+console.log(Object.keys(j));
+console.log(JSON.stringify(L.slice(0,3),null,1).slice(0,3000));
+"
+[
+  'ok',
+  'strict',
+  'browserSkipped',
+  'lint',
+  'runtime',
+  'layout',
+  'motion',
+  'contrast',
+  'hdr',
+  'snapshots'
+]
+[
+ {
+  "code": "content_overlap",
+  "severity": "error",
+  "time": 2.878,
+  "selector": "div.s1-stat.s1-b > div:nth-of-type(1)",
+  "message": "Two text blocks overlap and may render unreadable.",
+  "rect": {
+   "left": 700,
+   "top": 785.96,
+   "right": 920.59,
+   "bottom": 860.96,
+   "width": 220.59,
+   "height": 75
+  },
+  "containerSelector": "#c01-hook-cap1",
+  "text": "per day",
+  "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+  "dataAttributes": {},
+  "sourceFile": "compositions/01-hook.html",
+  "bbox": {
+   "x": 700,
+   "y": 785.96,
+   "width": 220.59,
+   "height": 75
+  },
+  "firstSeen": 2.878,
+  "lastSeen": 4.317,
+  "occurrences": 3,
+  "heldMs": 1439,
+  "times": [
+   2.878,
+   3.378,
+   4.317
+  ]
+ },
+ {
+  "code": "content_overlap",
+  "severity": "error",
+  "time": 2.878,
+  "selector": "div.s1-stat.s1-c > div:nth-of-type(1)",
+  "message": "Two text blocks overlap and may render unreadable.",
+  "rect": {
+   "left": 1180,
+   "top": 785.96,
+   "right": 1465.02,
+   "bottom": 860.96,
+   "width": 285.02,
+   "height": 75
+  },
+  "containerSelector": "#c01-hook-cap1",
+  "text": "Indonesia",
+  "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+  "dataAttributes": {},
+  "sourceFile": "compositions/01-hook.html",
+  "bbox": {
+   "x": 1180,
+   "y": 785.96,
+   "width": 285.02,
+   "height": 75
+  },
+  "firstSeen": 2.878,
+  "lastSeen": 4.317,
+  "occurrences": 3,
+  "heldMs": 1439,
+  "times": [
+   2.878,
+   3.378,
+   4.317
+  ]
+ },
+ {
+  "code": "content_overlap",
+  "severity": "error",
+  "time": 5.756,
+  "selector": "div.s1-stat.s1-b > div:nth-of-type(2)",
+  "message": "Two text blocks overlap and may render unreadable.",
+  "rect": {
+   "left": 700,
+   "top": 863.15,
+   "right": 919.09,
+   "bottom": 887.15,
+   "width": 219.09,
+   "height": 24
+  },
+  "containerSelector": "#c01-hook-cap2",
+  "text": "emissions, not per year",
+  "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+  "dataAttributes": {},
+  "sourceFile": "compositions/01-hook.html",
+  "bbox": {
+   "x": 700,
+   "y": 863.15,
+   "width": 219.09,
+   "height": 24
+  },
+  "firstSeen": 5.756,
+  "lastSeen": 8.634,
+  "occurrences": 4,
+  "heldMs": 1439,
+  "times": [
+   5.756,
+   6.256,
+   7.195,
+   8.634
+  ]
+ }
+]
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node - <<'EOF'
+const fs=require('fs');
+let s=fs.readFileSync('tools/build.mjs','utf8');
+
+const oldCap = `      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        text-align: center;
+        z-index: 90;
+      }
+      .cap {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+        opacity: 0;
+      }`;
+
+const newCap = `      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }`;
+
+if(!s.includes(oldCap)) throw new Error('cap css not found');
+s = s.replace(oldCap, newCap);
+
+const oldMark = '`<span class="cap" id="c\${scene.id}-cap\${i + 1}">\${c[2]}</span>`';
+const newMark = '`<span class="cap" id="c\${scene.id}-cap\${i + 1}"><span class="pill">\${c[2]}</span></span>`';
+if(!s.includes(oldMark)) throw new Error('cap markup not found');
+s = s.replace(oldMark, newMark);
+
+// non-overlapping caption hand-over: caption i is fully out at t1, caption i+1 starts at t1
+const oldJs = `    const outAt = Math.max(t0 + fadeIn + 0.02, t1 - fadeOut);
+    lines.push(\`  tl.set("\${sel}", { opacity: 0 }, 0);\`);
+    lines.push(
+      \`  tl.fromTo("\${sel}", { opacity: 0 }, { opacity: 1, duration: \${fadeIn}, ease: "none" }, \${n(t0)});\`,
+    );
+    lines.push(
+      \`  tl.to("\${sel}", { opacity: 0, duration: \${fadeOut}, ease: "none" }, \${n(outAt)});\`,
+    );`;
+const newJs = `    const outAt = Math.max(t0 + fadeIn + 0.02, t1 - fadeOut);
+    lines.push(\`  tl.set("\${sel}", { opacity: 0 }, 0);\`);
+    lines.push(
+      \`  tl.fromTo("\${sel}", { opacity: 0 }, { opacity: 1, duration: \${fadeIn}, ease: "none" }, \${n(t0)});\`,
+    );
+    lines.push(
+      \`  tl.to("\${sel}", { opacity: 0, duration: \${fadeOut}, ease: "none" }, \${n(outAt)});\`);`;
+if(!s.includes(oldJs)) throw new Error('cap js not found');
+s = s.replace(oldJs, newJs);
+
+fs.writeFileSync('tools/build.mjs',s);
+console.log('build.mjs patched');
+EOF
+build.mjs patched
+[0m
+Found the root cause — the caption pills were stacking vertically. Let me fix the caption layout and the scene-9 chip timings.
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node - <<'EOF'
+const fs=require('fs');
+let s=fs.readFileSync('tools/scenes.mjs','utf8');
+const rep=(a,b)=>{ if(!s.includes(a)) throw new Error('not found: '+a.slice(0,60)); s=s.replace(a,b); };
+
+// --- scene 07: fade beat A out before the terminal panel appears
+rep(`  tl.to("#s07-term", { opacity: 1, duration: 0.4, ease: "none" }, 14.0);`,
+    `  tl.to(".s7-head, .s7-step, .s7-conn, .s7-stats", { opacity: 0, duration: 0.45, ease: "none" }, 13.5);
+  tl.to("#s07-term", { opacity: 1, duration: 0.4, ease: "none" }, 14.0);`);
+
+// --- scene 09: callouts 4 and 5 appear after the camera has settled clear of the caption band
+rep(`  tl.fromTo("#s09-r4", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 14.0);
+  tl.fromTo("#s09-chip4", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 14.4);
+  tl.fromTo("#s09-r5", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 17.5);
+  tl.fromTo("#s09-chip5", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 17.9);`,
+    `  tl.fromTo("#s09-r4", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 18.0);
+  tl.fromTo("#s09-chip4", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 18.4);
+  tl.fromTo("#s09-r5", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 21.0);
+  tl.fromTo("#s09-chip5", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 21.4);`);
+
+// --- scene 06: smaller chips so they stay inside the canvas; allow sheet overflow
+rep(`            <div class="chip" id="s06-chip1" style="left:18px; top:142px; font-size:18px;">6 sealed &middot; 0 scored &mdash; waiting for the first 24 h windows to close</div>
+            <div class="chip" id="s06-chip2" style="left:30px; top:340px; font-size:19px;">Sealed Oct 21, 12:40 AM &middot; on Bitcoin &middot; scored after Oct 22, 06:40 AM</div>`,
+    `            <div class="chip" id="s06-chip1" style="left:18px; top:142px; font-size:17px;">6 sealed &middot; 0 scored &mdash; waiting for the first 24 h windows to close</div>
+            <div class="chip" id="s06-chip2" style="left:30px; top:340px; font-size:17px;">Sealed Oct 21, 12:40 AM &middot; on Bitcoin &middot; scored after Oct 22, 06:40 AM</div>`);
+rep(`          <div class="s6-sheetwrap" id="s06-sheetwrap">`,
+    `          <div class="s6-sheetwrap" id="s06-sheetwrap" data-layout-allow-overflow>`);
+rep(`          <div class="s8-sheetwrap" id="s08-sheetwrap">`,
+    `          <div class="s8-sheetwrap" id="s08-sheetwrap" data-layout-allow-overflow>`);
+rep(`            <div class="s4-sheetwrap" id="s04-sheetwrap">`,
+    `            <div class="s4-sheetwrap" id="s04-sheetwrap" data-layout-allow-overflow>`);
+
+fs.writeFileSync('tools/scenes.mjs',s);
+console.log('scenes.mjs patched');
+EOF
+node tools/build.mjs > /dev/null && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -5
+scenes.mjs patched
+◆  Linting hf/13 files
+
+◇  0 errors, 0 warnings
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 check --samples 12 2>&1 | grep -E "✗|ℹ|error\(s\)|passed|failed" | head -40
+◇  Check passed
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 snapshot --at 8,26,50,70,82,100,130,150,168,180,205,218,228,240,250 2>&1 | tail -25
+Fonts: 12 loaded, 14 unused
+   Note: added an end-of-timeline frame at 247.06s. Short beats between your --at times may still be skipped — pass them explicitly.
+   Revision: 11e4ae88-52e1-4ec4-af2b-c17ff7740910 (recorded-revision)
+   State: /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/video-state.json
+
+◇  16 snapshots saved to /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-00-at-8s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-01-at-26s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-02-at-50s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-03-at-70s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-04-at-82s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-05-at-100s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-06-at-130s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-07-at-150s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-08-at-168s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-09-at-180s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-10-at-205s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-11-at-218s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-12-at-228s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-13-at-240s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-14-at-250s.png
+   .hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/frame-15-at-247.059s.png
+   /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/contact-sheet-1.jpg (grid view for AI review)
+   /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/contact-sheet-2.jpg (grid view for AI review)
+[0m
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/contact-sheet-1.jpg
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/973098ef-4ece-448a-9e2e-a8da1d79d161/contact-sheet-2.jpg
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node - <<'EOF'
+const fs=require('fs');
+let s=fs.readFileSync('tools/scenes.mjs','utf8');
+const rep=(a,b)=>{ if(!s.includes(a)) throw new Error('not found: '+a.slice(0,70)); s=s.replace(a,b); };
+
+// --- scene 09: put the beat-A / beat-B accent rects in groups that cross-fade with the chips
+rep(`            <svg class="ovl" width="1920" height="1080" viewBox="0 0 1920 1080">
+              <rect id="s09-r1" x="1300" y="80" width="376" height="96" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              <rect id="s09-r2" x="1298" y="214" width="212" height="48" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              <rect id="s09-r3" x="1306" y="314" width="352" height="74" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              <rect id="s09-r4" x="1300" y="515" width="360" height="230" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              <rect id="s09-r5" x="1300" y="876" width="368" height="76" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+            </svg>`,
+`            <svg class="ovl" width="1920" height="1080" viewBox="0 0 1920 1080">
+              <g id="s09-ga">
+                <rect id="s09-r1" x="1300" y="80" width="376" height="96" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+                <rect id="s09-r2" x="1298" y="214" width="212" height="48" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+                <rect id="s09-r3" x="1306" y="314" width="352" height="74" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              </g>
+              <g id="s09-gb">
+                <rect id="s09-r4" x="1300" y="515" width="360" height="230" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+                <rect id="s09-r5" x="1300" y="876" width="368" height="76" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              </g>
+            </svg>`);
+
+rep(`  tl.to(".s9-ovlA", { opacity: 0, duration: 0.4, ease: "none" }, 11.8);
+  tl.to(".s9-ovlB", { opacity: 1, duration: 0.4, ease: "none" }, 12.0);`,
+`  tl.to(".s9-ovlA", { opacity: 0, duration: 0.4, ease: "none" }, 11.8);
+  tl.to(".s9-ovlB", { opacity: 1, duration: 0.4, ease: "none" }, 12.0);
+  tl.to("#s09-ga", { opacity: 0, duration: 0.4, ease: "none" }, 11.8);
+  tl.to("#s09-gb", { opacity: 1, duration: 0.4, ease: "none" }, 12.0);`);
+
+// --- scene 05: keep the "about 6x too much fire" note clear of the bar labels
+rep(`      .s5-hlab { position: absolute; left: 960px; font-size: 22px; color: #1a1a1a; }
+      .s5-sixx { position: absolute; left: 1160px; top: 64px; font-size: 22px; color: #6b7075; }`,
+`      .s5-hlab { position: absolute; left: 940px; font-size: 22px; color: #1a1a1a; }
+      .s5-sixx { position: absolute; left: 1240px; top: 92px; font-size: 22px; color: #6b7075; }`);
+rep(`            <div class="s5-sixx"><span class="u">about 6&times; too much fire</span></div>`,
+    `            <div class="s5-sixx"><span class="u">about 6&times; too much fire</span></div>`);
+
+// --- scene 10: the closing line belongs on the end card (it matches caption 4, 19-23 s)
+rep(`      .s10-close { position: absolute; left: 140px; top: 840px; font-size: 24px; color: #6b7075; }`,
+`      .s10-close { position: absolute; left: 0; right: 0; top: 664px; font-size: 24px; color: #6b7075; text-align: center; }`);
+rep(`      .s10-foot { position: absolute; left: 0; right: 0; top: 690px; font-size: 26px; color: #6b7075; line-height: 1.55; }`,
+`      .s10-foot { position: absolute; left: 0; right: 0; top: 712px; font-size: 26px; color: #6b7075; line-height: 1.55; }`);
+rep(`          <div class="s10-close">That is exactly why every forecast is now on the record.</div>
+
+          <div class="s10-end" id="s10-end">`,
+`          <div class="s10-end" id="s10-end">`);
+rep(`            <div class="s10-foot" id="s10-foot">`,
+`            <div class="s10-close" id="s10-close">That is exactly why every forecast is now on the record.</div>
+            <div class="s10-foot" id="s10-foot">`);
+rep(`  tl.fromTo(".s10-close", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 18.6);
+  tl.to(".s10-head, .s10-card, .s10-l1, .s10-l2, .s10-lim, .s10-close", { opacity: 0, duration: 0.45, ease: "none" }, 15.8);`,
+`  tl.to(".s10-head, .s10-card, .s10-l1, .s10-l2, .s10-lim", { opacity: 0, duration: 0.45, ease: "none" }, 15.8);`);
+rep(`  tl.fromTo("#s10-foot", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 19.6);`,
+`  tl.fromTo("#s10-close", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 19.0);
+  tl.fromTo("#s10-foot", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 19.7);`);
+
+fs.writeFileSync('tools/scenes.mjs',s);
+console.log('patched');
+EOF
+node tools/build.mjs >/dev/null && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -5
+patched
+◆  Linting hf/13 files
+
+◇  0 errors, 0 warnings
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 snapshot --at 100,131,185,205,218,250 2>&1 | tail -12
+Revision: c37698c7-c050-45de-90e6-5add7fbbdb1d (recorded-revision)
+   State: /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/video-state.json
+
+◇  7 snapshots saved to /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe
+   .hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/frame-00-at-100s.png
+   .hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/frame-01-at-131s.png
+   .hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/frame-02-at-185s.png
+   .hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/frame-03-at-205s.png
+   .hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/frame-04-at-218s.png
+   .hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/frame-05-at-250s.png
+   .hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/frame-06-at-247.059s.png
+   /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/contact-sheet.jpg (grid view for AI review)
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe && ffmpeg -y -loglevel error -i frame-01-at-131s.png -vf "crop=820:700:1150:60" /tmp/crops/s6sheet.png && ffmpeg -y -loglevel error -i frame-00-at-100s.png -vf "crop=1700:200:140:700" /tmp/crops/s5panelc.png && echo ok
+ok
+[0m
+[0m→ [0mRead /tmp/crops/s6sheet.png
+[0m→ [0mRead /tmp/crops/s5panelc.png
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/c1f7b811-69ae-47a5-a6ca-e2b6a90759fe/contact-sheet.jpg
+Let me fix the scene-9 camera framing and callout timing:
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node - <<'EOF'
+const fs=require('fs');
+let s=fs.readFileSync('tools/scenes.mjs','utf8');
+const rep=(a,b)=>{ if(!s.includes(a)) throw new Error('not found: '+a.slice(0,80)); s=s.replace(a,b); };
+
+// --- scene 09 camera: start on the whole app, push into the numbers, then into the plan panel
+rep(`  tl.fromTo("#s09-shot", { scale: 1, x: -460, y: 210 }, { scale: 1.08, x: -573.6, y: 183.6, duration: 12, ease: "power2.inOut" }, 0);`,
+    `  tl.fromTo("#s09-shot", { scale: 1, x: 0, y: 0 }, { scale: 1.05, x: -531, y: 88.5, duration: 11.5, ease: "power2.inOut" }, 0);`);
+rep(`  tl.fromTo("#s09-shot", { scale: 1.08, x: -573.6, y: 183.6 }, { scale: 1.14, x: -681.6, y: -189.6, duration: 12, ease: "power2.inOut", immediateRender: false }, 12);`,
+    `  tl.fromTo("#s09-shot", { scale: 1.05, x: -531, y: 88.5 }, { scale: 1.14, x: -556.2, y: -246.6, duration: 6.5, ease: "power2.inOut", immediateRender: false }, 11.5);`);
+
+// --- scene 09 callout 4 / 5 timing (they must clear the caption band once the camera settles)
+rep(`  tl.fromTo("#s09-r4", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 18.0);
+  tl.fromTo("#s09-chip4", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 18.4);
+  tl.fromTo("#s09-r5", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 21.0);
+  tl.fromTo("#s09-chip5", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 21.4);`,
+    `  tl.fromTo("#s09-r4", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 14.0);
+  tl.fromTo("#s09-chip4", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 14.4);
+  tl.fromTo("#s09-r5", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 17.5);
+  tl.fromTo("#s09-chip5", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 17.9);`);
+
+// --- scene 09 3D terrain camera: recompute for anchor (760, 520)
+rep(`  tl.fromTo("#s09-terrainwrap", { scale: 1, x: -400, y: 128 }, { scale: 1.07, x: -519.2, y: 48.4, duration: 7.4, ease: "power2.inOut" }, 24);`,
+    `  tl.fromTo("#s09-terrainwrap", { scale: 1, x: 200, y: 20 }, { scale: 1.07, x: 146.8, y: -16.4, duration: 7.4, ease: "power2.inOut" }, 24);`);
+
+fs.writeFileSync('tools/scenes.mjs',s);
+console.log('patched');
+EOF
+node tools/build.mjs >/dev/null && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -3 && npx --yes hyperframes@0.8.181 check --samples 14 2>&1 | grep -E "✗|error\(s\)|passed|failed" | head -20
+patched
+◆  Linting hf/13 files
+
+◇  0 errors, 0 warnings
+◇  Check passed
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 snapshot --at 200,209,214,220,228 2>&1 | tail -8
+◇  6 snapshots saved to /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21
+   .hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/frame-00-at-200s.png
+   .hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/frame-01-at-209s.png
+   .hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/frame-02-at-214s.png
+   .hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/frame-03-at-220s.png
+   .hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/frame-04-at-228s.png
+   .hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/frame-05-at-247.059s.png
+   /Users/af/dumpProject/IEEE-ClimateChain/video/hf/.hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/contact-sheet.jpg (grid view for AI review)
+[0m
+[0m→ [0mRead video/hf/.hyperframes/artifacts/snapshots/5099f533-778e-4bbe-bbd8-64698f8eae21/contact-sheet.jpg
+Now let me render the final MP4.
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 render --quality high --output ../out/sekatapi-demo.mp4 2>&1 | tail -25
+████████████████████░░░░░  80%  Streaming frame 7587/7641
+@hf-progress {"code":"capture","done":7587,"total":7641,"pct":80}
+  ████████████████████░░░░░  80%  Streaming frame 7625/7641
+@hf-progress {"code":"capture","done":7625,"total":7641,"pct":80}
+  ████████████████████░░░░░  80%  Streaming frame 7641/7641
+@hf-progress {"code":"capture","done":7641,"total":7641,"pct":80}
+[static-dedup] reused 2683/10324 frame(s) (26%), est. ~26830ms saved (avg 10ms/frame)
+  ██████████████████████░░░  90%  Encoding frame 7520/7641
+@hf-progress {"code":"encode","done":7520,"total":7641,"pct":90}
+  ██████████████████████░░░  90%  Encoding frame 7641/7641
+@hf-progress {"code":"encode","done":7641,"total":7641,"pct":90}
+[INFO] [Render:trace] {"renderJobId":"80227e7e-2459-4cdd-9185-8b51fc991648","phase":"capture_streaming","status":"end","elapsedMs":125727,"durationMs":122093,"stagePhase":"capturing","workerCount":1,"forceScreenshot":false,"totalFrames":7641,"framesCompleted":7641,"captureMode":"drawelement","captureOperation":"encode"}
+[INFO] [Render:trace] {"renderJobId":"80227e7e-2459-4cdd-9185-8b51fc991648","phase":"assemble","status":"start","elapsedMs":125727,"stagePhase":"capturing","hasAudio":true,"workerCount":1,"forceScreenshot":false,"totalFrames":7641,"framesCompleted":7641,"captureMode":"drawelement","captureOperation":"encode"}
+  ██████████████████████░░░  90%  Assembling final video
+@hf-progress {"code":"assemble","done":0,"total":254.7,"pct":90}
+  ████████████████████████░  99%  Assembling final video
+@hf-progress {"code":"assemble","done":254.7,"total":254.7,"pct":99}
+[INFO] [Render:trace] {"renderJobId":"80227e7e-2459-4cdd-9185-8b51fc991648","phase":"assemble","status":"end","elapsedMs":126970,"durationMs":1242,"stagePhase":"capturing","hasAudio":true,"workerCount":1,"forceScreenshot":false,"totalFrames":7641,"framesCompleted":7641,"captureMode":"drawelement","captureOperation":"encode"}
+[INFO] [Render:trace] {"renderJobId":"80227e7e-2459-4cdd-9185-8b51fc991648","phase":"pipeline","status":"checkpoint","elapsedMs":126997,"message":"artifact validated","totalElapsedMs":126997}
+  █████████████████████████  100%  Render complete
+
+◇  /Users/af/dumpProject/IEEE-ClimateChain/video/out/sekatapi-demo.mp4
+   78.0 MB · 4m 14.7s video · rendered in 2m 7.1s
+   drawelement capture · hardware gpu · compile 1.3s · extract 0.0s · audio 2.0s · probe 0.3s · setup 0.3s · capture 2m 2.1s · encode (during capture) 2m 2.1s · assemble 1.2s
+   Keep editing by chatting with Framey in the HyperFrames desktop app → https://hyperframes.dev/studio/download
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/out && ls -la sekatapi-demo.mp4 && echo "=== FORMAT ===" && ffprobe -v error -show_entries format=duration,size,bit_rate,format_name -of default=nw=1 sekatapi-demo.mp4 && echo "=== STREAMS ===" && ffprobe -v error -show_entries stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration -of default=nw=1 sekatapi-demo.mp4
+-rw-r--r--@ 1 af  staff  81824474 Oct 21 01:34 sekatapi-demo.mp4
+=== FORMAT ===
+format_name=mov,mp4,m4a,3gp,3g2,mj2
+duration=254.700000
+size=81824474
+bit_rate=2570065
+=== STREAMS ===
+index=0
+codec_name=h264
+codec_type=video
+width=1920
+height=1080
+r_frame_rate=30/1
+duration=254.700000
+index=1
+codec_name=aac
+codec_type=audio
+sample_rate=48000
+channels=2
+r_frame_rate=0/0
+duration=254.700000
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/out
+for t in 25.47 89.15 152.82 229.23; do ffmpeg -y -loglevel error -ss $t -i sekatapi-demo.mp4 -frames:v 1 "frame-${t}.png"; done
+ls -la frame-*.png
+ffmpeg -y -loglevel error -i frame-25.47.png -i frame-89.15.png -i frame-152.82.png -i frame-229.23.png -filter_complex "[0:v]scale=960:-1[a];[1:v]scale=960:-1[b];[2:v]scale=960:-1[c];[3:v]scale=960:-1[d];[a][b]hstack[t];[c][d]hstack[u];[t][u]vstack" /tmp/crops/final4.png
+echo "--- audio levels per scene (mean dB) ---"
+for t in 5 30 55 75 105 135 150 185 205 235; do printf "t=%-4s " $t; ffmpeg -v error -ss $t -t 3 -i sekatapi-demo.mp4 -af volumedetect -f null - 2>&1 | grep -E "mean_volume|max_volume" | tr '\n' ' '; echo; done
+-rw-r--r--@ 1 af  staff  150899 Oct 21 01:34 frame-152.82.png
+-rw-r--r--@ 1 af  staff  172384 Oct 21 01:34 frame-229.23.png
+-rw-r--r--@ 1 af  staff  173708 Oct 21 01:34 frame-25.47.png
+-rw-r--r--@ 1 af  staff  261918 Oct 21 01:34 frame-89.15.png
+--- audio levels per scene (mean dB) ---
+t=5    
+t=30   
+t=55   
+t=75   
+t=105  
+t=135  
+t=150  
+t=185  
+t=205  
+t=235
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/out
+mv frame-25.47.png frame-01.png; mv frame-89.15.png frame-02.png; mv frame-152.82.png frame-03.png; mv frame-229.23.png frame-04.png
+echo "--- audio levels (mean / max dB) per scene ---"
+for t in 5 30 55 75 105 135 150 185 205 235; do printf "t=%-4s " $t; ffmpeg -hide_banner -nostats -ss $t -t 3 -i sekatapi-demo.mp4 -af volumedetect -f null - 2>&1 | grep -E "mean_volume|max_volume" | sed 's/.*] //' | tr '\n' ' '; echo; done
+echo "--- overall ---"
+ffmpeg -hide_banner -nostats -i sekatapi-demo.mp4 -af volumedetect -f null - 2>&1 | grep -E "mean_volume|max_volume" | sed 's/.*] //'
+--- audio levels (mean / max dB) per scene ---
+t=5    mean_volume: -15.1 dB max_volume: -2.3 dB 
+t=30   mean_volume: -15.5 dB max_volume: -3.1 dB 
+t=55   mean_volume: -15.3 dB max_volume: -2.5 dB 
+t=75   mean_volume: -16.9 dB max_volume: -2.4 dB 
+t=105  mean_volume: -15.1 dB max_volume: -2.2 dB 
+t=135  mean_volume: -16.0 dB max_volume: -2.4 dB 
+t=150  mean_volume: -15.9 dB max_volume: -2.9 dB 
+t=185  mean_volume: -15.9 dB max_volume: -2.7 dB 
+t=205  mean_volume: -16.1 dB max_volume: -2.4 dB 
+t=235  mean_volume: -15.4 dB max_volume: -1.9 dB 
+--- overall ---
+mean_volume: -16.0 dB
+max_volume: -1.6 dB
+[0m
+[0m→ [0mRead /tmp/crops/final4.png
+One storyboard detail to fix — the dashed "no record" node should fade in last:
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && node - <<'EOF'
+const fs=require('fs');
+let s=fs.readFileSync('tools/scenes.mjs','utf8');
+const a=`  tl.fromTo(".s2-node", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.3 }, 4.0);`;
+const b=`  tl.fromTo(".s2-n1, .s2-n2, .s2-n3", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.3 }, 4.0);`;
+if(!s.includes(a)) throw new Error('nf');
+s=s.replace(a,b);
+fs.writeFileSync('tools/scenes.mjs',s);
+console.log('patched');
+EOF
+node tools/build.mjs >/dev/null && npx --yes hyperframes@0.8.181 lint 2>&1 | tail -3 && npx --yes hyperframes@0.8.181 check --samples 12 2>&1 | grep -E "✗|error\(s\)|passed|failed"
+patched
+◆  Linting hf/13 files
+
+◇  0 errors, 0 warnings
+◇  Check passed
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/hf && npx --yes hyperframes@0.8.181 render --quality high --output ../out/sekatapi-demo.mp4 2>&1 | tail -6
+█████████████████████████  100%  Render complete
+
+◇  /Users/af/dumpProject/IEEE-ClimateChain/video/out/sekatapi-demo.mp4
+   78.0 MB · 4m 14.7s video · rendered in 2m 2.1s
+   drawelement capture · hardware gpu · compile 1.3s · extract 0.0s · audio 1.9s · probe 0.2s · setup 0.3s · capture 1m 57.3s · encode (during capture) 1m 57.3s · assemble 1.3s
+   Keep editing by chatting with Framey in the HyperFrames desktop app → https://hyperframes.dev/studio/download
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video/out
+echo "=== FORMAT ===" && ffprobe -v error -show_entries format=duration,size -of default=nw=1 sekatapi-demo.mp4
+echo "=== STREAMS ===" && ffprobe -v error -show_entries stream=index,codec_type,codec_name,width,height,r_frame_rate,channels,duration -of default=nw=1 sekatapi-demo.mp4
+rm -f frame-*.png
+for p in 10 35 60 90; do
+  t=$(python3 -c "print(round(254.7*$p/100,2))")
+  ffmpeg -y -loglevel error -ss $t -i sekatapi-demo.mp4 -frames:v 1 "frame-$(printf '%02d' $p)pct.png"
+  echo "frame-${p}pct.png @ ${t}s"
+done
+ls -la frame-*.png
+ffmpeg -y -loglevel error -i frame-10pct.png -i frame-35pct.png -i frame-60pct.png -i frame-90pct.png -filter_complex "[0:v]scale=960:-1[a];[1:v]scale=960:-1[b];[2:v]scale=960:-1[c];[3:v]scale=960:-1[d];[a][b]hstack[t];[c][d]hstack[u];[t][u]vstack" /tmp/crops/final4b.png && echo "sheet ok"
+=== FORMAT ===
+duration=254.700000
+size=81789541
+=== STREAMS ===
+index=0
+codec_name=h264
+codec_type=video
+width=1920
+height=1080
+r_frame_rate=30/1
+duration=254.700000
+index=1
+codec_name=aac
+codec_type=audio
+channels=2
+r_frame_rate=0/0
+duration=254.700000
+frame-10pct.png @ 25.47s
+frame-35pct.png @ 89.14s
+frame-60pct.png @ 152.82s
+frame-90pct.png @ 229.23s
+-rw-r--r--@ 1 af  staff  159866 Oct 21 01:37 frame-10pct.png
+-rw-r--r--@ 1 af  staff  261918 Oct 21 01:37 frame-35pct.png
+-rw-r--r--@ 1 af  staff  150899 Oct 21 01:37 frame-60pct.png
+-rw-r--r--@ 1 af  staff  172384 Oct 21 01:37 frame-90pct.png
+sheet ok
+[0m
+[0m→ [0mRead /tmp/crops/final4b.png
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain && (git status --porcelain 2>/dev/null | head -30 || echo "not a git repo"); echo "--- video tree ---"; find video -maxdepth 2 -not -path "*/.hyperframes*" -not -path "*/node_modules*" | sort | head -60; echo "--- out ---"; ls -la video/out/; rm -rf /tmp/crops
+--- video tree ---
+video
+video/BRIEF.md
+video/SCRIPT.md
+video/STORYBOARD.md
+video/assets
+video/assets/01-recorded-fire.png
+video/assets/02-live-fires.png
+video/assets/03-forecast-register.png
+video/assets/03b-register-sheet.png
+video/assets/04-plan-before-after.png
+video/assets/05-record-sealed.png
+video/assets/05b-record-checks.png
+video/assets/06-3d-terrain.png
+video/assets/07-ots-terminal.txt
+video/assets/data.json
+video/hf
+video/hf/AGENTS.md
+video/hf/CLAUDE.md
+video/hf/assets
+video/hf/audio
+video/hf/compositions
+video/hf/hyperframes.json
+video/hf/index.html
+video/hf/meta.json
+video/hf/package.json
+video/hf/tools
+video/out
+video/out/frame-10pct.png
+video/out/frame-35pct.png
+video/out/frame-60pct.png
+video/out/frame-90pct.png
+video/out/sekatapi-demo.mp4
+video/prompts
+video/prompts/01-storyboard.log
+video/prompts/01-storyboard.txt
+video/prompts/01b-storyboard.log
+video/prompts/02-build-render.txt
+video/prompts/02-build.log
+--- out ---
+total 161224
+drwxr-xr-x@ 7 af  staff       224 Oct 21 01:37 .
+drwxr-xr-x@ 9 af  staff       288 Oct 21 01:13 ..
+-rw-r--r--@ 1 af  staff    159866 Oct 21 01:37 frame-10pct.png
+-rw-r--r--@ 1 af  staff    261918 Oct 21 01:37 frame-35pct.png
+-rw-r--r--@ 1 af  staff    150899 Oct 21 01:37 frame-60pct.png
+-rw-r--r--@ 1 af  staff    172384 Oct 21 01:37 frame-90pct.png
+-rw-r--r--@ 1 af  staff  81789541 Oct 21 01:37 sekatapi-demo.mp4
+[0m
+[0m← [0mWrite video/out/REPORT.md
+Wrote file successfully.
+[0m
+All checks pass and the render is verified. Now the report:
+[0m# [0mTodos
+[✓] Read BRIEF/STORYBOARD/SCRIPT/assets + hyperframes skill references
+[✓] Scaffold hyperframes project in video/hf
+[✓] Generate narration audio (say -> aiff -> wav), measure durations
+[✓] Build 10 scene composition HTML frames
+[✓] Wire index.html: clips, audio track, captions
+[✓] Run hyperframes lint + check until clean
+[✓] Render MP4 to video/out/sekatapi-demo.mp4
+[✓] Verify with ffprobe + extract 4 frames, fix issues, re-render
+[✓] Write video/out/REPORT.md
+[0m
+Done. `video/out/sekatapi-demo.mp4` — **254.70 s (4:14.7)**, 1920×1080 @ 30 fps, H.264 + AAC stereo with continuous narration.
+
+**What was built**
+- HyperFrames project in `video/hf` (10 sub-composition slots on a visual track, narration on an audio track at each scene start, burned-in captions per scene).
+- Narration: macOS `say -v Samantha -r 165` → AIFF → WAV (44.1 kHz mono), one file per scene, tails trimmed.
+- Real screenshots with slow Ken Burns pushes + SVG callout rects/chips (`01-recorded-fire`, `02-live-fires`, `03b-register-sheet`, `04-plan-before-after`, `05b-record-checks`, `06-3d-terrain`), plus the hindcast charts and the `ots` terminal panel built in HTML/CSS/SVG from `data.json` and `07-ots-terminal.txt`.
+- Palette: `#F7F8FA` canvas, `#FFFFFF` cards, `#1A1A1A` text, single `#E8590C` accent, bundled Inter.
+
+**Gates**
+- `hyperframes lint` → 0 errors, 0 warnings.
+- `hyperframes check --samples 12` → **Check passed** (lint, runtime, layout, motion, contrast 73/73 WCAG AA).
+- `ffprobe`: duration 254.70 s (within 210–270 and the brief's 3:30–4:15), 1920×1080, audio stream present; per-scene levels mean ≈ −16 dBFS, max ≈ −2 dBFS, no silence.
+- Frames at 10/35/60/90 % extracted to `video/out/frame-*pct.png` and inspected — no blank frames, no overflow, captions legible.
+
+**Key deviations** (all in `video/out/REPORT.md`): scenes 1, 3, 7, 9 stretched to fit their longer narration (+10.7 s); content below y ≈ 915 moved up to clear the caption band (scenes 1, 5, 6, 8); scene 9's Beat A camera re-anchored to (1420, 430) because the storyboard's anchor sliced the app's header off; scene 10's closing line moved onto the end card to match caption 4.

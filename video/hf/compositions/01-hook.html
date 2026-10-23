@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="01-hook-template">
+      <style>
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F7F8FA;
+        color: #1A1A1A;
+        font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      .stage { position: absolute; inset: 0; }
+      .card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E0E3E6;
+        border-radius: 16px;
+      }
+      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .chip {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E8590C;
+        border-radius: 10px;
+        color: #1A1A1A;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.15;
+        padding: 9px 16px;
+        z-index: 20;
+      }
+      .shotwrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .shotimg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        display: block;
+      }
+      .ovl { position: absolute; left: 0; top: 0; overflow: visible; }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+
+
+      .s1-top { position: absolute; left: 140px; top: 138px; width: 1400px; }
+      .s1-eyebrow {
+        font-size: 24px; font-weight: 600; letter-spacing: 0.16em; color: #6b7075;
+        margin-bottom: 36px;
+      }
+      .s1-head {
+        font-size: 68px; font-weight: 700; line-height: 1.15; letter-spacing: -0.022em;
+      }
+      .s1-rule {
+        width: 420px; height: 4px; background: #e8590c; margin-top: 28px;
+        transform-origin: 0 50%;
+      }
+      .s1-sub { font-size: 30px; color: #6b7075; margin-top: 28px; }
+      .s1-call {
+        font-size: 68px; font-weight: 700; letter-spacing: -0.022em; margin-top: 48px;
+      }
+      .s1-call .acc { color: #e8590c; }
+      .s1-band { position: absolute; left: 140px; top: 776px; width: 1440px; height: 110px; }
+      .s1-stat { position: absolute; top: 0; }
+      .s1-a { left: 0; }
+      .s1-b { left: 560px; }
+      .s1-c { left: 1040px; }
+      .s1-vr { position: absolute; top: 6px; width: 1px; height: 96px; background: #e0e3e6; }
+      .s1-num { font-size: 62px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+      .s1-lab { font-size: 20px; color: #6b7075; margin-top: 14px; }
+  
+      </style>
+      <div id="root" data-composition-id="01-hook" data-width="1920" data-height="1080" data-duration="18.2">
+        <div class="stage">
+
+          <div class="s1-top">
+            <div class="s1-eyebrow">IEEE CLIMATECHAIN GLOBAL HACKATHON 2026</div>
+            <div class="s1-head">In 2015, Indonesia&rsquo;s peat fires released more carbon dioxide per day than the entire United States economy.</div>
+            <div class="s1-rule" id="s01-rule"></div>
+            <div class="s1-sub">World Resources Institute analysis of the Global Fire Emissions Database (GFED)</div>
+            <div class="s1-call"><span class="acc">Nobody keeps score</span> of those forecasts.</div>
+          </div>
+          <div class="s1-band">
+            <div class="s1-vr" style="left:520px;"></div>
+            <div class="s1-vr" style="left:1000px;"></div>
+            <div class="s1-stat s1-a">
+              <div class="s1-num">2015</div>
+              <div class="s1-lab">the fire season measured</div>
+            </div>
+            <div class="s1-stat s1-b">
+              <div class="s1-num">per day</div>
+              <div class="s1-lab">emissions, not per year</div>
+            </div>
+            <div class="s1-stat s1-c">
+              <div class="s1-num">Indonesia</div>
+              <div class="s1-lab">drained tropical peat</div>
+            </div>
+          </div>
+          <div class="capwrap">
+          <span class="cap" id="c01-hook-cap1"><span class="pill">In 2015, Indonesia's peat fires released more carbon dioxide per day<br>than the entire United States economy.</span></span>
+          <span class="cap" id="c01-hook-cap2"><span class="pill">A World Resources Institute analysis of the Global Fire Emissions Database.</span></span>
+          <span class="cap" id="c01-hook-cap3"><span class="pill">Every dry season, fire commanders act on those forecasts,<br>and nobody keeps score of them.</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+  tl.set("#c01-hook-cap1", { opacity: 0 }, 0);
+  tl.fromTo("#c01-hook-cap1", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 0);
+  tl.to("#c01-hook-cap1", { opacity: 0, duration: 0.28, ease: "none" }, 5.12);
+  tl.set("#c01-hook-cap2", { opacity: 0 }, 0);
+  tl.fromTo("#c01-hook-cap2", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 5.4);
+  tl.to("#c01-hook-cap2", { opacity: 0, duration: 0.28, ease: "none" }, 9.52);
+  tl.set("#c01-hook-cap3", { opacity: 0 }, 0);
+  tl.fromTo("#c01-hook-cap3", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 9.8);
+  tl.to("#c01-hook-cap3", { opacity: 0, duration: 0.28, ease: "none" }, 16.72);
+
+  tl.fromTo("#s01-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: "power3.out" }, 3.4);
+  tl.fromTo(".s1-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.2);
+  tl.fromTo(".s1-head", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.85, ease: "power3.out" }, 0.55);
+  tl.fromTo(".s1-sub", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 5.4);
+  tl.fromTo(".s1-call", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.85, ease: "power3.out" }, 9.8);
+  tl.fromTo(".s1-stat", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.18 }, 1.7);
+  tl.fromTo(".s1-top, .s1-band", { y: 24 }, { y: 0, duration: 18, ease: "power1.out" }, 0);
+
+        window.__timelines["01-hook"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

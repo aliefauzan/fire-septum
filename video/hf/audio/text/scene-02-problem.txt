@@ -1,0 +1,1 @@
+This is a Climate Data and Environmental Monitoring track build, and the problem is familiar: environmental data is fragmented and hard to verify. You cannot prove what a model said before the fire spread. And a model can always be tuned until the past looks good. So nobody knows which forecasts deserve trust.

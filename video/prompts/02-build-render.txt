@@ -1,0 +1,22 @@
+Build and render the video from the approved storyboard.
+
+Inputs (read them first):
+- video/BRIEF.md: the contract. Its facts and forbidden claims still apply.
+- video/STORYBOARD.md and video/SCRIPT.md: the approved plan. Follow scene order, durations, narration, assets, callouts and captions.
+- video/assets/: the screenshots, data.json and 07-ots-terminal.txt.
+
+HyperFrames references (read before writing HTML):
+- /Users/af/.claude/skills/hyperframes-core/SKILL.md: the composition contract (data-* timing attributes, class="clip", tracks, deterministic rendering).
+- /Users/af/.claude/skills/hyperframes-cli/SKILL.md: init, lint, check, render.
+- /Users/af/.claude/skills/hyperframes-animation/SKILL.md: only if you need motion rules.
+
+Steps:
+1. Scaffold the project in video/hf with `npx hyperframes@latest init video/hf --non-interactive --example=blank --resolution=landscape --skill=general-video`. Copy the assets you use into the project.
+2. Narration: for each scene, write its lines to a text file and run macOS `say -v Samantha -r 165 -o video/hf/audio/sceneNN.aiff -f <file>`. Convert each to WAV with `ffmpeg -y -i sceneNN.aiff sceneNN.wav`. Measure each length with `ffprobe`. If a scene's narration is longer than its storyboard duration, lengthen the scene. Total runtime must stay between 3:30 and 4:30.
+3. Write the composition HTML: one timed clip per scene, the narration audio placed on an audio track at each scene's start, burned-in captions matching the narration, and slow Ken Burns moves, callouts and highlights on the screenshots as the storyboard says. Build the hindcast chart and the terminal panel in HTML/CSS/SVG with the exact numbers from data.json and 07-ots-terminal.txt. Style: white and light grey, near-black text, one orange accent #E8590C, Inter or system sans-serif.
+4. Run `npx hyperframes lint`, then `npx hyperframes check`. Fix every error and repeat until both pass.
+5. Render with `npx hyperframes render --quality high --output video/out/sekatapi-demo.mp4` (create video/out first; run the command from inside video/hf if the CLI expects that, and adjust the output path).
+6. Check the result with ffprobe: duration between 210 and 270 seconds, 1920x1080, has an audio stream. Extract 4 frames (at 10%, 35%, 60% and 90%) with ffmpeg to video/out/frame-*.png and look at them. Fix anything broken (blank frames, overflowing text, unreadable captions) and re-render.
+7. Finish with a short report in video/out/REPORT.md: final duration, the scene list with timings, the commands you ran, and any deviation from the storyboard.
+
+Only write inside video/. Do not modify any file outside video/.

@@ -1,0 +1,12 @@
+$ node scripts/export-proofs.mjs
+ok  2026-10-20T16:38:43.516Z  -2.964, 112.151  sekatapi-278f58dc6960.receipt.json + .ots
+ok  2026-10-20T16:38:09.494Z  -3.335, 112.671  sekatapi-445e7ddd7292.receipt.json + .ots
+ok  2026-10-20T16:39:37.890Z  -3.400, 105.229  sekatapi-5ff72728fced.receipt.json + .ots
+ok  2026-10-20T16:40:11.756Z  -2.979, 105.162  sekatapi-8b3757efb8aa.receipt.json + .ots
+ok  2026-10-20T16:38:26.453Z  -3.832, 115.073  sekatapi-8f48c87dffb9.receipt.json + .ots
+ok  2026-10-20T16:39:54.798Z  -3.509, 105.287  sekatapi-fb2db4de00fe.receipt.json + .ots
+6 forecast(s) exported to proofs/
+
+$ ots verify proofs/sekatapi-278f58dc6960.receipt.json.ots
+Assuming target filename is 'proofs/sekatapi-278f58dc6960.receipt.json'
+Calendar https://alice.btc.calendar.opentimestamps.org: Timestamped by transaction fc6c351623a80b15c8559b9937688b7a0de5606e3520772bbfc3d38b4a8e838f; waiting for 6 confirmations

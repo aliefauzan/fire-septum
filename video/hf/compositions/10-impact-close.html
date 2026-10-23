@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="10-impact-close-template">
+      <style>
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F7F8FA;
+        color: #1A1A1A;
+        font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      .stage { position: absolute; inset: 0; }
+      .card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E0E3E6;
+        border-radius: 16px;
+      }
+      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .chip {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E8590C;
+        border-radius: 10px;
+        color: #1A1A1A;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.15;
+        padding: 9px 16px;
+        z-index: 20;
+      }
+      .shotwrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .shotimg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        display: block;
+      }
+      .ovl { position: absolute; left: 0; top: 0; overflow: visible; }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+
+
+      .s10-head { position: absolute; left: 140px; top: 104px; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; }
+      .s10-card { position: absolute; width: 830px; height: 150px; background: #ffffff; border: 1px solid #e0e3e6; border-radius: 14px; padding: 28px 32px; }
+      .s10-c1 { left: 140px; top: 218px; } .s10-c2 { left: 1010px; top: 218px; }
+      .s10-c3 { left: 140px; top: 398px; } .s10-c4 { left: 1010px; top: 398px; }
+      .s10-card .t { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; }
+      .s10-card .s { font-size: 22px; color: #6b7075; margin-top: 10px; }
+      .s10-l1 { position: absolute; left: 140px; top: 612px; font-size: 30px; font-weight: 500; }
+      .s10-l2 { position: absolute; left: 140px; top: 662px; font-size: 30px; font-weight: 500; }
+      .s10-lim { position: absolute; width: 830px; }
+      .s10-lim1 { left: 140px; top: 748px; } .s10-lim2 { left: 1010px; top: 748px; }
+      .s10-lim .b { position: absolute; left: 0; top: 0; width: 4px; height: 30px; background: #e8590c; }
+      .s10-lim .x { position: absolute; left: 26px; top: 0; font-size: 26px; line-height: 1.3; width: 780px; }
+      .s10-close { position: absolute; left: 0; right: 0; top: 664px; font-size: 24px; color: #6b7075; text-align: center; }
+      .s10-end { position: absolute; inset: 0; opacity: 0; text-align: center; }
+      .s10-logo { position: absolute; left: 928px; top: 300px; width: 64px; height: 64px; border-radius: 14px; }
+      .s10-title { position: absolute; left: 0; right: 0; top: 400px; font-size: 96px; font-weight: 700; letter-spacing: -0.03em; }
+      .s10-tag { position: absolute; left: 0; right: 0; top: 528px; font-size: 40px; font-weight: 500; color: #e8590c; }
+      .s10-rule { position: absolute; left: 840px; top: 628px; width: 240px; height: 3px; background: #e8590c; transform-origin: 50% 50%; }
+      .s10-foot { position: absolute; left: 0; right: 0; top: 712px; font-size: 26px; color: #6b7075; line-height: 1.55; }
+  
+      </style>
+      <div id="root" data-composition-id="10-impact-close" data-width="1920" data-height="1080" data-duration="28">
+        <div class="stage">
+
+          <div class="s10-head">Who it is for</div>
+          <div class="s10-card s10-c1"><div class="t">Disaster managers</div><div class="s">national and provincial response</div></div>
+          <div class="s10-card s10-c2"><div class="t">Manggala Agni commanders</div><div class="s">where and when to act</div></div>
+          <div class="s10-card s10-c3"><div class="t">Provincial governments</div><div class="s">deciding when to act</div></div>
+          <div class="s10-card s10-c4"><div class="t">Researchers and auditors</div><div class="s">comparing models; checking what was known</div></div>
+          <div class="s10-l1">It runs in a browser on free open data.</div>
+          <div class="s10-l2">Adding a region is a bounding box.</div>
+          <div class="s10-lim s10-lim1"><span class="b"></span><span class="x">The peat map is synthetic, so carbon numbers are illustrative.</span></div>
+          <div class="s10-lim s10-lim2"><span class="b"></span><span class="x">The model&rsquo;s edge over a distance-only forecast is small.</span></div>
+          <div class="s10-end" id="s10-end">
+            <img class="s10-logo" id="s10-logo" src="../assets/sekatapi-mark.png" alt="SekatApi" />
+            <div class="s10-title" id="s10-title">SekatApi</div>
+            <div class="s10-tag" id="s10-tag">Forecasts on the record.</div>
+            <div class="s10-rule" id="s10-rule"></div>
+            <div class="s10-close" id="s10-close">That is exactly why every forecast is now on the record.</div>
+            <div class="s10-foot" id="s10-foot">
+              Track &middot; Climate Data &amp; Environmental Monitoring<br />
+              IEEE ClimateChain Global Hackathon 2026<br />
+              [Team]<br />
+              [repo URL]
+            </div>
+          </div>
+          <div class="capwrap">
+          <span class="cap" id="c10-impact-close-cap1"><span class="pill">Who is it for? Disaster managers, Manggala Agni fire commanders,<br>provincial governments, researchers comparing fire models,</span></span>
+          <span class="cap" id="c10-impact-close-cap2"><span class="pill">and auditors checking what was known.<br>It runs in a browser on free open data; adding a region is a bounding box.</span></span>
+          <span class="cap" id="c10-impact-close-cap3"><span class="pill">Two honest limits: the peat map is synthetic, so carbon numbers are illustrative,<br>and the model's edge is small.</span></span>
+          <span class="cap" id="c10-impact-close-cap4"><span class="pill">That is why every forecast is now on the record.</span></span>
+          <span class="cap" id="c10-impact-close-cap5"><span class="pill">SekatApi &mdash; forecasts on the record.</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+  tl.set("#c10-impact-close-cap1", { opacity: 0 }, 0);
+  tl.fromTo("#c10-impact-close-cap1", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 0);
+  tl.to("#c10-impact-close-cap1", { opacity: 0, duration: 0.28, ease: "none" }, 6.92);
+  tl.set("#c10-impact-close-cap2", { opacity: 0 }, 0);
+  tl.fromTo("#c10-impact-close-cap2", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 7.2);
+  tl.to("#c10-impact-close-cap2", { opacity: 0, duration: 0.28, ease: "none" }, 11.32);
+  tl.set("#c10-impact-close-cap3", { opacity: 0 }, 0);
+  tl.fromTo("#c10-impact-close-cap3", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 11.6);
+  tl.to("#c10-impact-close-cap3", { opacity: 0, duration: 0.28, ease: "none" }, 18.72);
+  tl.set("#c10-impact-close-cap4", { opacity: 0 }, 0);
+  tl.fromTo("#c10-impact-close-cap4", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 19);
+  tl.to("#c10-impact-close-cap4", { opacity: 0, duration: 0.28, ease: "none" }, 22.72);
+  tl.set("#c10-impact-close-cap5", { opacity: 0 }, 0);
+  tl.fromTo("#c10-impact-close-cap5", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 23);
+  tl.to("#c10-impact-close-cap5", { opacity: 0, duration: 0.28, ease: "none" }, 27.7);
+
+  tl.fromTo(".s10-head", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 0.2);
+  tl.fromTo(".s10-card", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.25 }, 0.8);
+  tl.fromTo(".s10-l1, .s10-l2", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.2 }, 7.6);
+  tl.fromTo(".s10-lim", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.25 }, 11.8);
+  tl.to(".s10-head, .s10-card, .s10-l1, .s10-l2, .s10-lim", { opacity: 0, duration: 0.45, ease: "none" }, 15.8);
+  tl.fromTo("#s10-end", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 16.0);
+  tl.fromTo("#s10-logo", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 16.3);
+  tl.fromTo("#s10-title", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 16.6);
+  tl.fromTo("#s10-tag", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 17.8);
+  tl.fromTo("#s10-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.8, ease: "power3.out" }, 18.8);
+  tl.fromTo("#s10-close", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 19.0);
+  tl.fromTo("#s10-foot", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 19.7);
+
+        window.__timelines["10-impact-close"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

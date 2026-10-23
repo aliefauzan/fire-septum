@@ -1,0 +1,485 @@
+[0m
+> build · minimax-m3.1-flash-free
+[0m
+[0m← [0mWrite video/SCRIPT.md
+Wrote file successfully.
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && python3 - <<'PY'
+import re
+txt=open('SCRIPT.md').read()
+blocks=re.findall(r'## Line (\d+) — (.+?)\n\n\*\*Time:\*\* (\S+) – (\S+)\n\*\*Delivery:\*\* (.*?)\n\n    (.*?)\n\n', txt, re.S)
+def sec(t):
+    m,s=t.split(':'); return int(m)*60+int(s)
+tot_w=0; tot_s=0
+for n,label,t0,t1,deliv,spoken in blocks:
+    w=len(spoken.split())
+    d=sec(t1)-sec(t0)
+    tot_w+=w; tot_s+=d
+    print(f"Line {n:>2} {label[:34]:<36} {t0}-{t1} {d:>3}s {w:>3}w  {w/d*60:5.1f} wpm")
+print(f"TOTAL {tot_s}s ({tot_s//60}:{tot_s%60:02d})  {tot_w} words  {tot_w/tot_s*60:.1f} wpm")
+PY
+Line  1 Hook (Frame 1)                       0:00-0:18  18s  49w  163.3 wpm
+Line  2 The problem (Frame 2)                0:18-0:37  19s  53w  167.4 wpm
+Line  3 What it does (Frame 3)               0:37-1:02  25s  69w  165.6 wpm
+Line  4 The recorded fire (Frame 4)          1:02-1:28  26s  73w  168.5 wpm
+Line  5 Honest validation (Frame 5)          1:28-2:00  32s  91w  170.6 wpm
+Line  6 The register rule (Frame 6)          2:00-2:19  19s  46w  145.3 wpm
+Line  7 The seal (Frame 7)                   2:19-2:48  29s  81w  167.6 wpm
+Line  8 Why Bitcoin (Frame 8)                2:48-3:09  21s  58w  165.7 wpm
+Line  9 Decision support (Frame 9)           3:09-3:36  27s  75w  166.7 wpm
+TOTAL 216s (3:36)  595 words  165.3 wpm
+[0m
+Adjusting scene times slightly for even narration pace, then writing the storyboard.
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && python3 - <<'PY'
+import re
+p='SCRIPT.md'; t=open(p).read()
+subs=[("0:00 – 0:18","0:00 – 0:18"),("0:18 – 0:37","0:18 – 0:37"),("0:37 – 1:02","0:37 – 1:02"),
+      ("1:02 – 1:28","1:02 – 1:29"),("1:28 – 2:00","1:29 – 2:02"),("2:00 – 2:19","2:02 – 2:20"),
+      ("2:19 – 2:48","2:20 – 2:49"),("2:48 – 3:09","2:49 – 3:10"),("3:09 – 3:36","3:10 – 3:37"),
+      ("3:36 – 4:04","3:37 – 4:05")]
+for a,b in subs:
+    assert a in t, a
+    t=t.replace(a,b)
+t=t.replace("Total: 670 spoken words · 244 s (4:04) · ≈ 165 wpm.","Total: 673 spoken words · 245 s (4:05) · ≈ 165 wpm.")
+open(p,'w').write(t)
+print("ok")
+PY
+python3 - <<'PY'
+import re
+txt=open('/Users/af/dumpProject/IEEE-ClimateChain/video/SCRIPT.md').read()
+blocks=re.findall(r'## Line (\d+) — (.+?)\n\n\*\*Time:\*\* (\S+) – (\S+)\n\*\*Delivery:\*\* (.*?)\n\n    (.*?)(?:\n\n|\Z)', txt, re.S)
+def sec(t):
+    m,s=t.split(':'); return int(m)*60+int(s)
+tw=0; ts=0
+for n,label,t0,t1,deliv,spoken in blocks:
+    w=len(spoken.split()); d=sec(t1)-sec(t0); tw+=w; ts+=d
+    print(f"Line {n:>2}  {t0}-{t1}  {d:>3}s  {w:>3}w  {w/d*60:5.1f} wpm")
+print(f"TOTAL {ts}s ({ts//60}:{ts%60:02d})  {tw} words  {tw/ts*60:.1f} wpm")
+PY
+ok
+Line  1  0:00-0:18   18s   49w  163.3 wpm
+Line  2  0:18-0:37   19s   53w  167.4 wpm
+Line  3  0:37-1:02   25s   69w  165.6 wpm
+Line  4  1:02-1:29   27s   73w  162.2 wpm
+Line  5  1:29-2:02   33s   91w  165.5 wpm
+Line  6  2:02-2:20   18s   46w  153.3 wpm
+Line  7  2:20-2:49   29s   81w  167.6 wpm
+Line  8  2:49-3:10   21s   58w  165.7 wpm
+Line  9  3:10-3:37   27s   75w  166.7 wpm
+Line 10  3:37-4:05   28s   78w  167.1 wpm
+TOTAL 245s (4:05)  673 words  164.8 wpm
+[0m
+[0m← [0mWrite video/STORYBOARD.md
+Wrote file successfully.
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && python3 - <<'PY'
+import re
+sb=open('STORYBOARD.md').read()
+frames=re.findall(r'## Frame (\d+) — (.+?)\n\n(.*?)(?=\n## |\Z)', sb, re.S)
+tot=0
+for n,title,body in frames:
+    st=float(re.search(r'- start: ([\d.]+)s', body).group(1))
+    du=float(re.search(r'- duration: (\d+)s', body).group(1))
+    vo=re.search(r'- voiceover: "(.*?)"\n', body, re.S).group(1)
+    w=len(vo.split())
+    print(f"Frame {n:>2} {title[:38]:<40} start {st:6.1f}  dur {du:5.1f}  end {st+du:6.1f}  {w:>3}w  {w/du*60:5.1f} wpm")
+    tot+=du
+print(f"FRAMES {len(frames)}  TOTAL {tot:.0f}s = {int(tot)//60}:{int(tot)%60:02d}   (target 3:30-4:15 = 210-255s)")
+# script cross-check
+sc=open('SCRIPT.md').read()
+lines=re.findall(r'## Line (\d+) — .*?\*\*Time:\*\* (\S+) – (\S+).*?\n\n    (.*?)(?:\n\n|\Z)', sc, re.S)
+def sec(t):
+    m,s=t.split(':'); return int(m)*60+int(s)
+print()
+for n,label,t0,t1,spoken in lines:
+    st=float(re.search(r'- start: ([\d.]+)s', dict(frames)[n] if False else [b for a,b in frames if a==n][0]).group(1))
+    m=sec(t0); ok = abs(m-st)<0.51
+    print(f"Line {n:>2} script {t0}-{t1} ({sec(t1)-sec(t0)}s) vs storyboard start {st}  {'OK' if ok else 'MISMATCH'}")
+PY
+Frame  1 Hook: nobody keeps score                 start    0.0  dur  18.0  end   18.0   49w  163.3 wpm
+Frame  2 The problem: fragmented and unverifiab   start   18.0  dur  19.0  end   37.0   53w  167.4 wpm
+Frame  3 What it does: one forecast from live o   start   37.0  dur  25.0  end   62.0   69w  165.6 wpm
+Frame  4 The recorded fire, and live fires        start   62.0  dur  27.0  end   89.0   73w  162.2 wpm
+Frame  5 Honest validation: the hindcast          start   89.0  dur  33.0  end  122.0   91w  165.5 wpm
+Frame  6 The register rule                        start  122.0  dur  18.0  end  140.0   46w  153.3 wpm
+Frame  7 The seal: hash, signature, Bitcoin       start  140.0  dur  29.0  end  169.0   81w  167.6 wpm
+Frame  8 Why Bitcoin: a public clock              start  169.0  dur  21.0  end  190.0   58w  165.7 wpm
+Frame  9 Decision support: comparing plans        start  190.0  dur  27.0  end  217.0   75w  166.7 wpm
+Frame 10 Impact, honest limits, close             start  217.0  dur  28.0  end  245.0   78w  167.1 wpm
+FRAMES 10  TOTAL 245s = 4:05   (target 3:30-4:15 = 210-255s)
+
+Traceback (most recent call last):
+  File "<stdin>", line 19, in <module>
+ValueError: not enough values to unpack (expected 5, got 4)
+[0m
+Two narration details ("steer crews and aircraft", "request aircraft") aren't traceable to BRIEF.md, so I'll tighten them and re-time the whole film to keep the fact-check airtight.
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && python3 - <<'PY'
+p='SCRIPT.md'; t=open(p).read()
+def rep(a,b):
+    global t
+    assert a in t, "MISS: "+a[:70]
+    t=t.replace(a,b,1)
+
+rep("Every dry season, fire commanders act on forecasts that steer crews and aircraft. Nobody keeps score of those forecasts.",
+    "Every dry season, fire commanders act on those forecasts, and nobody keeps score of them.")
+rep("provincial governments deciding when to request aircraft, researchers comparing fire models",
+    "provincial governments, researchers comparing fire models")
+for a,b in [("0:00 – 0:18","0:00 – 0:17"),("0:18 – 0:37","0:17 – 0:36"),("0:37 – 1:02","0:36 – 1:01"),
+            ("1:02 – 1:29","1:01 – 1:28"),("1:29 – 2:02","1:28 – 2:01"),("2:02 – 2:20","2:01 – 2:19"),
+            ("2:20 – 2:49","2:19 – 2:48"),("2:49 – 3:10","2:48 – 3:09"),("3:10 – 3:37","3:09 – 3:36"),
+            ("3:36 – 4:05","3:36 – 4:04")]:
+    rep(a,b)
+rep("Total: 673 spoken words · 245 s (4:05) · ≈ 165 wpm.","Total: 664 spoken words · 244 s (4:04) · ≈ 163 wpm.")
+open(p,'w').write(t); print("SCRIPT.md ok")
+PY
+Traceback (most recent call last):
+  File "<stdin>", line 15, in <module>
+  File "<stdin>", line 4, in rep
+AssertionError: MISS: 3:36 – 4:05
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && python3 - <<'PY'
+p='SCRIPT.md'; t=open(p).read()
+def rep(a,b):
+    global t
+    assert a in t, "MISS: "+a[:70]
+    t=t.replace(a,b,1)
+
+rep("Every dry season, fire commanders act on forecasts that steer crews and aircraft. Nobody keeps score of those forecasts.",
+    "Every dry season, fire commanders act on those forecasts, and nobody keeps score of them.")
+rep("provincial governments deciding when to request aircraft, researchers comparing fire models",
+    "provincial governments, researchers comparing fire models")
+for a,b in [("0:00 – 0:18","0:00 – 0:17"),("0:18 – 0:37","0:17 – 0:36"),("0:37 – 1:02","0:36 – 1:01"),
+            ("1:02 – 1:29","1:01 – 1:28"),("1:29 – 2:02","1:28 – 2:01"),("2:02 – 2:20","2:01 – 2:19"),
+            ("2:20 – 2:49","2:19 – 2:48"),("2:49 – 3:10","2:48 – 3:09"),("3:10 – 3:37","3:09 – 3:36"),
+            ("3:37 – 4:05","3:36 – 4:04")]:
+    rep(a,b)
+rep("Total: 673 spoken words · 245 s (4:05) · ≈ 165 wpm.","Total: 664 spoken words · 244 s (4:04) · ≈ 163 wpm.")
+open(p,'w').write(t); print("SCRIPT.md ok")
+PY
+python3 - <<'PY'
+import re
+txt=open('/Users/af/dumpProject/IEEE-ClimateChain/video/SCRIPT.md').read()
+blocks=re.findall(r'## Line (\d+) — .*?\*\*Time:\*\* (\S+) – (\S+).*?\n\n    (.*?)(?:\n\n|\Z)', txt, re.S)
+def sec(t):
+    m,s=t.split(':'); return int(m)*60+int(s)
+tw=0; ts=0
+for n,t0,t1,spoken in blocks:
+    w=len(spoken.split()); d=sec(t1)-sec(t0); tw+=w; ts+=d
+    print(f"Line {n:>2}  {t0}-{t1}  {d:>3}s  {w:>3}w  {w/d*60:5.1f} wpm")
+print(f"TOTAL {ts}s ({ts//60}:{ts%60:02d})  {tw} words  {tw/ts*60:.1f} wpm")
+PY
+SCRIPT.md ok
+Line  1  0:00-0:17   17s   45w  158.8 wpm
+Line  2  0:17-0:36   19s   53w  167.4 wpm
+Line  3  0:36-1:01   25s   69w  165.6 wpm
+Line  4  1:01-1:28   27s   73w  162.2 wpm
+Line  5  1:28-2:01   33s   91w  165.5 wpm
+Line  6  2:01-2:19   18s   46w  153.3 wpm
+Line  7  2:19-2:48   29s   81w  167.6 wpm
+Line  8  2:48-3:09   21s   58w  165.7 wpm
+Line  9  3:09-3:36   27s   75w  166.7 wpm
+Line 10  3:36-4:04   28s   73w  156.4 wpm
+TOTAL 244s (4:04)  664 words  163.3 wpm
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && python3 - <<'PY'
+p='STORYBOARD.md'; t=open(p).read()
+def rep(a,b):
+    global t
+    assert a in t, "MISS: "+repr(a[:80])
+    t=t.replace(a,b,1)
+
+# ---- frontmatter / header ----
+rep("duration: 245s","duration: 244s")
+rep("**Runtime:** 245 s (4:05)","**Runtime:** 244 s (4:04)")
+rep("**Durations:** 18 + 19 + 25 + 27 + 33 + 18 + 29 + 21 + 27 + 28 = **245 s**.",
+    "**Durations:** 17 + 19 + 25 + 27 + 33 + 18 + 29 + 21 + 27 + 28 = **244 s**.")
+rep("673 words at ≈165 wpm","664 words at ≈163 wpm")
+
+# ---- Frame 1 ----
+rep("- duration: 18s\n- start: 0.0s","- duration: 17s\n- start: 0.0s")
+rep('- voiceover: "In 2015, Indonesia\'s peat fires released more carbon dioxide per day than the entire United States economy. That is a World Resources Institute analysis of the Global Fire Emissions Database. Every dry season, fire commanders act on forecasts that steer crews and aircraft. Nobody keeps score of those forecasts."',
+    '- voiceover: "In 2015, Indonesia\'s peat fires released more carbon dioxide per day than the entire United States economy. That is a World Resources Institute analysis of the Global Fire Emissions Database. Every dry season, fire commanders act on those forecasts, and nobody keeps score of them."')
+rep("> In 2015, Indonesia's peat fires released more carbon dioxide per day than the entire United States economy. That is a World Resources Institute analysis of the Global Fire Emissions Database. Every dry season, fire commanders act on forecasts that steer crews and aircraft. Nobody keeps score of those forecasts.",
+    "> In 2015, Indonesia's peat fires released more carbon dioxide per day than the entire United States economy. That is a World Resources Institute analysis of the Global Fire Emissions Database. Every dry season, fire commanders act on those forecasts, and nobody keeps score of them.")
+rep("  - 0.0–5.6 s — `In 2015, Indonesia's peat fires released more carbon dioxide per day` / `than the entire United States economy.`\n  - 5.6–10.2 s — `A World Resources Institute analysis of the Global Fire Emissions Database.`\n  - 10.2–18.0 s — `Every dry season, fire commanders act on forecasts that steer crews and aircraft.` / `Nobody keeps score of those forecasts.`",
+    "  - 0.0–5.4 s — `In 2015, Indonesia's peat fires released more carbon dioxide per day` / `than the entire United States economy.`\n  - 5.4–9.8 s — `A World Resources Institute analysis of the Global Fire Emissions Database.`\n  - 9.8–17.0 s — `Every dry season, fire commanders act on those forecasts,` / `and nobody keeps score of them.`")
+rep("**Transition to next frame:** hard `cut` at 18.0 s (no overlap)","**Transition to next frame:** hard `cut` at 17.0 s (no overlap)")
+rep("  - `2015` / `the year`","  - `2015` / `the year of the peak emissions")
+
+# ---- Frame 2 ----
+rep("- duration: 19s\n- start: 18.0s","- duration: 19s\n- start: 17.0s")
+rep("**Transition to next frame:** `crossfade` 0.5 s, 37.0 s → 37.5 s (Frame 3 fades in over the last 0.5 s of Frame 2).",
+    "**Transition to next frame:** `crossfade` 0.5 s, 36.0 s → 36.5 s (Frame 3 fades in over the last 0.5 s of Frame 2).")
+
+# ---- Frame 3 ----
+rep("- duration: 25s\n- start: 37.0s","- duration: 25s\n- start: 36.0s")
+rep("**Transition to next frame:** `crossfade` 0.5 s at 62.0–62.5 s.","**Transition to next frame:** `crossfade` 0.5 s at 61.0–61.5 s.")
+
+# ---- Frame 4 ----
+rep("- duration: 27s\n- start: 62.0s","- duration: 27s\n- start: 61.0s")
+rep("**Beat A — 62.0 s to 76.0 s (14 s): `video/assets/01-recorded-fire.png`**","**Beat A — 61.0 s to 75.0 s (14 s): `video/assets/01-recorded-fire.png`**")
+rep("**Beat B — 76.0 s to 89.0 s (13 s): `video/assets/02-live-fires.png` (520×720)**","**Beat B — 75.0 s to 88.0 s (13 s): `video/assets/02-live-fires.png` (520×720)**")
+rep("counts up 0 → **2,452** over 1.2 s from t = 76.6 s.","counts up 0 → **2,452** over 1.2 s from t = 75.6 s.")
+rep("**Transition to next frame:** `cut` at 89.0 s into Frame 5.","**Transition to next frame:** `cut` at 88.0 s into Frame 5.")
+
+# ---- Frame 5 ----
+rep("- duration: 33s\n- start: 89.0s","- duration: 33s\n- start: 88.0s")
+rep("**Transition to next frame:** `crossfade` 0.4 s at 122.0–122.4 s.","**Transition to next frame:** `crossfade` 0.4 s at 121.0–121.4 s.")
+
+# ---- Frame 6 ----
+rep("- duration: 18s\n- start: 122.0s","- duration: 18s\n- start: 121.0s")
+rep("**Transition to next frame:** `cut` at 140.0 s into Frame 7.","**Transition to next frame:** `cut` at 139.0 s into Frame 7.")
+
+# ---- Frame 7 ----
+rep("- duration: 29s\n- start: 140.0s","- duration: 29s\n- start: 139.0s")
+rep("**Beat A — 140.0 s to 154.0 s (14 s): the three sealing steps**","**Beat A — 139.0 s to 153.0 s (14 s): the three sealing steps**")
+rep("**Beat B — 154.0 s to 169.0 s (15 s): the terminal**","**Beat B — 153.0 s to 168.0 s (15 s): the terminal**")
+rep("**Transition to next frame:** `crossfade` 0.4 s at 169.0–169.4 s.","**Transition to next frame:** `crossfade` 0.4 s at 168.0–168.4 s.")
+
+# ---- Frame 8 ----
+rep("- duration: 21s\n- start: 169.0s","- duration: 21s\n- start: 168.0s")
+rep("""    - `One hash per forecast`
+    - `No token, no wallet, no fee`
+    - `One hash per forecast, verified by anyone with the public ots client`
+    → corrected final bullet: `Verified by anyone with the public ots client`""",
+    """    - `One hash per forecast`
+    - `No token, no wallet, no fee`
+    - `Verified by anyone with the public ots client`""")
+rep("**Transition to next frame:** `crossfade` 0.4 s at 190.0–190.4 s.","**Transition to next frame:** `crossfade` 0.4 s at 189.0–189.4 s.")
+
+# ---- Frame 9 ----
+rep("- duration: 27s\n- start: 190.0s","- duration: 27s\n- start: 189.0s")
+rep("**Beat A — 190.0 s to 202.0 s (12 s): `video/assets/04-plan-before-after.png`**","**Beat A — 189.0 s to 201.0 s (12 s): `video/assets/04-plan-before-after.png`**")
+rep("**Beat B — 202.0 s to 213.0 s (11 s): the same asset, panned to the plan panel**","**Beat B — 201.0 s to 212.0 s (11 s): the same asset, panned to the plan panel**")
+rep("**Beat C — 213.0 s to 217.0 s (4 s): `video/assets/06-3d-terrain.png`**","**Beat C — 212.0 s to 216.0 s (4 s): `video/assets/06-3d-terrain.png`**")
+rep("**Transition to next frame:** `crossfade` 0.5 s at 217.0–217.5 s.","**Transition to next frame:** `crossfade` 0.5 s at 216.0–216.5 s.")
+
+# ---- Frame 10 ----
+rep("- duration: 28s\n- start: 217.0s","- duration: 28s\n- start: 216.0s")
+rep('- voiceover: "Who is it for? Disaster managers, Manggala Agni fire commanders, provincial governments deciding when to request aircraft, researchers comparing fire models, and auditors checking what was known. It runs in a browser on free open data; adding a region is a bounding box. Two honest limits: the peat map is synthetic, so carbon numbers are illustrative, and the model\'s edge is small. That is why every forecast is now on the record. SekatApi — forecasts on the record."',
+    '- voiceover: "Who is it for? Disaster managers, Manggala Agni fire commanders, provincial governments, researchers comparing fire models, and auditors checking what was known. It runs in a browser on free open data; adding a region is a bounding box. Two honest limits: the peat map is synthetic, so carbon numbers are illustrative, and the model\'s edge is small. That is why every forecast is now on the record. SekatApi — forecasts on the record."')
+rep("> Who is it for? Disaster managers, Manggala Agni fire commanders, provincial governments deciding when to request aircraft, researchers comparing fire models, and auditors checking what was known.",
+    "> Who is it for? Disaster managers, Manggala Agni fire commanders, provincial governments, researchers comparing fire models, and auditors checking what was known.")
+rep("**Beat A — 217.0 s to 233.0 s (16 s): who it is for**","**Beat A — 216.0 s to 232.0 s (16 s): who it is for**")
+rep("**Beat B — 233.0 s to 245.0 s (12 s): end card**","**Beat B — 232.0 s to 244.0 s (12 s): end card**")
+rep("end of video at 245.0 s.","end of video at 244.0 s.")
+rep("  - 0.0–7.2 s — `Who is it for? Disaster managers, Manggala Agni fire commanders,` / `provincial governments deciding when to request aircraft,`\n  - 7.2–11.6 s — `researchers comparing fire models, and auditors checking what was known.` / `It runs in a browser on free open data; adding a region is a bounding box.`",
+    "  - 0.0–7.2 s — `Who is it for? Disaster managers, Manggala Agni fire commanders,` / `provincial governments, researchers comparing fire models,`\n  - 7.2–11.6 s — `and auditors checking what was known.` / `It runs in a browser on free open data; adding a region is a bounding box.`")
+rep("  - `Provincial governments` / `when to request aircraft`","  - `Provincial governments` / `deciding when to act`")
+
+# ---- Fact check table ----
+rep('| 3 | "Every dry season, fire commanders act on forecasts that steer crews and aircraft" | 1 | BRIEF.md line 25 ("commanders act on forecasts"); steering crews and aircraft from BRIEF.md line 38 area / the app\'s stated purpose — **restatement**, no number |',
+    '| 3 | "Every dry season, fire commanders act on those forecasts" | 1 | BRIEF.md line 25 ("Every dry season, commanders act on forecasts") |')
+rep('| 4 | "Nobody keeps score of those forecasts" | 1 | BRIEF.md line 25 ("nobody keeps score of them") |',
+    '| 4 | "and nobody keeps score of them" | 1 | BRIEF.md line 25 ("nobody keeps score of them") |')
+rep('| 56 | Users: disaster managers, Manggala Agni commanders, provincial governments, researchers comparing fire models, auditors and carbon-project verifiers | 10 | BRIEF.md line 32 |',
+    '| 56 | Users: disaster managers (BPBD), Manggala Agni commanders, provincial governments, researchers comparing fire models, auditors and carbon-project verifiers | 10 | BRIEF.md line 32 |')
+rep("""- Any claim of safety, guarantees, agency deployment, partnerships, or real users (BRIEF.md line 45).""",
+    """- "Requesting aircraft" as a specific provincial-government action — not stated in BRIEF.md, so the users are named from BRIEF.md line 32 without added detail.
+- Any claim of safety, guarantees, agency deployment, partnerships, or real users (BRIEF.md line 45).""")
+open(p,'w').write(t); print("STORYBOARD.md ok")
+PY
+STORYBOARD.md ok
+[0m
+Now syncing the storyboard to the new timings and narration.
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && python3 - <<'PY'
+import re
+sb=open('STORYBOARD.md').read()
+frames=re.findall(r'## Frame (\d+) — (.+?)\n\n(.*?)(?=\n## |\Z)', sb, re.S)
+sc=open('SCRIPT.md').read()
+lines=re.findall(r'## Line (\d+) — .*?\*\*Time:\*\* (\S+) – (\S+).*?\n\n    (.*?)(?:\n\n|\Z)', sc, re.S)
+def sec(t):
+    m,s=t.split(':'); return int(m)*60+int(s)
+line_by={n:(t0,t1,spoken) for n,t0,t1,spoken in lines}
+tot=0; ok=True
+for n,title,body in frames:
+    st=float(re.search(r'- start: ([\d.]+)s',body).group(1))
+    du=float(re.search(r'- duration: (\d+)s',body).group(1))
+    vo=re.search(r'- voiceover: "(.*?)"\n',body,re.S).group(1)
+    t0,t1,spoken=line_by[n]
+    m1 = abs(sec(t0)-st)<0.51
+    m2 = abs(sec(t1)-(st+du))<0.51
+    m3 = vo.strip()==spoken.strip()
+    m4 = spoken.strip() in body
+    if not(m1 and m2 and m3 and m4): ok=False
+    print(f"Frame {n:>2} {st:6.1f}+{du:4.1f} -> {st+du:6.1f} | time {'OK' if m1 and m2 else 'BAD'} | vo{'==' if m3 else '!='}script | quoted {'OK' if m4 else 'MISSING'}")
+    tot+=du
+print(f"\nTOTAL {tot:.0f}s = {int(tot)//60}:{int(tot)%60:02d}  (must be 210-255)   consistency: {'ALL OK' if ok else 'PROBLEMS'}")
+# caption windows inside each frame
+for n,title,body in frames:
+    du=float(re.search(r'- duration: (\d+)s',body).group(1))
+    wins=[float(x) for x in re.findall(r'^\s+- (\d+\.\d+)[–-](\d+\.\d+) s', body, re.M) for x in x]
+    cap=re.findall(r'^\s+- (\d+\.\d+)–(\d+\.\d+) s',body,re.M)
+    bad=[c for c in cap if float(c[0])<0 or float(c[1])>du+0.01]
+    print(f"Frame {n:>2} caption windows {len(cap)}  out-of-range: {bad if bad else 'none'}")
+PY
+Frame  1    0.0+17.0 ->   17.0 | time OK | vo==script | quoted OK
+Frame  2   17.0+19.0 ->   36.0 | time OK | vo==script | quoted OK
+Frame  3   36.0+25.0 ->   61.0 | time OK | vo==script | quoted OK
+Frame  4   61.0+27.0 ->   88.0 | time OK | vo==script | quoted OK
+Frame  5   88.0+33.0 ->  121.0 | time OK | vo==script | quoted OK
+Frame  6  121.0+18.0 ->  139.0 | time OK | vo==script | quoted OK
+Frame  7  139.0+29.0 ->  168.0 | time OK | vo==script | quoted OK
+Frame  8  168.0+21.0 ->  189.0 | time OK | vo==script | quoted OK
+Frame  9  189.0+27.0 ->  216.0 | time OK | vo==script | quoted OK
+Frame 10  216.0+28.0 ->  244.0 | time OK | vo==script | quoted OK
+
+TOTAL 244s = 4:04  (must be 210-255)   consistency: ALL OK
+Frame  1 caption windows 3  out-of-range: none
+Frame  2 caption windows 3  out-of-range: none
+Frame  3 caption windows 4  out-of-range: none
+Frame  4 caption windows 4  out-of-range: none
+Frame  5 caption windows 5  out-of-range: none
+Frame  6 caption windows 3  out-of-range: none
+Frame  7 caption windows 5  out-of-range: none
+Frame  8 caption windows 3  out-of-range: none
+Frame  9 caption windows 4  out-of-range: none
+Frame 10 caption windows 5  out-of-range: none
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && echo "=== forbidden-term scan ===" && rg -in "avoided emission|carbon credit|offset|\bAI predict|guarantee|deployed with|partnership|users have used" SCRIPT.md STORYBOARD.md | rg -v "not used anywhere|Forbidden|BRIEF.md line 48|BRIEF.md line 45|BRIEF.md line 47|not a carbon credit|not \"avoided|Do not|never stated" ; echo "--- (empty above = clean) ---" && echo && echo "=== files changed ===" && ls -la SCRIPT.md STORYBOARD.md && echo && echo "=== git-ish check: other files untouched ===" && ls -la BRIEF.md assets prompts
+=== forbidden-term scan ===
+STORYBOARD.md:183:- **Callout 1** (drawn at t = +3.0 s): a 2 px `#E8590C` rounded rectangle (radius 10) around the score block **source rect (1300, 78)–(1676, 226)**, drawn on with a 0.5 s `strokeDashoffset` reveal. A leader line 2 px `#E8590C` runs from (1488, 232) down-left to (1320, 300) ending in a 8 px dot.
+--- (empty above = clean) ---
+
+=== files changed ===
+-rw-r--r--@ 1 af  staff   6539 Oct 21 01:11 SCRIPT.md
+-rw-r--r--@ 1 af  staff  50133 Oct 21 01:11 STORYBOARD.md
+
+=== git-ish check: other files untouched ===
+-rw-r--r--@ 1 af  staff  6985 Oct 21 00:51 BRIEF.md
+
+assets:
+total 4624
+drwxr-xr-x@ 12 af  staff     384 Oct 21 00:50 .
+drwxr-xr-x@  7 af  staff     224 Oct 21 01:10 ..
+-rw-r--r--@  1 af  staff  634891 Oct 21 00:48 01-recorded-fire.png
+-rw-r--r--@  1 af  staff   55461 Oct 21 00:50 02-live-fires.png
+-rw-r--r--@  1 af  staff  656465 Oct 21 00:49 03-forecast-register.png
+-rw-r--r--@  1 af  staff   74173 Oct 21 00:49 03b-register-sheet.png
+-rw-r--r--@  1 af  staff  293478 Oct 21 00:49 04-plan-before-after.png
+-rw-r--r--@  1 af  staff  303322 Oct 21 00:50 05-record-sealed.png
+-rw-r--r--@  1 af  staff   67436 Oct 21 00:50 05b-record-checks.png
+-rw-r--r--@  1 af  staff  250963 Oct 21 00:50 06-3d-terrain.png
+-rw-r--r--@  1 af  staff     910 Oct 21 00:50 07-ots-terminal.txt
+-rw-r--r--@  1 af  staff    2082 Oct 21 00:50 data.json
+
+prompts:
+total 112
+drwxr-xr-x@ 6 af  staff    192 Oct 21 01:07 .
+drwxr-xr-x@ 7 af  staff    224 Oct 21 01:10 ..
+-rw-r--r--@ 1 af  staff  22079 Oct 21 00:57 01-storyboard.log
+-rw-r--r--@ 1 af  staff   1652 Oct 21 00:51 01-storyboard.txt
+-rw-r--r--@ 1 af  staff  22803 Oct 21 01:11 01b-storyboard.log
+-rw-r--r--@ 1 af  staff   2644 Oct 21 00:54 02-build-render.txt
+[0m
+[0m$ [0mcd /Users/af/dumpProject/IEEE-ClimateChain/video && rg -n "^#{1,3} |^- (status|src|duration|start|transition_in|scene|voiceover|poster|audio):" STORYBOARD.md | head -100
+10:# Storyboard — SekatApi demo (IEEE ClimateChain Global Hackathon 2026)
+17:## Global style
+34:## Frame 1 — Hook: nobody keeps score
+36:- status: outline
+37:- src: compositions/01-hook.html
+38:- duration: 17s
+39:- start: 0.0s
+40:- transition_in: cut
+41:- scene: Typeset cold open. A single statistic fills the frame, then a thin accent rule draws under it.
+42:- voiceover: "In 2015, Indonesia's peat fires released more carbon dioxide per day than the entire United States economy. That is a World Resources Institute analysis of the Global Fire Emissions Database. Every dry season, fire commanders act on those forecasts, and nobody keeps score of them."
+43:- poster: 6s
+44:- audio: audio/scene-01-hook.aiff
+74:## Frame 2 — The problem: fragmented and unverifiable
+76:- status: outline
+77:- src: compositions/02-problem.html
+78:- duration: 19s
+79:- start: 17.0s
+80:- transition_in: crossfade
+81:- scene: Same canvas as Frame 1. A headline, three chips, and a diagram whose last link is dashed and empty.
+82:- voiceover: "This is a Climate Data and Environmental Monitoring track build, and the problem is familiar: environmental data is fragmented and hard to verify. You cannot prove what a model said before the fire spread. And a model can always be tuned until the past looks good. So nobody knows which forecasts deserve trust."
+83:- poster: 8s
+84:- audio: audio/scene-02-problem.aiff
+113:## Frame 3 — What it does: one forecast from live open data
+115:- status: outline
+116:- src: compositions/03-what-it-does.html
+117:- duration: 25s
+118:- start: 36.0s
+119:- transition_in: crossfade
+120:- scene: Four live data sources feed one grid. A drawn arrow carries the eye to an 8×8 cell grid where a few cells catch fire.
+121:- voiceover: "SekatApi joins live open data into one fire-spread forecast. NASA FIRMS satellite hotspots for where fire is now. Open-Meteo for wind, humidity and rain. AWS terrain for slope. OpenStreetMap for rivers and roads. It runs on a six point four by six point four kilometre grid at one hundred metre cells, forty simulated runs, twenty four to forty eight hours ahead. You see the uncertainty, not one confident line."
+122:- poster: 12s
+123:- audio: audio/scene-03-what-it-does.aiff
+160:## Frame 4 — The recorded fire, and live fires
+162:- status: outline
+163:- src: compositions/04-recorded-fire.html
+164:- duration: 27s
+165:- start: 61.0s
+166:- transition_in: crossfade
+167:- scene: Real app screenshot with a slow push; an accent outline lands on the score card. Then a cut to the live-fires sheet beside a big count.
+168:- voiceover: "Here is a real West Kalimantan fire, frozen at the last satellite pass on the eighteenth of October, twenty twenty six. The next day the satellites found eighteen new fire spots. The forecast caught twelve: a critical success index of point four one, against point one seven for a distance-only baseline. The white rings are what the satellites saw. Live, Kalimantan shows two thousand four hundred fifty two detections in the last day."
+169:- poster: 10s
+170:- audio: audio/scene-04-recorded-fire.aiff
+209:## Frame 5 — Honest validation: the hindcast
+211:- status: outline
+212:- src: compositions/05-hindcast.html
+213:- duration: 33s
+214:- start: 88.0s
+215:- transition_in: cut
+216:- scene: Two honest bar charts side by side, then a third strip that shows the first model over-forecasting six times too much.
+217:- voiceover: "Now the honest part. We hindcast twelve real fires, eight to eighteen October. The first model spread about six times too much fire: a score of point one seven, no better than a distance-only baseline at point one six. We slowed the spread, choosing the parameter on Kalimantan only. On held-out Sumatra, the score moved from point zero eight to point one one, against point zero nine. Pooled over all twelve: point two two against point one seven. Small — we say so. Re-running it a day later gave identical counts."
+218:- poster: 18s
+219:- audio: audio/scene-05-hindcast.aiff
+267:## Frame 6 — The register rule
+269:- status: outline
+270:- src: compositions/06-register-rule.html
+271:- duration: 18s
+272:- start: 121.0s
+273:- transition_in: crossfade
+274:- scene: Three numbered rules on the left; the real register sheet on the right with an accent box on "6 sealed · 0 scored".
+275:- voiceover: "That is why forecasts now go on the record. The register picks the three most active fires on each island by a fixed rule, applied automatically at issue time. Nobody picks the easy fires. Each gets a live scenario, a twenty-four hour forecast, and a seal."
+276:- poster: 8s
+277:- audio: audio/scene-06-register-rule.aiff
+307:## Frame 7 — The seal: hash, signature, Bitcoin
+309:- status: outline
+310:- src: compositions/07-seal-bitcoin.html
+311:- duration: 29s
+312:- start: 139.0s
+313:- transition_in: cut
+314:- scene: Three sealing steps, then a typeset terminal showing the reference `ots` client verifying a real Bitcoin transaction.
+315:- voiceover: "Sealing is three things. A SHA-256 hash over every input and every simulated cell. An Ed25519 signature over that hash. And an OpenTimestamps anchor committed to Bitcoin. Six forecasts were sealed on the twenty-first of October — three in Kalimantan, three in Sumatra — before their outcome existed. Twenty-four hours later each one is scored against NASA FIRMS, and stays on the board, good or bad. Here is the reference client verifying one: a real Bitcoin transaction, still waiting for confirmations."
+316:- poster: 20s
+317:- audio: audio/scene-07-seal-bitcoin.aiff
+376:## Frame 8 — Why Bitcoin: a public clock
+378:- status: outline
+379:- src: compositions/08-why-bitcoin.html
+380:- duration: 21s
+381:- start: 168.0s
+382:- transition_in: crossfade
+383:- scene: The argument on the left, the real Record panel on the right with the four green checks outlined.
+384:- voiceover: "Bitcoin here is a public clock and nothing more. One hash per forecast. No token, no wallet, no fee. A smart contract cannot make a fire model more correct — a deterministic re-run can. So the record shows four things: the receipt is unchanged, the inputs are unchanged, the signature is valid, and re-running gives the same result."
+385:- poster: 12s
+386:- audio: audio/scene-08-why-bitcoin.aiff
+418:## Frame 9 — Decision support: comparing plans
+420:- status: outline
+421:- src: compositions/09-decision-support.html
+422:- duration: 27s
+423:- start: 189.0s
+424:- transition_in: crossfade
+425:- scene: The exercise scenario's before/after numbers, the plan panel with the speculative note, then the 3D terrain.
+426:- voiceover: "The same sealed engine compares firefighting plans: control lines, helicopter drops, hand crews, peat injection. It only plans with resources the commander says exist. Options resting on placeholder numbers, like cloud seeding, are tagged speculative and kept out. In the exercise scenario, five hundred seventy-eight hectares burn with the plan against eight hundred forty-seven without: thirty-two percent less. That difference is a model estimate of about two hundred ten thousand tonnes of carbon dioxide equivalent."
+427:- poster: 14s
+428:- audio: audio/scene-09-decision-support.aiff
+467:## Frame 10 — Impact, honest limits, close
+469:- status: outline
+470:- src: compositions/10-impact-close.html
+471:- duration: 28s
+472:- start: 216.0s
+473:- transition_in: crossfade
+474:- scene: Who it is for, then the two honest limits, then a plain end card.
+475:- voiceover: "Who is it for? Disaster managers, Manggala Agni fire commanders, provincial governments, researchers comparing fire models, and auditors checking what was known. It runs in a browser on free open data; adding a region is a bounding box. Two honest limits: the peat map is synthetic, so carbon numbers are illustrative, and the model's edge is small. That is why every forecast is now on the record. SekatApi — forecasts on the record."
+[0m
+Both files are written and internally consistent.
+
+**`video/SCRIPT.md`** — 10 narration lines in the HyperFrames `SCRIPT.md` shape (header with voice/settings/direction, then `## Line N — label (Frame N)` with Time, Delivery, and the indented spoken block). **664 words / 244 s (4:04) = 163 wpm**, inside the 3:30–4:15 window and the 580–700 word band. Numbers are spelled out so `say` paces predictably; the register's forecasts are never given a score.
+
+**`video/STORYBOARD.md`** — frontmatter + one `## Frame N — Title` block per scene, each with `status/src/duration/start/transition_in/scene/voiceover/poster/audio`, then the exact narration quote, the visuals (asset file, source-rect pixel crops, placement, Ken Burns camera spec, accent-outline callouts with their literal text, and the charts/terminal to build with their exact figures), timed caption cards (≤2 lines each), and the transition out. Durations sum to 244 s with no gaps or overlaps, and every `voiceover` string matches its `SCRIPT.md` line verbatim.
+
+The **Fact check** table lists 63 sourced claims with BRIEF.md line numbers or `data.json` JSON paths, plus an explicit "removed for lack of a source" list — the register's `detections + FRP/50` formula, any score for the six pending forecasts, "avoided emissions"/credits/offsets, safety or agency-deployment claims, and "AI predicts".
+
+Two things I changed from my first draft, both for fact-check integrity: "forecasts that steer crews and aircraft" and "provincial governments deciding when to request aircraft" are not in BRIEF.md, so I trimmed them to what line 25 and line 32 actually support and re-timed the whole film to keep every scene at ~165 wpm.

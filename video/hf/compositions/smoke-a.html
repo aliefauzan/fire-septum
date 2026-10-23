@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="smoke-a-template">
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          background: #f7f8fa;
+          color: #1a1a1a;
+          font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        }
+        .head {
+          position: absolute;
+          left: 140px;
+          top: 200px;
+          width: 1200px;
+          font-size: 76px;
+          font-weight: 600;
+          line-height: 1.12;
+          letter-spacing: -0.02em;
+        }
+        .capwrap {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 62px;
+          text-align: center;
+          z-index: 60;
+        }
+        .cap {
+          display: inline-block;
+          max-width: 1480px;
+          padding: 11px 26px;
+          border-radius: 12px;
+          background: #1a1a1a;
+          color: #ffffff;
+          font-size: 33px;
+          font-weight: 500;
+          line-height: 1.2;
+          text-align: center;
+        }
+      </style>
+      <div id="root" data-composition-id="smoke-a" data-width="1920" data-height="1080" data-duration="5">
+        <div class="head">Smoke test scene A with a long headline that should wrap onto two lines.</div>
+        <div class="capwrap">
+          <span class="cap" id="a-cap-1">First caption line for the smoke test</span>
+          <span class="cap" id="a-cap-2">Second caption line for the smoke test</span>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#a-cap-1", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0);
+        tl.to("#a-cap-1", { opacity: 0, duration: 0.3 }, 2.4);
+        tl.fromTo("#a-cap-2", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 2.5);
+        tl.to("#a-cap-2", { opacity: 0, duration: 0.3 }, 4.7);
+        tl.fromTo(".head", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0);
+        window.__timelines["smoke-a"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

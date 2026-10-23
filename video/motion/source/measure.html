@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>measure</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Inter"; font-weight: 400; font-display: block; src: url("assets/fonts/inter-400.woff2") format("woff2"); }
+      @font-face { font-family: "Inter"; font-weight: 500; font-display: block; src: url("assets/fonts/inter-500.woff2") format("woff2"); }
+      @font-face { font-family: "Inter"; font-weight: 600; font-display: block; src: url("assets/fonts/inter-600.woff2") format("woff2"); }
+      @font-face { font-family: "Inter"; font-weight: 700; font-display: block; src: url("assets/fonts/inter-700.woff2") format("woff2"); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #F7F8FA; }
+    </style>
+  </head>
+  <body>
+    <div id="host"></div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      (async () => {
+        const res = await fetch("compositions/02-problem.html");
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const tpl = doc.querySelector("template");
+        const host = document.getElementById("host");
+        host.appendChild(tpl.content.cloneNode(true));
+        document.documentElement.dataset.ready = "1";
+      })();
+    </script>
+  </body>
+</html>

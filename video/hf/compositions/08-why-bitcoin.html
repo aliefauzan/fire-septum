@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="08-why-bitcoin-template">
+      <style>
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F7F8FA;
+        color: #1A1A1A;
+        font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      .stage { position: absolute; inset: 0; }
+      .card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E0E3E6;
+        border-radius: 16px;
+      }
+      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .chip {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E8590C;
+        border-radius: 10px;
+        color: #1A1A1A;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.15;
+        padding: 9px 16px;
+        z-index: 20;
+      }
+      .shotwrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .shotimg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        display: block;
+      }
+      .ovl { position: absolute; left: 0; top: 0; overflow: visible; }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+
+
+      .s8-head { position: absolute; left: 120px; top: 196px; font-size: 48px; font-weight: 700; letter-spacing: -0.022em; }
+      .s8-sub { position: absolute; left: 120px; top: 266px; font-size: 28px; color: #6b7075; }
+      .s8-bul { position: absolute; left: 120px; font-size: 28px; display: flex; align-items: center; }
+      .s8-b1 { top: 352px; } .s8-b2 { top: 422px; } .s8-b3 { top: 492px; }
+      .s8-mk { width: 6px; height: 26px; background: #e8590c; margin-right: 18px; }
+      .s8-quote {
+        position: absolute; left: 120px; top: 606px; width: 1080px; height: 156px;
+        background: #ffffff; border: 1px solid #e0e3e6; border-radius: 14px;
+      }
+      .s8-qbar { position: absolute; left: 0; top: 0; width: 4px; height: 154px; background: #e8590c; }
+      .s8-q1 { position: absolute; left: 40px; top: 26px; font-size: 34px; font-weight: 500; letter-spacing: -0.01em; }
+      .s8-q2 { position: absolute; left: 40px; top: 82px; font-size: 34px; font-weight: 600; color: #e8590c; letter-spacing: -0.01em; }
+      .s8-tests {
+        position: absolute; left: 120px; top: 840px; background: #ffffff; border: 1px solid #e0e3e6;
+        border-radius: 999px; padding: 11px 22px; font-size: 22px; color: #6b7075;
+      }
+      .s8-sheetwrap {
+        position: absolute; left: 1340px; top: 45px; width: 380px; height: 843px;
+        transform-origin: 0 0;
+      }
+      .s8-sheetimg { position: absolute; left: 0; top: 0; width: 380px; height: 843px; display: block; border-radius: 16px; }
+      .s8-sheetovl { position: absolute; left: 0; top: 0; }
+  
+      </style>
+      <div id="root" data-composition-id="08-why-bitcoin" data-width="1920" data-height="1080" data-duration="21">
+        <div class="stage">
+
+          <div class="s8-head">Bitcoin is a public clock</div>
+          <div class="s8-sub">and nothing more</div>
+          <div class="s8-bul s8-b1"><span class="s8-mk"></span><span>One hash per forecast</span></div>
+          <div class="s8-bul s8-b2"><span class="s8-mk"></span><span>No token, no wallet, no fee</span></div>
+          <div class="s8-bul s8-b3"><span class="s8-mk"></span><span>Verified by anyone with the public ots client</span></div>
+          <div class="s8-quote">
+            <div class="s8-qbar"></div>
+            <div class="s8-q1">A smart contract cannot make a fire model more correct.</div>
+            <div class="s8-q2">A deterministic re-run can.</div>
+          </div>
+          <div class="s8-tests">47 automated tests pass</div>
+          <div class="s8-sheetwrap" id="s08-sheetwrap" data-layout-allow-overflow>
+            <img class="s8-sheetimg" src="../assets/05b-record-checks.png" alt="Record panel with the four checks" />
+            <svg class="s8-sheetovl" width="380" height="843" viewBox="0 0 380 843">
+              <rect id="s08-r1" x="14" y="512" width="354" height="140" rx="8" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+            </svg>
+            <div class="chip" id="s08-chip1" style="left:16px; top:482px; font-size:22px;">Checks</div>
+          </div>
+          <div class="capwrap">
+          <span class="cap" id="c08-why-bitcoin-cap1"><span class="pill">Bitcoin here is a public clock and nothing more.<br>One hash per forecast. No token, no wallet, no fee.</span></span>
+          <span class="cap" id="c08-why-bitcoin-cap2"><span class="pill">A smart contract cannot make a fire model more correct &mdash;<br>a deterministic re-run can.</span></span>
+          <span class="cap" id="c08-why-bitcoin-cap3"><span class="pill">So the record shows four things: the receipt is unchanged, the inputs are unchanged,<br>the signature is valid, and re-running gives the same result.</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+  tl.set("#c08-why-bitcoin-cap1", { opacity: 0 }, 0);
+  tl.fromTo("#c08-why-bitcoin-cap1", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 0);
+  tl.to("#c08-why-bitcoin-cap1", { opacity: 0, duration: 0.28, ease: "none" }, 5.72);
+  tl.set("#c08-why-bitcoin-cap2", { opacity: 0 }, 0);
+  tl.fromTo("#c08-why-bitcoin-cap2", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 6);
+  tl.to("#c08-why-bitcoin-cap2", { opacity: 0, duration: 0.28, ease: "none" }, 11.12);
+  tl.set("#c08-why-bitcoin-cap3", { opacity: 0 }, 0);
+  tl.fromTo("#c08-why-bitcoin-cap3", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 11.4);
+  tl.to("#c08-why-bitcoin-cap3", { opacity: 0, duration: 0.28, ease: "none" }, 20.7);
+
+  tl.fromTo("#s08-sheetwrap", { scale: 0.96 }, { scale: 1.02, duration: 21, ease: "power1.inOut" }, 0);
+  tl.fromTo(".s8-head, .s8-sub", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.16 }, 0.3);
+  tl.fromTo(".s8-bul", { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", stagger: 0.24 }, 1.6);
+  tl.fromTo(".s8-quote", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 5.2);
+  tl.fromTo(".s8-tests", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 7.2);
+  tl.fromTo("#s08-r1", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 9.0);
+  tl.fromTo("#s08-chip1", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 9.4);
+
+        window.__timelines["08-why-bitcoin"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

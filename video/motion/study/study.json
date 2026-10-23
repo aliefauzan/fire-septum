@@ -1,0 +1,40 @@
+{
+ "video": "source.mp4",
+ "width": 1920,
+ "height": 1080,
+ "fps": 30.0,
+ "duration": 9.6,
+ "frames": 288,
+ "frames_every": 0.25,
+ "frame_count_saved": 38,
+ "cuts": [],
+ "sheet": {
+  "cols": 6,
+  "rows": 4,
+  "every": 0.5
+ },
+ "palette": [
+  {
+   "hex": "#F5F7F9",
+   "share": 0.962
+  },
+  {
+   "hex": "#D9DADC",
+   "share": 0.0093
+  },
+  {
+   "hex": "#C2C3C5",
+   "share": 0.0057
+  },
+  {
+   "hex": "#ABACAD",
+   "share": 0.0049
+  },
+  {
+   "hex": "#1B1C1D",
+   "share": 0.0046
+  }
+ ],
+ "source_loop_seam": 0.59,
+ "source_loops": true
+}

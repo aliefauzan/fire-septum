@@ -1,0 +1,468 @@
+<title>Ide ClimateChain Indonesia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: laporan lapangan. Strip data karhutla di atas, tabel pilih ide, lalu satu bagian per track dengan warna track sendiri. */
+:root{
+  --bg:#F2F4F0; --surface:#FFFFFF; --fg:#18201C; --muted:#5A645E; --line:#D7DCD4;
+  --accent:#C2410C; --accent-soft:#FBE7DC;
+  --t1:#2F6B4F; --t2:#8A560A; --t3:#7A5A2B; --t4:#2A63A6;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111513; --surface:#191F1C; --fg:#E5EAE4; --muted:#9BA59F; --line:#2B332F;
+    --accent:#F0803F; --accent-soft:#3A2418;
+    --t1:#62B88E; --t2:#E2A84A; --t3:#C9A06A; --t4:#73A9EA; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111513; --surface:#191F1C; --fg:#E5EAE4; --muted:#9BA59F; --line:#2B332F;
+  --accent:#F0803F; --accent-soft:#3A2418;
+  --t1:#62B88E; --t2:#E2A84A; --t3:#C9A06A; --t4:#73A9EA; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.02;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(2.6rem,7vw,4.6rem);font-weight:800;text-transform:uppercase}
+h2{font-size:clamp(2rem,5vw,3rem);font-weight:800;text-transform:uppercase}
+h3{font-family:var(--body);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.4rem}
+p{margin:0}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:.8rem;color:var(--muted);letter-spacing:.02em}
+
+header{padding-block:48px 28px}
+header .lede{max-width:62ch;margin-top:16px;font-size:1.08rem;color:var(--muted)}
+.deadline{display:inline-flex;gap:8px;align-items:center;margin-bottom:18px;padding:4px 10px;border:1px solid var(--accent);color:var(--accent);border-radius:999px;font-family:var(--mono);font-size:.8rem}
+
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--fg);border-bottom:1px solid var(--line);margin-top:28px}
+.strip div{padding:14px 14px 14px 0;min-width:0}
+.strip div + div{padding-left:14px;border-left:1px solid var(--line)}
+.strip b{display:block;font-family:var(--display);font-size:2.1rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.strip span{display:block;font-size:.85rem;color:var(--muted);margin-top:6px}
+@media (max-width:720px){
+  .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .strip div:nth-child(3){padding-left:0;border-left:0}
+  .strip div:nth-child(n+3){border-top:1px solid var(--line)}
+}
+
+nav.jump{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.jump .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:10px}
+nav.jump a{flex:none;text-decoration:none;color:var(--fg);font-size:.88rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);display:flex;gap:8px;align-items:center}
+nav.jump a i{width:9px;height:9px;border-radius:50%;background:var(--c)}
+nav.jump a:hover{border-color:var(--c)}
+
+section.block{padding-block:44px}
+.intro-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:820px){.intro-grid{grid-template-columns:1fr}}
+.note{background:var(--accent-soft);padding:18px 20px;border-radius:6px}
+.note p + p{margin-top:10px}
+ul.plain{margin:10px 0 0;padding-left:1.1em}
+ul.plain li + li{margin-top:6px}
+
+.table-scroll{overflow-x:auto;margin-top:18px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td .tk{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c);margin-right:8px;vertical-align:baseline}
+.dots{font-family:var(--mono);letter-spacing:.12em;white-space:nowrap}
+.dots b{color:var(--fg)} .dots s{color:var(--muted);opacity:.55;text-decoration:none}
+.pick{display:inline-block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+
+.track{border-top:6px solid var(--c);padding-block:40px 48px}
+.track + .track{margin-top:8px}
+.track-head{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:end;justify-content:space-between}
+.track-label{font-family:var(--mono);font-size:.82rem;color:var(--c);font-weight:500}
+.track-head h2{margin-top:6px}
+.pitch{font-size:1.15rem;max-width:60ch;margin-top:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 36px;margin-top:30px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.grid2 > div{min-width:0}
+.grid2 ul{margin:0;padding-left:1.1em}
+.grid2 li + li{margin-top:5px}
+.data li{font-size:.9rem}
+.data code{font-family:var(--mono);font-size:.84rem;background:var(--accent-soft);padding:0 4px;border-radius:3px}
+.trust{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px}
+.trust h3{color:var(--c)}
+
+.plan{margin-top:34px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
+.plan div{padding:14px;min-width:0;font-size:.9rem}
+.plan div + div{border-left:1px solid var(--line)}
+.plan .d{font-family:var(--mono);font-size:.76rem;color:var(--c);display:block;margin-bottom:4px;font-weight:500}
+@media (max-width:820px){
+  .plan{grid-template-columns:1fr}
+  .plan div + div{border-left:0;border-top:1px solid var(--line)}
+}
+.demo{margin-top:28px}
+.demo ol{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.demo li{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;font-size:.95rem}
+.demo li span{font-family:var(--mono);font-size:.82rem;color:var(--muted);padding-top:2px}
+.risk{margin-top:26px;font-size:.92rem;color:var(--muted)}
+.risk b{color:var(--fg)}
+
+footer{border-top:1px solid var(--line);padding-block:32px 56px;font-size:.88rem;color:var(--muted)}
+footer ul{padding-left:1.1em;margin:8px 0 0}
+footer li + li{margin-top:4px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<header class="wrap">
+  <div class="deadline">Deadline submit · 25 Okt 2026 · 22:00 (cek zona waktu di Devpost)</div>
+  <p class="eyebrow">IEEE ClimateChain Global Hackathon 2026 · versi tanpa blockchain</p>
+  <h1>Empat ide dari musim asap 2026</h1>
+  <p class="lede">Satu ide per track, semuanya diambil dari masalah Indonesia yang sedang terjadi: karhutla Kalimantan dan Sumatra, asap lintas provinsi, banjir, dan kekeringan. Semua dibangun dengan AI dan data terbuka, tanpa blockchain. Setiap ide punya cara sendiri untuk membuat datanya bisa dipercaya.</p>
+
+  <div class="strip">
+    <div><b class="mono">35.085</b><span>titik panas VIIRS, 8–15 Okt 2026. 34.226 di Kalimantan.</span></div>
+    <div><b class="mono">843 MW</b><span>daya radiasi api (FRP) satu kobaran di Kalimantan, 11 Okt.</span></div>
+    <div><b class="mono">513,89 ha</b><span>lahan masih ditangani di TN Tanjung Puting per 13 Okt.</span></div>
+    <div><b class="mono">Rp39–123 T</b><span>estimasi kerugian karhutla Jan–Agu 2026 (CELIOS).</span></div>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Lompat ke track">
+  <div class="wrap">
+    <a href="#pilih" style="--c:var(--accent)"><i></i>Pilih ide</a>
+    <a href="#track-1" style="--c:var(--t1)"><i></i>1 · Carbon market</a>
+    <a href="#track-2" style="--c:var(--t2)"><i></i>2 · Energi</a>
+    <a href="#track-3" style="--c:var(--t3)"><i></i>3 · Supply chain</a>
+    <a href="#track-4" style="--c:var(--t4)"><i></i>4 · Data iklim</a>
+  </div>
+</nav>
+
+<main>
+<section class="block wrap" id="pilih">
+  <div class="intro-grid">
+    <div>
+      <h2>Pilih satu</h2>
+      <p style="margin-top:14px;max-width:60ch">Blockchain tidak tercantum sebagai syarat di halaman Rules. Yang wajib: pilih satu track, video demo 3–5 menit, repo kode, dan submit sebelum deadline. Kriteria Technical Execution menanyakan apakah teknologinya <em>"appropriate for the proposed solution"</em>. Itu celah kita: tunjukkan bahwa masalahnya selesai tanpa blockchain, dan jelaskan alasannya.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Track</th><th>Ide</th><th>Cepat dibangun</th><th>Kekuatan cerita</th><th>Butuh hardware</th></tr></thead>
+          <tbody>
+            <tr style="--c:var(--t1)"><td><span class="tk"></span>1 · Carbon</td><td><b>Saksi Gambut</b><span class="pick">Rekomendasi</span></td><td class="dots"><b>●●●●</b><s>●</s></td><td class="dots"><b>●●●●●</b></td><td>Tidak</td></tr>
+            <tr style="--c:var(--t2)"><td><span class="tk"></span>2 · Energi</td><td><b>SuryaDesa</b></td><td class="dots"><b>●●●</b><s>●●</s></td><td class="dots"><b>●●●</b><s>●●</s></td><td>Opsional</td></tr>
+            <tr style="--c:var(--t3)"><td><span class="tk"></span>3 · Supply chain</td><td><b>JejakSawit</b></td><td class="dots"><b>●●●●</b><s>●</s></td><td class="dots"><b>●●●●</b><s>●</s></td><td>Tidak</td></tr>
+            <tr style="--c:var(--t4)"><td><span class="tk"></span>4 · Data iklim</td><td><b>UdaraKita</b></td><td class="dots"><b>●●●</b><s>●●</s></td><td class="dots"><b>●●●●●</b></td><td>Ya, atau simulasi</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="note">
+      <h3>Cara jual "tanpa blockchain" ke juri</h3>
+      <p>Juri berasal dari komunitas IEEE Blockchain. Jangan menghindari topiknya. Tulis satu paragraf di deskripsi proyek: kenapa blockchain tidak perlu di sini, dan apa penggantinya.</p>
+      <ul class="plain">
+        <li><b>Bisa diulang:</b> semua skor dihitung dari data satelit publik. Siapa pun bisa menjalankan ulang dan dapat angka yang sama.</li>
+        <li><b>Ditandatangani:</b> setiap laporan diberi tanda tangan digital Ed25519 dan hash-nya dipublikasikan.</li>
+        <li><b>Riwayat terbuka:</b> log audit append-only dan snapshot data berversi (repo Git atau Zenodo).</li>
+        <li><b>Lebih murah dan cepat diadopsi:</b> tanpa wallet, gas fee, atau edukasi crypto untuk pengguna di desa dan pemerintah daerah.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- TRACK 1 -->
+<section class="track wrap" id="track-1" style="--c:var(--t1)">
+  <div class="track-head">
+    <div>
+      <div class="track-label">TRACK 1 · TRANSPARANSI CARBON MARKET</div>
+      <h2>Saksi Gambut</h2>
+    </div>
+  </div>
+  <p class="pitch">Pemantau integritas carbon credit berbasis satelit. Kalau lahan proyek terbakar, kredit langsung ditandai berisiko, tidak menunggu audit tahunan.</p>
+
+  <div class="grid2">
+    <div>
+      <h3>Masalah</h3>
+      <p>Proyek restorasi gambut dan hutan di Kalimantan dan Sumatra menjual carbon credit. Saat lahannya terbakar, karbonnya lepas ke udara, tapi kreditnya tetap beredar sampai verifikasi berikutnya, yang bisa setahun lagi. Satu proyek juga bisa terdaftar di registri nasional (SRN PPI) dan internasional (mis. Verra), sehingga berisiko dihitung dua kali.</p>
+    </div>
+    <div>
+      <h3>Solusi</h3>
+      <ul>
+        <li>Unggah poligon proyek karbon. Sistem memantau titik panas setiap hari.</li>
+        <li>Hitung luas terbakar dari citra Sentinel-2 (indeks dNBR), lalu estimasi emisi dengan faktor emisi kebakaran gambut IPCC.</li>
+        <li><b>Skor Integritas 0–100</b> per proyek dan estimasi tCO₂e kredit yang berisiko.</li>
+        <li>Deteksi klaim ganda: cek poligon yang tumpang tindih antar-registri.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Peran AI</h3>
+      <ul>
+        <li>Classifier untuk menyaring false positive hotspot (flare industri, atap seng panas) berdasarkan FRP, durasi, dan tutupan lahan.</li>
+        <li>Segmentasi area terbakar dari Sentinel-2.</li>
+        <li>LLM menulis laporan insiden untuk pembeli kredit dan auditor, lengkap dengan peta dan angka.</li>
+      </ul>
+    </div>
+    <div class="trust">
+      <h3>Kepercayaan tanpa blockchain</h3>
+      <p>Metodologi open source. Skor dihitung ulang dari data publik dengan parameter yang dicatat. Laporan ditandatangani Ed25519, dan setiap perubahan skor masuk log audit append-only yang bisa dibaca publik.</p>
+    </div>
+    <div class="data">
+      <h3>Data &amp; tools</h3>
+      <ul>
+        <li>NASA FIRMS API, VIIRS NRT (<code>MAP_KEY</code> gratis)</li>
+        <li>Sentinel-2 L2A via Microsoft Planetary Computer atau Copernicus Data Space</li>
+        <li>Peta lahan gambut Indonesia (dataset GFW / KLHK)</li>
+        <li>Python: <code>geopandas</code>, <code>rasterio</code>, <code>scikit-learn</code>, FastAPI</li>
+        <li>Frontend: Next.js + Leaflet, atau Streamlit kalau mau cepat</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Pengguna</h3>
+      <p>Perusahaan pembeli kredit, lembaga validasi dan verifikasi, bursa karbon, KLHK, jurnalis lingkungan.</p>
+    </div>
+  </div>
+
+  <div class="plan">
+    <div><span class="d">21 OKT</span>Pipeline FIRMS + 3 poligon proyek contoh di Kalteng dan Sumsel.</div>
+    <div><span class="d">22 OKT</span>Classifier hotspot dan hitungan dNBR dari Sentinel-2.</div>
+    <div><span class="d">23 OKT</span>Rumus skor integritas, deteksi tumpang tindih, laporan LLM.</div>
+    <div><span class="d">24 OKT</span>Dashboard peta + timeline, README, tanda tangan laporan.</div>
+    <div><span class="d">25 OKT</span>Rekam video, rapikan deskripsi, submit sebelum 22:00.</div>
+  </div>
+
+  <div class="demo">
+    <h3>Alur video demo</h3>
+    <ol>
+      <li><span>0:00–0:40</span>Peta asap 8–15 Okt. Pertanyaan: kredit karbon dari lahan yang terbakar masih dijual?</li>
+      <li><span>0:40–2:00</span>Buka proyek contoh di Kalteng. Hotspot muncul 11–14 Okt, skor turun dari 92 ke 41.</li>
+      <li><span>2:00–3:00</span>Tunjukkan peta area terbakar, estimasi tCO₂e berisiko, dan laporan otomatis.</li>
+      <li><span>3:00–4:00</span>Verifikasi: jalankan ulang skrip, hasil sama, tanda tangan cocok. Tutup dengan skala ke semua proyek di Indonesia.</li>
+    </ol>
+  </div>
+  <p class="risk"><b>Risiko:</b> poligon proyek asli tidak selalu publik. Pakai poligon contoh yang ditandai jelas sebagai ilustrasi, dan sebutkan sumbernya kalau memakai batas proyek yang memang dipublikasikan.</p>
+</section>
+
+<!-- TRACK 2 -->
+<section class="track wrap" id="track-2" style="--c:var(--t2)">
+  <div class="track-head">
+    <div>
+      <div class="track-label">TRACK 2 · SISTEM ENERGI TERDESENTRALISASI</div>
+      <h2>SuryaDesa</h2>
+    </div>
+  </div>
+  <p class="pitch">Koordinator microgrid untuk PLTS komunal desa. Memprediksi produksi listrik saat cuaca dan asap memburuk, lalu membagi energi ke beban yang paling penting.</p>
+
+  <div class="grid2">
+    <div>
+      <h3>Masalah</h3>
+      <p>Banyak desa di luar Jawa bergantung pada PLTS komunal. Produksinya turun saat mendung atau saat asap tebal menutupi matahari, dan musim asap 2026 menjangkau Sumatra sampai Papua. Pembagian listrik biasanya manual, sehingga baterai habis malam hari dan puskesmas ikut padam. Rumah yang punya surplus panel tidak bisa berbagi ke tetangga.</p>
+    </div>
+    <div>
+      <h3>Solusi</h3>
+      <ul>
+        <li>Prediksi produksi PV 24–72 jam ke depan per desa.</li>
+        <li>Penjadwal beban otomatis: puskesmas dan sekolah dulu, lalu pompa air dan freezer ikan digeser ke jam surplus.</li>
+        <li>Kuota harian per rumah. Rumah dengan surplus bisa berbagi kWh ke tetangga.</li>
+        <li>Saldo kWh dicatat di buku besar koperasi desa dan diselesaikan bulanan lewat QRIS atau tunai.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Peran AI</h3>
+      <ul>
+        <li>Model prediksi PV dari radiasi, awan, dan aerosol (proksi asap).</li>
+        <li>Optimasi jadwal beban untuk meminimalkan jam padam pada beban prioritas.</li>
+        <li>Deteksi anomali meter: panel kotor, baterai melemah, atau pencurian listrik.</li>
+      </ul>
+    </div>
+    <div class="trust">
+      <h3>Kepercayaan tanpa blockchain</h3>
+      <p>Pembacaan meter ditandatangani per perangkat. Buku besar double-entry di Postgres dikelola koperasi desa yang sudah dipercaya warga. Laporan bulanan bisa dicetak dan ditempel di balai desa.</p>
+    </div>
+    <div class="data">
+      <h3>Data &amp; tools</h3>
+      <ul>
+        <li>Open-Meteo Forecast: <code>shortwave_radiation</code>, <code>cloud_cover</code></li>
+        <li>Open-Meteo Air Quality: <code>aerosol_optical_depth</code>, <code>pm2_5</code></li>
+        <li><code>pvlib</code> untuk model PV, <code>OR-Tools</code> atau heuristik untuk penjadwal</li>
+        <li>Opsional: ESP32 + meter PZEM-004T untuk satu titik data nyata</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Pengguna</h3>
+      <p>Operator PLTS desa, koperasi atau BUMDes, pemerintah daerah, dan program elektrifikasi desa.</p>
+    </div>
+  </div>
+
+  <div class="plan">
+    <div><span class="d">21 OKT</span>Simulasi desa 60 rumah: kapasitas PV, baterai, profil beban.</div>
+    <div><span class="d">22 OKT</span>Model prediksi PV dengan data Open-Meteo, termasuk hari berasap.</div>
+    <div><span class="d">23 OKT</span>Penjadwal beban prioritas dan buku besar kWh antar-rumah.</div>
+    <div><span class="d">24 OKT</span>Dashboard operator dan tampilan ponsel untuk warga.</div>
+    <div><span class="d">25 OKT</span>Video, README, submit.</div>
+  </div>
+
+  <div class="demo">
+    <h3>Alur video demo</h3>
+    <ol>
+      <li><span>0:00–0:40</span>Desa simulasi di Kalteng saat asap tebal 14 Okt.</li>
+      <li><span>0:40–2:00</span>Prediksi produksi turun. Bandingkan pembagian manual dengan SuryaDesa: jam padam puskesmas turun.</li>
+      <li><span>2:00–3:00</span>Rumah A berbagi surplus ke rumah B, saldo kWh tercatat.</li>
+      <li><span>3:00–4:00</span>Rencana skala: satu dashboard untuk banyak desa di satu kabupaten.</li>
+    </ol>
+  </div>
+  <p class="risk"><b>Risiko:</b> data microgrid desa yang asli sulit didapat dalam lima hari. Katakan terang-terangan bahwa demo memakai simulasi berbasis data cuaca nyata.</p>
+</section>
+
+<!-- TRACK 3 -->
+<section class="track wrap" id="track-3" style="--c:var(--t3)">
+  <div class="track-head">
+    <div>
+      <div class="track-label">TRACK 3 · TRANSPARANSI SUPPLY CHAIN</div>
+      <h2>JejakSawit</h2>
+    </div>
+  </div>
+  <p class="pitch">Skor risiko kebakaran dan deforestasi untuk setiap pabrik kelapa sawit, plus paspor produk digital yang bisa dibaca pembeli lewat QR.</p>
+
+  <div class="grid2">
+    <div>
+      <h3>Masalah</h3>
+      <p>Pembeli CPO, merek konsumen, dan bank harus membuktikan rantai pasoknya bebas deforestasi dan kebakaran, antara lain karena regulasi Uni Eropa (EUDR) dan standar RSPO. Kenyataannya, mereka sulit tahu apakah kebun di sekitar pabrik pemasok ikut terbakar musim ini.</p>
+    </div>
+    <div>
+      <h3>Solusi</h3>
+      <ul>
+        <li>Unggah daftar pabrik pemasok (CSV). Sistem membuat area pasokan di sekitar setiap pabrik.</li>
+        <li>Tumpuk titik panas, peringatan deforestasi, peta gambut, dan batas konsesi.</li>
+        <li>Skor risiko per pabrik dan per rantai pasok merek.</li>
+        <li>Paspor produk digital per batch, dengan QR yang menunjukkan pabrik asal dan kondisi lahan saat pengiriman.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Peran AI</h3>
+      <ul>
+        <li>Clustering hotspot menjadi "kejadian kebakaran", bukan titik lepas.</li>
+        <li>Model risiko yang menggabungkan kebakaran, gambut, deforestasi baru, dan riwayat.</li>
+        <li>LLM menyusun draf pernyataan uji tuntas (due diligence) dari data skor.</li>
+      </ul>
+    </div>
+    <div class="trust">
+      <h3>Kepercayaan tanpa blockchain</h3>
+      <p>Setiap paspor merujuk snapshot data berversi dengan tanggal. PDF paspor ditandatangani, hash-nya dipublikasikan, dan siapa pun bisa mencocokkannya dengan mengunduh ulang snapshot yang sama.</p>
+    </div>
+    <div class="data">
+      <h3>Data &amp; tools</h3>
+      <ul>
+        <li>Universal Mill List (koordinat pabrik sawit)</li>
+        <li>Global Forest Watch Data API: integrated deforestation alerts, konsesi sawit</li>
+        <li>NASA FIRMS (titik panas), peta lahan gambut</li>
+        <li><code>geopandas</code>, <code>HDBSCAN</code>, FastAPI, Next.js</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Pengguna</h3>
+      <p>Eksportir CPO, merek FMCG, bank dan investor, auditor RSPO, LSM pemantau.</p>
+    </div>
+  </div>
+
+  <div class="plan">
+    <div><span class="d">21 OKT</span>Ambil data pabrik dan hotspot untuk Kalimantan dan Sumatra.</div>
+    <div><span class="d">22 OKT</span>Clustering kejadian kebakaran dan model skor risiko.</div>
+    <div><span class="d">23 OKT</span>Unggah CSV pemasok, peta risiko, draf due diligence LLM.</div>
+    <div><span class="d">24 OKT</span>Halaman paspor QR dan tanda tangan PDF.</div>
+    <div><span class="d">25 OKT</span>Video, README, submit.</div>
+  </div>
+
+  <div class="demo">
+    <h3>Alur video demo</h3>
+    <ol>
+      <li><span>0:00–0:40</span>Peta asap minggu ini dan pertanyaan pembeli: apakah minyak saya ikut membakar hutan?</li>
+      <li><span>0:40–2:00</span>Unggah 30 pabrik pemasok contoh. Tiga pabrik merah karena klaster api 14 Okt dekat area pasokannya.</li>
+      <li><span>2:00–3:00</span>Buka paspor batch lewat QR, lihat bukti peta dan tanggal snapshot.</li>
+      <li><span>3:00–4:00</span>Draf due diligence otomatis, lalu verifikasi hash paspor.</li>
+    </ol>
+  </div>
+  <p class="risk"><b>Risiko:</b> area pasokan hanya perkiraan dari jarak ke pabrik, bukan data kebun yang sebenarnya. Sebutkan asumsi ini di demo dan beri ruang untuk mengunggah poligon kebun asli.</p>
+</section>
+
+<!-- TRACK 4 -->
+<section class="track wrap" id="track-4" style="--c:var(--t4)">
+  <div class="track-head">
+    <div>
+      <div class="track-label">TRACK 4 · DATA IKLIM YANG ANDAL DAN TERBUKA</div>
+      <h2>UdaraKita</h2>
+    </div>
+  </div>
+  <p class="pitch">Jaringan sensor asap milik warga, dengan AI yang mengoreksi dan memverifikasi data, lalu memberi peringatan asap per kelurahan 24–48 jam sebelumnya.</p>
+
+  <div class="grid2">
+    <div>
+      <h3>Masalah</h3>
+      <p>Stasiun ISPU resmi jarang, dan laporan sering hanya menulis "berbahaya" tanpa angka indeks. Pada Oktober 2026 kualitas udara di Palangka Raya dan sejumlah titik di Kalimantan dan Sumatra masuk kategori berbahaya. Sekolah dan puskesmas butuh peringatan lokal sebelum asap datang, bukan sesudahnya.</p>
+    </div>
+    <div>
+      <h3>Solusi</h3>
+      <ul>
+        <li>Sensor PM2.5 murah di sekolah, puskesmas, dan rumah warga, ditambah laporan foto dari ponsel.</li>
+        <li>Data dikoreksi dan diverifikasi otomatis, lalu tampil di peta publik.</li>
+        <li>Prediksi asap 24–48 jam dari titik panas dan arah angin.</li>
+        <li>Peringatan lewat bot Telegram atau WhatsApp, plus API data terbuka untuk peneliti.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Peran AI</h3>
+      <ul>
+        <li>Kalibrasi kelembapan: sensor murah cenderung membaca terlalu tinggi saat udara lembap, jadi dikoreksi dengan model terhadap stasiun referensi.</li>
+        <li>Deteksi sensor rusak atau dimanipulasi dengan membandingkan sensor tetangga, data satelit, dan prakiraan CAMS.</li>
+        <li>Model prediksi PM2.5 (gradient boosting) dari hotspot, angin, dan riwayat.</li>
+      </ul>
+    </div>
+    <div class="trust">
+      <h3>Kepercayaan tanpa blockchain</h3>
+      <p>Setiap sensor punya kunci sendiri dan menandatangani datanya. Setiap sensor punya skor kepercayaan yang naik turun sesuai konsistensinya. Dataset dirilis berkala sebagai snapshot terbuka (mis. Zenodo dengan DOI).</p>
+    </div>
+    <div class="data">
+      <h3>Data &amp; tools</h3>
+      <ul>
+        <li>Sensor: ESP32 + PMS5003 atau SDS011 + DHT22</li>
+        <li>Open-Meteo Air Quality (prakiraan <code>pm2_5</code> CAMS), BMKG untuk angin</li>
+        <li>NASA FIRMS, ISPU KLHK sebagai pembanding</li>
+        <li><code>LightGBM</code>, FastAPI, Leaflet, bot Telegram</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Pengguna</h3>
+      <p>Sekolah, puskesmas, dinas kesehatan, BPBD, warga, dan peneliti kualitas udara.</p>
+    </div>
+  </div>
+
+  <div class="plan">
+    <div><span class="d">21 OKT</span>Rakit 1–2 sensor, atau buat simulator sensor dari data CAMS.</div>
+    <div><span class="d">22 OKT</span>Ingest data bertanda tangan, kalibrasi kelembapan, skor kepercayaan.</div>
+    <div><span class="d">23 OKT</span>Model prediksi asap dari hotspot dan angin.</div>
+    <div><span class="d">24 OKT</span>Peta publik, bot peringatan, endpoint API terbuka.</div>
+    <div><span class="d">25 OKT</span>Video, README, submit.</div>
+  </div>
+
+  <div class="demo">
+    <h3>Alur video demo</h3>
+    <ol>
+      <li><span>0:00–0:40</span>Palangka Raya, 14 Okt: laporan resmi "berbahaya" tanpa angka.</li>
+      <li><span>0:40–2:00</span>Peta sensor warga dengan angka PM2.5 per kelurahan. Satu sensor ditandai tidak wajar dan otomatis diturunkan bobotnya.</li>
+      <li><span>2:00–3:00</span>Prediksi: asap tiba di kelurahan X besok pagi. Bot mengirim peringatan ke kepala sekolah.</li>
+      <li><span>3:00–4:00</span>Peneliti mengunduh dataset lewat API. Penutup: biaya per sensor dan rencana skala.</li>
+    </ol>
+  </div>
+  <p class="risk"><b>Risiko:</b> pengiriman sensor dan perakitan bisa makan waktu. Siapkan simulator sejak hari pertama supaya demo tetap jalan walau hardware terlambat.</p>
+</section>
+</main>
+
+<footer class="wrap">
+  <p><b style="color:var(--fg)">Sumber</b>. Angka diambil dari berita per 13–15 Oktober 2026. Cek ulang data terbaru BNPB dan BMKG sebelum merekam video.</p>
+  <ul>
+    <li><a href="https://ieee-climatechain-hack.devpost.com" target="_blank" rel="noopener">IEEE ClimateChain Hackathon, Devpost</a> dan <a href="https://ieee-climatechain-hack.devpost.com/rules" target="_blank" rel="noopener">halaman Rules</a></li>
+    <li><a href="https://databoks.katadata.co.id/datapublish/2026/10/15/arah-angin-asap-karhutla-sepekan-titik-api-terpanas-843-mw-di-kalimantan" target="_blank" rel="noopener">Databoks: titik api terpanas 843 MW di Kalimantan</a></li>
+    <li><a href="https://katadata.co.id/berita/nasional/6acc43ceec956/asap-karhutla-masih-selimuti-sumatra-hingga-papua-negara-jiran-ikut-terdampak" target="_blank" rel="noopener">Katadata: asap selimuti Sumatra hingga Papua</a></li>
+    <li><a href="https://journalarta.com/news/2026/10/13/karhutla-berlanjut-polusi-udara-kalimantan-sumatra-masuk-kategori-berbahaya/" target="_blank" rel="noopener">Journalarta: polusi udara Kalimantan dan Sumatra berbahaya</a></li>
+    <li><a href="https://www.kabarbursa.com/makro/karhutla-2026-ancam-ekonomi-kerugian-capai-rp1231-triliun.md" target="_blank" rel="noopener">Kabarbursa: kerugian karhutla 2026 (estimasi CELIOS)</a></li>
+    <li><a href="https://ahacentre.org/weekly-disaster-update/weekly-disaster-update-22-28-june-2026/" target="_blank" rel="noopener">AHA Centre: kekeringan Jawa dan NTB, Juni 2026</a></li>
+  </ul>
+</footer>

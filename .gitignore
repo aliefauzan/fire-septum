@@ -1,0 +1,11 @@
+node_modules
+dist
+.cache
+.env
+.env.local
+.remember
+.vitest
+.impeccable
+.claude/hook.cache.json
+tsconfig.tsbuildinfo
+video/hf/.hyperframes

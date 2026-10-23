@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="09-decision-support-template">
+      <style>
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F7F8FA;
+        color: #1A1A1A;
+        font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      .stage { position: absolute; inset: 0; }
+      .card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E0E3E6;
+        border-radius: 16px;
+      }
+      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .chip {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E8590C;
+        border-radius: 10px;
+        color: #1A1A1A;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.15;
+        padding: 9px 16px;
+        z-index: 20;
+      }
+      .shotwrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .shotimg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        display: block;
+      }
+      .ovl { position: absolute; left: 0; top: 0; overflow: visible; }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+
+
+      .s9-shot { opacity: 1; }
+      .s9-terrain { position: absolute; inset: 0; opacity: 0; }
+      .s9-ovlA, .s9-ovlB { position: absolute; inset: 0; }
+      .s9-ovlB { opacity: 0; }
+  
+      </style>
+      <div id="root" data-composition-id="09-decision-support" data-width="1920" data-height="1080" data-duration="31.3">
+        <div class="stage">
+
+          <div class="shotwrap s9-shot" id="s09-shot" data-layout-allow-overflow>
+            <img class="shotimg" src="../assets/04-plan-before-after.png" alt="Plan comparison before and after" />
+            <svg class="ovl" width="1920" height="1080" viewBox="0 0 1920 1080">
+              <g id="s09-ga">
+                <rect id="s09-r1" x="1300" y="80" width="376" height="96" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+                <rect id="s09-r2" x="1298" y="214" width="212" height="48" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+                <rect id="s09-r3" x="1306" y="314" width="352" height="74" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              </g>
+              <g id="s09-gb">
+                <rect id="s09-r4" x="1300" y="515" width="360" height="230" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+                <rect id="s09-r5" x="1300" y="876" width="368" height="76" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              </g>
+            </svg>
+            <div class="s9-ovlA">
+              <div class="chip" id="s09-chip1" style="right:244px; top:180px; font-size:22px;">578 ha with your plan &middot; 847 ha if nothing is done &middot; &minus;32%</div>
+              <div class="chip" id="s09-chip2" style="right:244px; top:268px; font-size:22px;">Peat emissions difference &mdash; a model estimate, not a measurement</div>
+              <div class="chip" id="s09-chip3" style="right:260px; top:396px; font-size:22px;">The peat map here is synthetic &mdash; illustrative only</div>
+            </div>
+            <div class="s9-ovlB">
+              <div class="chip" id="s09-chip4" style="right:260px; top:754px; font-size:22px;">Only resources the commander says exist</div>
+              <div class="chip" id="s09-chip5" style="right:252px; top:790px; font-size:22px;">Cloud seeding: speculative &mdash; kept out of the combined strategy</div>
+            </div>
+          </div>
+
+          <div class="s9-terrain" id="s09-terrain">
+            <div class="shotwrap" id="s09-terrainwrap" data-layout-allow-overflow>
+              <img class="shotimg" src="../assets/06-3d-terrain.png" alt="3D terrain view of both maps" />
+              <svg class="ovl" width="1920" height="1080" viewBox="0 0 1920 1080">
+                <rect id="s09-r6" x="286" y="392" width="456" height="314" rx="10" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              </svg>
+              <div class="chip" id="s09-chip6" style="left:300px; top:714px; font-size:22px;">Same map, draped on real elevation</div>
+            </div>
+          </div>
+          <div class="capwrap">
+          <span class="cap" id="c09-decision-support-cap1"><span class="pill">The same sealed engine compares firefighting plans:<br>control lines, helicopter drops, hand crews, peat injection.</span></span>
+          <span class="cap" id="c09-decision-support-cap2"><span class="pill">It only plans with resources the commander says exist.<br>Options resting on placeholder numbers, like cloud seeding, are tagged speculative and kept out.</span></span>
+          <span class="cap" id="c09-decision-support-cap3"><span class="pill">In the exercise scenario, five hundred seventy-eight hectares burn with the plan<br>against eight hundred forty-seven without: thirty-two percent less.</span></span>
+          <span class="cap" id="c09-decision-support-cap4"><span class="pill">That difference is a model estimate of about two hundred ten thousand tonnes<br>of carbon dioxide equivalent.</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+  tl.set("#c09-decision-support-cap1", { opacity: 0 }, 0);
+  tl.fromTo("#c09-decision-support-cap1", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 0);
+  tl.to("#c09-decision-support-cap1", { opacity: 0, duration: 0.28, ease: "none" }, 6.32);
+  tl.set("#c09-decision-support-cap2", { opacity: 0 }, 0);
+  tl.fromTo("#c09-decision-support-cap2", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 6.6);
+  tl.to("#c09-decision-support-cap2", { opacity: 0, duration: 0.28, ease: "none" }, 11.52);
+  tl.set("#c09-decision-support-cap3", { opacity: 0 }, 0);
+  tl.fromTo("#c09-decision-support-cap3", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 11.8);
+  tl.to("#c09-decision-support-cap3", { opacity: 0, duration: 0.28, ease: "none" }, 19.32);
+  tl.set("#c09-decision-support-cap4", { opacity: 0 }, 0);
+  tl.fromTo("#c09-decision-support-cap4", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 19.6);
+  tl.to("#c09-decision-support-cap4", { opacity: 0, duration: 0.28, ease: "none" }, 26.72);
+
+  tl.fromTo("#s09-shot", { scale: 1, x: 0, y: 0 }, { scale: 1.05, x: -531, y: 88.5, duration: 11.5, ease: "power2.inOut" }, 0);
+  tl.fromTo("#s09-r1", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 2.0);
+  tl.fromTo("#s09-chip1", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 2.4);
+  tl.fromTo("#s09-r2", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 5.0);
+  tl.fromTo("#s09-chip2", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 5.4);
+  tl.fromTo("#s09-r3", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 8.0);
+  tl.fromTo("#s09-chip3", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 8.4);
+  tl.fromTo("#s09-shot", { scale: 1.05, x: -531, y: 88.5 }, { scale: 1.14, x: -556.2, y: -246.6, duration: 6.5, ease: "power2.inOut", immediateRender: false }, 11.5);
+  tl.to(".s9-ovlA", { opacity: 0, duration: 0.4, ease: "none" }, 11.8);
+  tl.to(".s9-ovlB", { opacity: 1, duration: 0.4, ease: "none" }, 12.0);
+  tl.to("#s09-ga", { opacity: 0, duration: 0.4, ease: "none" }, 11.8);
+  tl.to("#s09-gb", { opacity: 1, duration: 0.4, ease: "none" }, 12.0);
+  tl.fromTo("#s09-r4", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 14.0);
+  tl.fromTo("#s09-chip4", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 14.4);
+  tl.fromTo("#s09-r5", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 17.5);
+  tl.fromTo("#s09-chip5", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 17.9);
+  tl.to("#s09-shot", { opacity: 0, duration: 0.4, ease: "none" }, 23.8);
+  tl.fromTo("#s09-terrain", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 23.9);
+  tl.fromTo("#s09-terrainwrap", { scale: 1, x: 200, y: 20 }, { scale: 1.07, x: 146.8, y: -16.4, duration: 7.4, ease: "power2.inOut" }, 24);
+  tl.fromTo("#s09-r6", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 25.2);
+  tl.fromTo("#s09-chip6", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 25.6);
+
+        window.__timelines["09-decision-support"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

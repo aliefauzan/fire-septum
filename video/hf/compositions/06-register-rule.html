@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="06-register-rule-template">
+      <style>
+
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F7F8FA;
+        color: #1A1A1A;
+        font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      .stage { position: absolute; inset: 0; }
+      .card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E0E3E6;
+        border-radius: 16px;
+      }
+      .capwrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        height: 0;
+        z-index: 90;
+      }
+      .cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        opacity: 0;
+      }
+      .cap .pill {
+        display: inline-block;
+        max-width: 1500px;
+        padding: 11px 26px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 33px;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        text-align: center;
+      }
+      .chip {
+        position: absolute;
+        background: #FFFFFF;
+        border: 1px solid #E8590C;
+        border-radius: 10px;
+        color: #1A1A1A;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1.15;
+        padding: 9px 16px;
+        z-index: 20;
+      }
+      .shotwrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform-origin: 0 0;
+      }
+      .shotimg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        display: block;
+      }
+      .ovl { position: absolute; left: 0; top: 0; overflow: visible; }
+      .mono {
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+
+
+      .s6-eyebrow { position: absolute; left: 120px; top: 246px; font-size: 22px; letter-spacing: 0.16em; font-weight: 600; color: #6b7075; }
+      .s6-head { position: absolute; left: 120px; top: 284px; font-size: 52px; font-weight: 700; letter-spacing: -0.022em; }
+      .s6-rule { position: absolute; left: 120px; width: 960px; display: flex; }
+      .s6-rule .n { font-size: 44px; font-weight: 700; color: #e8590c; width: 66px; line-height: 1.05; }
+      .s6-rule .x { font-size: 28px; line-height: 1.4; }
+      .s6-r1 { top: 424px; } .s6-r2 { top: 556px; } .s6-r3 { top: 688px; }
+      .s6-close { position: absolute; left: 120px; top: 846px; font-size: 26px; }
+      .s6-close .acc { color: #e8590c; }
+      .s6-sheetwrap {
+        position: absolute; left: 1160px; top: 60px; width: 520px; height: 720px;
+        transform-origin: 0 0;
+      }
+      .s6-sheetimg { position: absolute; left: 0; top: 0; width: 520px; height: 720px; display: block; border-radius: 16px; }
+      .s6-sheetovl { position: absolute; left: 0; top: 0; }
+  
+      </style>
+      <div id="root" data-composition-id="06-register-rule" data-width="1920" data-height="1080" data-duration="18">
+        <div class="stage">
+
+          <div class="s6-eyebrow">PRE-REGISTRATION</div>
+          <div class="s6-head">The forecast register</div>
+          <div class="s6-rule s6-r1"><div class="n">1</div><div class="x">Pick the 3 most active fires on each island &mdash; a fixed rule, applied automatically at issue time.</div></div>
+          <div class="s6-rule s6-r2"><div class="n">2</div><div class="x">Forecast the next 24 h from live data.</div></div>
+          <div class="s6-rule s6-r3"><div class="n">3</div><div class="x">Seal it. Score it 24 h later against NASA FIRMS. Keep it, good or bad.</div></div>
+          <div class="s6-close"><span class="acc">Nobody picks the easy fires</span>.</div>
+          <div class="s6-sheetwrap" id="s06-sheetwrap" data-layout-allow-overflow>
+            <img class="s6-sheetimg" src="../assets/03b-register-sheet.png" alt="Forecast register sheet" />
+            <svg class="s6-sheetovl" width="520" height="720" viewBox="0 0 520 720">
+              <rect id="s06-r1" x="18" y="110" width="322" height="26" rx="8" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+              <rect id="s06-r2" x="426" y="284" width="82" height="28" rx="8" fill="none" stroke="#e8590c" stroke-width="2" stroke-dasharray="1600" stroke-dashoffset="1600"/>
+            </svg>
+            <div class="chip" id="s06-chip1" style="left:18px; top:142px; font-size:17px;">6 sealed &middot; 0 scored &mdash; waiting for the first 24 h windows to close</div>
+            <div class="chip" id="s06-chip2" style="left:30px; top:340px; font-size:17px;">Sealed Oct 21, 12:40 AM &middot; on Bitcoin &middot; scored after Oct 22, 06:40 AM</div>
+          </div>
+          <div class="capwrap">
+          <span class="cap" id="c06-register-rule-cap1"><span class="pill">That is why forecasts now go on the record.<br>The register picks the three most active fires on each island by a fixed rule,</span></span>
+          <span class="cap" id="c06-register-rule-cap2"><span class="pill">applied automatically at issue time.<br>Nobody picks the easy fires.</span></span>
+          <span class="cap" id="c06-register-rule-cap3"><span class="pill">Each gets a live scenario, a twenty-four hour forecast, and a seal.</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true });
+  tl.set("#c06-register-rule-cap1", { opacity: 0 }, 0);
+  tl.fromTo("#c06-register-rule-cap1", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 0);
+  tl.to("#c06-register-rule-cap1", { opacity: 0, duration: 0.28, ease: "none" }, 5.92);
+  tl.set("#c06-register-rule-cap2", { opacity: 0 }, 0);
+  tl.fromTo("#c06-register-rule-cap2", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 6.2);
+  tl.to("#c06-register-rule-cap2", { opacity: 0, duration: 0.28, ease: "none" }, 11.12);
+  tl.set("#c06-register-rule-cap3", { opacity: 0 }, 0);
+  tl.fromTo("#c06-register-rule-cap3", { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "none" }, 11.4);
+  tl.to("#c06-register-rule-cap3", { opacity: 0, duration: 0.28, ease: "none" }, 17.7);
+
+  tl.fromTo("#s06-sheetwrap", { scale: 1.12 }, { scale: 1.18, duration: 18, ease: "power1.inOut" }, 0);
+  tl.fromTo(".s6-eyebrow, .s6-head", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.16 }, 0.2);
+  tl.fromTo(".s6-rule", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", stagger: 0.4 }, 2.2);
+  tl.fromTo(".s6-close", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 9.0);
+  tl.fromTo("#s06-r1", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 6.0);
+  tl.fromTo("#s06-chip1", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 6.4);
+  tl.fromTo("#s06-r2", { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, 10.0);
+  tl.fromTo("#s06-chip2", { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 10.4);
+
+        window.__timelines["06-register-rule"] = tl;
+      </script>
+    </template>
+  </body>
+</html>
