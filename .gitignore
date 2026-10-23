@@ -9,3 +9,5 @@ dist
 .claude/hook.cache.json
 tsconfig.tsbuildinfo
 video/hf/.hyperframes
+.vercel
+.env*
