@@ -50,6 +50,9 @@ async function anchor(hex: string): Promise<{ calendar: string; ots: Buffer } | 
 }
 
 async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
+  // Vercel's Node runtime has already read and parsed the body.
+  const pre = (req as IncomingMessage & { body?: unknown }).body;
+  if (pre !== undefined) return typeof pre === 'string' ? JSON.parse(pre || '{}') : (pre as Record<string, unknown>) ?? {};
   let body = '';
   for await (const chunk of req) { body += chunk; if (body.length > 4096) throw new Error('body too large'); }
   return JSON.parse(body || '{}');
@@ -57,10 +60,10 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
 
 const HEX64 = /^[0-9a-f]{64}$/;
 
-export function receiptProxy(getPem: () => string | undefined): Plugin {
+export function receiptHandler(getPem: () => string | undefined) {
   let key: KeyObject | null = null;
   const getKey = () => (key ??= loadKey(getPem()));
-  const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+  return async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     const path = (req.url ?? '').split('?')[0];
     if (!path.startsWith('/api/receipt/')) return next();
     res.setHeader('content-type', 'application/json');
@@ -89,6 +92,10 @@ export function receiptProxy(getPem: () => string | undefined): Plugin {
       return send(500, { error: e instanceof Error ? e.message : String(e) });
     }
   };
+}
+
+export function receiptProxy(getPem: () => string | undefined): Plugin {
+  const handler = receiptHandler(getPem);
   return {
     name: 'receipt-proxy',
     configureServer(server) { server.middlewares.use(handler); },

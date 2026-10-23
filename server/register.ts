@@ -25,24 +25,31 @@ function canonical(v: unknown): string {
 
 const fileFor = (hash: string) => readdirSync(DIR).find((f) => f.endsWith(`_${hash.slice(0, 16)}.json`));
 
+// Serverless hosts have a read-only filesystem: the register can be read there, but entries are
+// added and scored from a local run and published with the code.
+const READ_ONLY = !!process.env.VERCEL;
+
 async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
+  const pre = (req as IncomingMessage & { body?: unknown }).body;
+  if (pre !== undefined) return typeof pre === 'string' ? JSON.parse(pre || '{}') : (pre as Record<string, unknown>) ?? {};
   let body = '';
   for await (const chunk of req) { body += chunk; if (body.length > 4_000_000) throw new Error('body too large'); }
   return JSON.parse(body || '{}');
 }
 
-function handler(req: IncomingMessage, res: ServerResponse, next: () => void) {
+export function registerHandler(req: IncomingMessage, res: ServerResponse, next: () => void) {
   const path = (req.url ?? '').split('?')[0];
   if (path !== '/api/register' && path !== '/api/register/score') return next();
   res.setHeader('content-type', 'application/json');
   const send = (status: number, body: unknown) => { res.statusCode = status; res.end(JSON.stringify(body)); };
   (async () => {
-    mkdirSync(DIR, { recursive: true });
+    if (!READ_ONLY) mkdirSync(DIR, { recursive: true });
     if (req.method === 'GET' && path === '/api/register') {
       const entries = readdirSync(DIR).filter((f) => f.endsWith('.json')).sort().map((f) => JSON.parse(readFileSync(join(DIR, f), 'utf8')));
       return send(200, { entries });
     }
     if (req.method !== 'POST') return send(405, { error: 'method not allowed' });
+    if (READ_ONLY) return send(405, { error: 'The hosted register is read-only. Run SekatApi locally to seal or score a forecast; entries are published with the code.' });
     const body = await readJson(req);
     if (path === '/api/register') {
       const e = body.entry as { kind?: string; issuedAt?: string; record?: { receipt?: unknown; receiptSha256?: string } } | undefined;
@@ -70,7 +77,7 @@ function handler(req: IncomingMessage, res: ServerResponse, next: () => void) {
 export function registerStore(): Plugin {
   return {
     name: 'forecast-register',
-    configureServer(server) { server.middlewares.use(handler); },
-    configurePreviewServer(server) { server.middlewares.use(handler); },
+    configureServer(server) { server.middlewares.use(registerHandler); },
+    configurePreviewServer(server) { server.middlewares.use(registerHandler); },
   };
 }

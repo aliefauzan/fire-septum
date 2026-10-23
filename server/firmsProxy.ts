@@ -10,7 +10,7 @@ const SOURCES = ['VIIRS_SNPP_NRT', 'VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT'];
 const cache = new Map<string, { at: number; body: string }>();
 const TTL_MS = 10 * 60 * 1000; // FIRMS NRT updates every few hours; don't hammer it
 
-function handler(getKey: () => string | undefined) {
+export function firmsHandler(getKey: () => string | undefined) {
   return async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     if (!req.url?.startsWith('/api/firms')) return next();
     const u = new URL(req.url, 'http://local');
@@ -101,7 +101,7 @@ function snapshotNear(lat: number, lon: number, radiusKm: number) {
   return { origin: 'snapshot', snapshotAt: snap.fetchedAt, elements };
 }
 
-function osmHandler() {
+export function osmHandler() {
   return async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     const u = new URL(req.url ?? '/', 'http://local');
     res.setHeader('content-type', 'application/json');
@@ -153,7 +153,7 @@ function osmHandler() {
 export function firmsProxy(getKey: () => string | undefined): Plugin {
   return {
     name: 'data-proxy',
-    configureServer(server) { server.middlewares.use(handler(getKey)); server.middlewares.use(osmHandler()); },
-    configurePreviewServer(server) { server.middlewares.use(handler(getKey)); server.middlewares.use(osmHandler()); },
+    configureServer(server) { server.middlewares.use(firmsHandler(getKey)); server.middlewares.use(osmHandler()); },
+    configurePreviewServer(server) { server.middlewares.use(firmsHandler(getKey)); server.middlewares.use(osmHandler()); },
   };
 }

@@ -60,6 +60,8 @@ function validPlan(plan: unknown[], recs: RecIn[]): Pick[] {
 }
 
 async function readBody(req: IncomingMessage, limit = 200_000): Promise<string> {
+  const pre = (req as IncomingMessage & { body?: unknown }).body;
+  if (pre !== undefined) return typeof pre === 'string' ? pre : JSON.stringify(pre);
   let size = 0;
   const chunks: Buffer[] = [];
   for await (const c of req) {
@@ -70,7 +72,7 @@ async function readBody(req: IncomingMessage, limit = 200_000): Promise<string> 
   return Buffer.concat(chunks).toString('utf8');
 }
 
-function handler(getCfg: () => LlmConfig) {
+export function briefHandler(getCfg: () => LlmConfig) {
   return async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     if (!req.url?.startsWith('/api/brief')) return next();
     res.setHeader('content-type', 'application/json');
@@ -113,7 +115,7 @@ function handler(getCfg: () => LlmConfig) {
 export function briefProxy(getCfg: () => LlmConfig): Plugin {
   return {
     name: 'llm-brief',
-    configureServer(server) { server.middlewares.use(handler(getCfg)); },
-    configurePreviewServer(server) { server.middlewares.use(handler(getCfg)); },
+    configureServer(server) { server.middlewares.use(briefHandler(getCfg)); },
+    configurePreviewServer(server) { server.middlewares.use(briefHandler(getCfg)); },
   };
 }
