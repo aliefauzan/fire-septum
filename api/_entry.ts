@@ -1,4 +1,6 @@
-// Vercel serverless entry: every /api/* request lands here and is passed down the same
+// Vercel serverless entry (source). `npm run build:api` bundles it into api/index.js, which is
+// committed, because Vercel compiles TypeScript functions without bundling and the imports
+// below would not resolve at runtime. vercel.json rewrites every /api/* request to it and is passed down the same
 // handlers the Vite dev server uses (server/), so hosted and local behave alike.
 //   /api/firms, /api/osm, /api/osm-resources   live data (needs FIRMS_MAP_KEY for hotspots)
 //   /api/receipt/key|sign|anchor               Ed25519 signing (RECEIPT_ED25519_KEY) and OpenTimestamps
