@@ -1,12 +1,12 @@
-# SekatApi: peat-fire forecasts you can hold to account
+# Fire Septum: peat-fire forecasts you can hold to account
 
-> *Sekat api* means "fire barrier" in Indonesian.
+> The name translates the Indonesian *sekat api*, "fire barrier" (a septum is a dividing wall). Records sealed before 24 Oct 2026 were made under that first name, SekatApi; their format identifiers (`sekatapi.run-receipt`, `sekatapi-receipt-v1`) are kept so they still verify.
 
 **Track: Climate Data & Environmental Monitoring** (IEEE ClimateChain Global Hackathon 2026).
 
 **The challenge:** environmental data is fragmented and hard to verify. During Indonesia's karhutla (forest and land fire) season, the data a fire commander needs is scattered: NASA satellite hotspots, weather forecasts, terrain, rivers and roads. Forecasts and decisions made from it leave no record anyone can check later. Nobody can prove what a model said before the fire spread, so nobody knows which forecasts deserve trust.
 
-**What SekatApi does:** it joins those open data sources into one fire-spread forecast. Then it makes the forecast accountable:
+**What Fire Septum does:** it joins those open data sources into one fire-spread forecast. Then it makes the forecast accountable:
 1. **Forecast.** How a real fire is likely to spread over the next 24–48 h, with the uncertainty visible (40-run ensemble).
 2. **Seal before the outcome.** Each forecast is hashed, signed and timestamped on Bitcoin through OpenTimestamps *before* the satellites see what happens next. Anyone can re-run the sealed inputs and get bit-identical outputs.
 3. **Score in public.** After 24 h, the *Forecast register* scores every sealed forecast against NASA FIRMS detections and keeps it on the board, good or bad. A hindcast can be tuned after the fact; a pre-registered forecast cannot.
@@ -213,25 +213,25 @@ Caveats: smouldering peat radiates little to the sky, so GFAS fits a large peat 
 - When was that?
 - Has anything been changed since?
 
-Concession holders in Indonesia carry strict liability for fires on their land (UU 32/2009, Pasal 88), so these questions end up in audits and in court. SekatApi answers them with three layers. Each layer does one job:
+Concession holders in Indonesia carry strict liability for fires on their land (UU 32/2009, Pasal 88), so these questions end up in audits and in court. Fire Septum answers them with three layers. Each layer does one job:
 
 1. **Reproducible.** The simulation is deterministic: every random draw is a hash of (seed, step, cell, slot). A receipt stores the SHA-256 of:
    - every input: scenario, weather, the fire at t0, the plan, rates and seeds;
    - every output: ignition time, burn-out time and suppression for every cell in every run of both ensembles.
 
    The record file also carries the inputs themselves. *Check by re-running* or *Open record…* recomputes every hash and re-runs all runs. Any change to the plan, a rate or the weather breaks the match.
-2. **Signed.** The server signs `sekatapi-receipt-v1:<receipt hash>:<time>` with Ed25519. The key comes from `RECEIPT_ED25519_KEY`, or is generated once in `.cache/`. The browser verifies the signature with WebCrypto. The signature says which SekatApi instance issued the record and when. It does not vouch for the numbers; the re-run does that.
-3. **Timestamped on Bitcoin.** *Timestamp on Bitcoin* sends only the 64-character receipt hash to the public [OpenTimestamps](https://opentimestamps.org) calendars. The calendars commit it to a Bitcoin block within a few hours. *Download proof* saves the exact receipt bytes and a standard `.ots` file, which anyone can check without SekatApi:
+2. **Signed.** The server signs `fireseptum-receipt-v2:<receipt hash>:<time>` with Ed25519 (records from before 24 Oct 2026 used the prefix `sekatapi-receipt-v1`, and still verify). The key comes from `RECEIPT_ED25519_KEY`, or is generated once in `.cache/`. The browser verifies the signature with WebCrypto. The signature says which Fire Septum instance issued the record and when. It does not vouch for the numbers; the re-run does that.
+3. **Timestamped on Bitcoin.** *Timestamp on Bitcoin* sends only the 64-character receipt hash to the public [OpenTimestamps](https://opentimestamps.org) calendars. The calendars commit it to a Bitcoin block within a few hours. *Download proof* saves the exact receipt bytes and a standard `.ots` file, which anyone can check without Fire Septum:
 
    ```bash
    pip install opentimestamps-client
-   ots upgrade sekatapi-<hash>.receipt.json.ots   # once the block is confirmed
-   ots verify sekatapi-<hash>.receipt.json.ots
+   ots upgrade fireseptum-<hash>.receipt.json.ots   # once the block is confirmed
+   ots verify fireseptum-<hash>.receipt.json.ots
    ```
 
 **What blockchain is used for, and what not.** Bitcoin is used only as a public, append-only clock: one hash per decision, no wallet, no fee, no token. Fire data itself does not go on chain, and a smart contract could not make the simulation more correct. Re-running does that, at no cost.
 
-**Known limit.** Floating-point maths such as `Math.exp` can differ in the last bit between JavaScript engines. Identical hashes were confirmed for Node and Chromium (both V8). A record made in Chromium might not reproduce bit-for-bit in Safari or Firefox; the receipt notes which engine produced it.
+**Same bits in every browser.** ECMAScript lets `Math.exp`, `Math.atan` and friends differ in the last bit between engines, and one flipped bit can flip a random threshold. Since 24 Oct 2026 the simulation uses its own elementary functions (`src/sim/detmath.ts`, fdlibm algorithms built only from IEEE-exact operations), recorded in the run inputs as `math: 'det1'`. `node scripts/determinism.mjs` re-runs the recorded fire in Node, Chromium (V8), WebKit (JavaScriptCore) and Firefox (SpiderMonkey) and compares the output hashes; CI runs it on every push (`docs/determinism.json`). Older records name no maths and re-run with the engine's own `Math`, as they were made.
 
 ## Pre-registered forecasts: the forecast register
 
@@ -241,7 +241,7 @@ A hindcast is easy to fool yourself with: the model can be tuned until the past 
 2. **Forecast and seal.** For each place it builds the live scenario (FIRMS, Open-Meteo forecast, AWS terrain, OSM), runs the 40-run no-action forecast for 24 h, and seals it as a run receipt. The server signs the receipt, and its hash goes to OpenTimestamps right away. If the timestamp fails, nothing is stored.
 3. **Store.** The entry is written to `data/register/<UTC hour>_<hash>.json` with everything needed to re-run it. Entries are never overwritten (`server/register.ts`).
 4. **Score after 24 h.** *Score due* waits until 24 h + 6 h (FIRMS latency) have passed. It re-runs the sealed inputs, which must reproduce the sealed output hash, and fetches the FIRMS detections acquired in (sealed, sealed + 24 h]. It scores new fire only, exactly like a hindcast. The score is written once; anyone can recompute it from FIRMS.
-5. **Check without SekatApi.** `node scripts/export-proofs.mjs` writes each receipt and its `.ots` proof to `proofs/`, for `ots upgrade` and `ots verify`.
+5. **Check without Fire Septum.** `node scripts/export-proofs.mjs` writes each receipt and its `.ots` proof to `proofs/`, for `ots upgrade` and `ots verify`.
 
 **Why the timestamp matters.** The proof shows that the forecast existed before the Bitcoin block that confirms it, usually within a few hours of sealing. VIIRS satellites pass over Indonesia about twice a day per satellite, mostly around 01:30 and 13:30 local time. A forecast sealed soon after a pass is in a block before the next pass observes anything. A strict auditor can start the window at the block time instead.
 

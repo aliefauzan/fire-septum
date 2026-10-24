@@ -1,0 +1,39 @@
+{
+ "ranAt": "2026-10-24T11:00:50.509Z",
+ "scenario": "src/data/events/kalimantan-2026-10-18.json, 40 runs, no actions",
+ "det1Identical": true,
+ "nativeIdentical": true,
+ "results": [
+  {
+   "engine": "V8 (Node)",
+   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "ms": 246
+  },
+  {
+   "engine": "V8 (Chromium)",
+   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "ms": 231,
+   "browser": "chromium 141.0.7390.37"
+  },
+  {
+   "engine": "firefox",
+   "error": "TimeoutError: browserType.launch: Timeout 45000ms exceeded."
+  },
+  {
+   "engine": "JavaScriptCore (Safari)",
+   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "ms": 346,
+   "browser": "webkit 26.0"
+  },
+  {
+   "engine": "SpiderMonkey (js shell)",
+   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
+   "ms": 242,
+   "browser": "SpiderMonkey shell "
+  }
+ ]
+}

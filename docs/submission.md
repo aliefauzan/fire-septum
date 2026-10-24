@@ -4,7 +4,7 @@ Paste section by section into the Devpost form. Numbers are as of 21 Oct 2026; u
 
 ## Track
 
-**Climate Data & Environmental Monitoring.** The track's problem is that environmental data is fragmented and hard to verify. SekatApi joins fragmented open fire data into one forecast. Then it makes every forecast verifiable: it is sealed and timestamped on Bitcoin before the outcome, reproducible bit for bit, and scored in public against NASA satellites. It is a *climate data verification platform* for wildfire forecasts, one of the builds the track lists.
+**Climate Data & Environmental Monitoring.** The track's problem is that environmental data is fragmented and hard to verify. Fire Septum joins fragmented open fire data into one forecast. Then it makes every forecast verifiable: it is sealed and timestamped on Bitcoin before the outcome, reproducible bit for bit, and scored in public against NASA satellites. It is a *climate data verification platform* for wildfire forecasts, one of the builds the track lists.
 
 ## Inspiration
 
@@ -27,7 +27,7 @@ TypeScript, React and Vite, with three.js for 3D terrain. The fire model is the 
 - **Hindcast, 12 fires, 8–18 Oct 2026.** The first model spread ~6× too much new fire (CSI 0.17, no better than distance alone, 0.16). We slowed spread using Kalimantan events only. On held-out Sumatra, CSI rose from 0.08 to 0.11, against 0.09 for distance-only. Pooled CSI is 0.22 vs 0.17 with the synthetic fuel map, and 0.23 vs 0.18 after the re-run with the real peat and land-cover map (24 Oct). That is small, and we say so.
 - **Reproducibility.** Re-running all 12 hindcasts from scratch a day later gave identical counts.
 - **Pre-registered forecasts.** 6 forecasts (3 Kalimantan, 3 Sumatra) were sealed and timestamped on 21 Oct 2026 before their outcome existed. [Update with scores before submitting.]
-- **Third-party check.** The `.ots` proofs parse in the reference OpenTimestamps client (`ots info`, `ots verify`), with no SekatApi code involved. At writing they were pending Bitcoin confirmation; run `ots upgrade` and re-check before submitting.
+- **Third-party check.** The `.ots` proofs parse in the reference OpenTimestamps client (`ots info`, `ots verify`), with no Fire Septum code involved. At writing they were pending Bitcoin confirmation; run `ots upgrade` and re-check before submitting.
 
 ## Who it is for and how it scales
 

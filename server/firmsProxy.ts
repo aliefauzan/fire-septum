@@ -72,7 +72,7 @@ async function overpass(q: string, key: string, timeoutMs: number, deadlineMs = 
     try {
       const r = await fetch(url, {
         method: 'POST',
-        headers: { 'User-Agent': 'SekatApi/0.1 (IEEE ClimateChain hackathon prototype)', 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'User-Agent': 'FireSeptum/0.2 (IEEE ClimateChain hackathon prototype)', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ data: q }),
         signal: AbortSignal.timeout(Math.min(timeoutMs, left)),
       });

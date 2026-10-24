@@ -10,7 +10,7 @@ const MIRRORS = [
   'https://overpass.kumi.systems/api/interpreter',
 ];
 const REGIONS = { kalimantan: '-4.6,108.5,4.6,119.5', sumatra: '-6.2,94.9,6.2,106.8' };
-const UA = 'SekatApi/0.1 (IEEE ClimateChain hackathon prototype)';
+const UA = 'FireSeptum/0.2 (IEEE ClimateChain hackathon prototype)';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function query(bbox) {

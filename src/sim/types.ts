@@ -1,3 +1,4 @@
+import type { MathMode } from './detmath';
 import type { Rates } from './doctrine';
 
 // Core data types for the Fire Septum wildfire decision-support simulator.
@@ -219,6 +220,11 @@ export interface SimParams {
   tauH: number;
   /** Production rates, tactic thresholds and logistics (see doctrine.ts for sources). */
   rates: Rates;
+  /**
+   * Which elementary functions the run uses (detmath.ts). 'det1' gives the same bits in every
+   * JavaScript engine. Unset in records made before 24 Oct 2026: those used the engine's Math.
+   */
+  math?: MathMode;
 }
 
 /** Result of one stochastic run: per-cell ignition and end time in hours (-1 = never). */

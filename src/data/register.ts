@@ -4,7 +4,7 @@ import { observedEmissions, scenarioNow } from '../sim/frp';
 import { scoreHindcast } from '../sim/hindcast';
 import { DEFAULT_PARAMS } from '../sim/model';
 import { buildReceipt, checkRecord, decode, encode, engineLabel, outputsDigest, type RunInputs, type RunRecord } from '../sim/receipt';
-import { REGISTER_WINDOW_H, observedInWindow, type RegisterEntry, type RegisterScore } from '../sim/register';
+import { ENTRY_KIND, REGISTER_WINDOW_H, observedInWindow, type RegisterEntry, type RegisterScore } from '../sim/register';
 import type { EnsembleResult, Scenario, SimParams } from '../sim/types';
 import { bboxAround, buildLiveScenario } from './live';
 import { fetchHotspots } from './firms';
@@ -48,7 +48,7 @@ export async function issueForecast(lat: number, lon: number, rule: string, run:
   // A forecast without a timestamp proves nothing about when it was made, so this must succeed.
   record.anchor = await post('/api/receipt/anchor', { receiptSha256 });
   const entry: RegisterEntry = {
-    v: 1, kind: 'sekatapi.preregistered-forecast',
+    v: 2, kind: ENTRY_KIND[2],
     issuedAt: receipt.createdAt, lat, lon, windowH: REGISTER_WINDOW_H, rule, record,
   };
   await post('/api/register', { entry });

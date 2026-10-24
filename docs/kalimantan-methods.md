@@ -1,4 +1,4 @@
-# What crews do against karhutla in Kalimantan, and what SekatApi simulates
+# What crews do against karhutla in Kalimantan, and what Fire Septum simulates
 
 Researched 20 Oct 2026. [P] = official or primary source, [S] = media or second-hand. "Not found" means we searched and found no published number, so the simulator uses an editable placeholder (marked "assumption" in Resources → Rates and limits).
 

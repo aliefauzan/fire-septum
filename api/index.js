@@ -180,7 +180,7 @@ async function overpass(q, key, timeoutMs, deadlineMs = Infinity) {
     try {
       const r = await fetch(url, {
         method: "POST",
-        headers: { "User-Agent": "SekatApi/0.1 (IEEE ClimateChain hackathon prototype)", "Content-Type": "application/x-www-form-urlencoded" },
+        headers: { "User-Agent": "FireSeptum/0.2 (IEEE ClimateChain hackathon prototype)", "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ data: q }),
         signal: AbortSignal.timeout(Math.min(timeoutMs, left))
       });
@@ -301,7 +301,7 @@ async function anchor(hex) {
     try {
       const r = await fetch(`${cal}/digest`, {
         method: "POST",
-        headers: { Accept: "application/vnd.opentimestamps.v1", "User-Agent": "SekatApi/0.1 (IEEE ClimateChain hackathon prototype)" },
+        headers: { Accept: "application/vnd.opentimestamps.v1", "User-Agent": "FireSeptum/0.2 (IEEE ClimateChain hackathon prototype)" },
         body: digest,
         signal: AbortSignal.timeout(1e4)
       });
@@ -345,9 +345,11 @@ function receiptHandler(getPem) {
       const hash = String(body.receiptSha256 ?? "");
       if (!HEX64.test(hash)) return send(400, { error: "receiptSha256 must be 64 lowercase hex digits" });
       if (path === "/api/receipt/sign") {
+        const scheme = String(body.scheme ?? "fireseptum-receipt-v2");
+        if (scheme !== "fireseptum-receipt-v2" && scheme !== "sekatapi-receipt-v1") return send(400, { error: "unknown signature scheme" });
         const signedAt = (/* @__PURE__ */ new Date()).toISOString();
-        const sig = sign(null, Buffer.from(`sekatapi-receipt-v1:${hash}:${signedAt}`), getKey()).toString("base64");
-        return send(200, { alg: "Ed25519", publicKey, keyId, signedAt, sig });
+        const sig = sign(null, Buffer.from(`${scheme}:${hash}:${signedAt}`), getKey()).toString("base64");
+        return send(200, { alg: "Ed25519", scheme, publicKey, keyId, signedAt, sig });
       }
       if (path === "/api/receipt/anchor") {
         const a = await anchor(hash);
@@ -402,12 +404,12 @@ function registerHandler(req, res, next) {
       return send(200, { entries });
     }
     if (req.method !== "POST") return send(405, { error: "method not allowed" });
-    if (READ_ONLY) return send(405, { error: "The hosted register is read-only. Run SekatApi locally to seal or score a forecast; entries are published with the code." });
+    if (READ_ONLY) return send(405, { error: "The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code." });
     const body = await readJson2(req);
     if (path === "/api/register") {
       const e = body.entry;
       const hash2 = String(e?.record?.receiptSha256 ?? "");
-      if (e?.kind !== "sekatapi.preregistered-forecast" || !HEX642.test(hash2) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: "not a register entry" });
+      if (e?.kind !== "fireseptum.preregistered-forecast" && e?.kind !== "sekatapi.preregistered-forecast" || !HEX642.test(hash2) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: "not a register entry" });
       if (createHash2("sha256").update(canonical(e.record.receipt)).digest("hex") !== hash2) return send(400, { error: "receipt does not match its hash" });
       if (fileFor(hash2)) return send(409, { error: "already registered" });
       const name = `${e.issuedAt.slice(0, 13).replace(/[-:T]/g, "")}_${hash2.slice(0, 16)}.json`;

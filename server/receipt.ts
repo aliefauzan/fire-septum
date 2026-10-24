@@ -1,9 +1,10 @@
 // Vite dev/preview middleware for run receipts.
 //   GET  /api/receipt/key                   → this instance's Ed25519 public key
-//   POST /api/receipt/sign   {receiptSha256} → signature over "sekatapi-receipt-v1:<hash>:<signedAt>"
+//   POST /api/receipt/sign   {receiptSha256, scheme?} → signature over "<scheme>:<hash>:<signedAt>",
+//                                             scheme 'fireseptum-receipt-v2' (default) or 'sekatapi-receipt-v1'
 //   POST /api/receipt/anchor {receiptSha256} → OpenTimestamps proof (.ots, base64) for that hash
 // The server only ever sees a 64-hex-digit hash, never the scenario. A signature says
-// "this SekatApi instance saw this receipt at signedAt"; whether the numbers are right
+// "this Fire Septum instance saw this receipt at signedAt"; whether the numbers are right
 // is checked by re-running the simulation, not by trusting the key.
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sign, type KeyObject } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -42,7 +43,7 @@ async function anchor(hex: string): Promise<{ calendar: string; ots: Buffer } | 
     try {
       const r = await fetch(`${cal}/digest`, {
         method: 'POST',
-        headers: { Accept: 'application/vnd.opentimestamps.v1', 'User-Agent': 'SekatApi/0.1 (IEEE ClimateChain hackathon prototype)' },
+        headers: { Accept: 'application/vnd.opentimestamps.v1', 'User-Agent': 'FireSeptum/0.2 (IEEE ClimateChain hackathon prototype)' },
         body: digest,
         signal: AbortSignal.timeout(10_000),
       });
@@ -83,9 +84,12 @@ export function receiptHandler(getPem: () => string | undefined) {
       const hash = String(body.receiptSha256 ?? '');
       if (!HEX64.test(hash)) return send(400, { error: 'receiptSha256 must be 64 lowercase hex digits' });
       if (path === '/api/receipt/sign') {
+        // Version 1 records were made under the first name (SekatApi) and keep their prefix.
+        const scheme = String(body.scheme ?? 'fireseptum-receipt-v2');
+        if (scheme !== 'fireseptum-receipt-v2' && scheme !== 'sekatapi-receipt-v1') return send(400, { error: 'unknown signature scheme' });
         const signedAt = new Date().toISOString();
-        const sig = sign(null, Buffer.from(`sekatapi-receipt-v1:${hash}:${signedAt}`), getKey()).toString('base64');
-        return send(200, { alg: 'Ed25519', publicKey, keyId, signedAt, sig });
+        const sig = sign(null, Buffer.from(`${scheme}:${hash}:${signedAt}`), getKey()).toString('base64');
+        return send(200, { alg: 'Ed25519', scheme, publicKey, keyId, signedAt, sig });
       }
       if (path === '/api/receipt/anchor') {
         const a = await anchor(hash);

@@ -92,9 +92,24 @@ export async function outputsDigest(base: EnsembleResult, plan: EnsembleResult):
   return sha256Hex(all);
 }
 
+/**
+ * Record formats this code reads. Version 1 was written under the project's first name,
+ * SekatApi; those records, their signatures and their Bitcoin timestamps stay valid, so the
+ * old identifiers are kept here and only new records use version 2.
+ */
+export const RECEIPT_KIND = { 1: 'sekatapi.run-receipt', 2: 'fireseptum.run-receipt' } as const;
+export const SIGNATURE_SCHEME = { 1: 'sekatapi-receipt-v1', 2: 'fireseptum-receipt-v2' } as const;
+export type SignatureScheme = (typeof SIGNATURE_SCHEME)[keyof typeof SIGNATURE_SCHEME];
+export const RECEIPT_VERSION = 2;
+
+export const isRunRecord = (r: unknown): r is RunRecord => {
+  const k = (r as RunRecord | null)?.receipt?.kind;
+  return k === RECEIPT_KIND[1] || k === RECEIPT_KIND[2];
+};
+
 export interface Receipt {
-  v: 1;
-  kind: 'sekatapi.run-receipt';
+  v: 1 | 2;
+  kind: (typeof RECEIPT_KIND)[1 | 2];
   createdAt: string;
   scenario: { id: string; title: string; provenance: Scenario['provenance'] };
   horizonH: number;
@@ -115,6 +130,8 @@ export interface Receipt {
 
 export interface Signature {
   alg: 'Ed25519';
+  /** Prefix of the signed message. Unset in version 1 signatures, which used 'sekatapi-receipt-v1'. */
+  scheme?: SignatureScheme;
   /** Raw 32-byte public key, base64. */
   publicKey: string;
   /** First 16 hex digits of SHA-256(public key). */
@@ -141,7 +158,7 @@ export interface RunRecord {
   inputs: unknown; // encode(RunInputs)
 }
 
-export const signedMessage = (receiptSha256: string, signedAt: string) => `sekatapi-receipt-v1:${receiptSha256}:${signedAt}`;
+export const signedMessage = (receiptSha256: string, signedAt: string, scheme: SignatureScheme = SIGNATURE_SCHEME[2]) => `${scheme}:${receiptSha256}:${signedAt}`;
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
 
@@ -149,8 +166,8 @@ export async function buildReceipt(inputs: RunInputs, base: EnsembleResult, plan
   const s = pairedSaving(base, plan);
   const hasPlan = inputs.actions.length > 0;
   const receipt: Receipt = {
-    v: 1,
-    kind: 'sekatapi.run-receipt',
+    v: 2,
+    kind: RECEIPT_KIND[2],
     createdAt: new Date().toISOString(),
     scenario: { id: inputs.scenario.id, title: inputs.scenario.title, provenance: inputs.scenario.provenance },
     horizonH: inputs.scenario.horizonH,
@@ -184,7 +201,7 @@ function round(x: number, dp = 1) {
 /** Verify an Ed25519 signature in the browser (WebCrypto). */
 export async function verifySignature(receiptSha256: string, s: Signature): Promise<boolean> {
   const key = await crypto.subtle.importKey('raw', fromB64(s.publicKey) as BufferSource, { name: 'Ed25519' }, false, ['verify']);
-  return crypto.subtle.verify('Ed25519', key, fromB64(s.sig) as BufferSource, new TextEncoder().encode(signedMessage(receiptSha256, s.signedAt)) as BufferSource);
+  return crypto.subtle.verify('Ed25519', key, fromB64(s.sig) as BufferSource, new TextEncoder().encode(signedMessage(receiptSha256, s.signedAt, s.scheme ?? SIGNATURE_SCHEME[1])) as BufferSource);
 }
 
 export interface CheckResult {

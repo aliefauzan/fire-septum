@@ -4,6 +4,8 @@
 // intervention can then only change outcomes through its physical effect, which
 // makes paired comparisons far less noisy than independent ensembles.
 
+import type { MathLib } from './detmath';
+
 export function hash4(a: number, b: number, c: number, d: number): number {
   let h = Math.imul(a ^ 0x9e3779b9, 0x85ebca6b);
   h = Math.imul(h ^ (h >>> 13) ^ b, 0xc2b2ae35);
@@ -25,10 +27,10 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-export function gaussian(rand: () => number): number {
+export function gaussian(rand: () => number, m: Pick<MathLib, 'sqrt' | 'log' | 'cos'> = Math): number {
   const u = Math.max(1e-12, rand());
   const v = rand();
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  return m.sqrt(-2 * m.log(u)) * m.cos(2 * Math.PI * v);
 }
 
 /** Smooth value noise in [0,1] for synthetic terrain and fuel texture. */

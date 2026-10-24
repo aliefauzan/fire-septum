@@ -1,6 +1,6 @@
 # Research notes (20 Oct 2026)
 
-Sources the user pointed to, and what SekatApi takes from each. Social posts were read through agent-reach burner accounts, read-only. Quote-posts could not be fetched because X search returned 404.
+Sources the user pointed to, and what Fire Septum takes from each. Social posts were read through agent-reach burner accounts, read-only. Quote-posts could not be fetched because X search returned 404.
 
 ## Claude post (x.com/claudeai/status/2111177834127601902)
 
@@ -44,7 +44,7 @@ K. Köse, N. Grammalidis, E. Yılmaz, and E. Çetin, "3D forest fire propagation
 
 Method: fireLib, which derives from BEHAVE and the Rothermel model, run on a grid. Each cell has a fuel model, moisture, slope and aspect. Wind, moisture and fuel can change over time. Rain on previous days wets fuel. Slope and aspect come from SRTM with a 3×3 Horn kernel. Output is an ignition-time map exported as KMZ.
 
-What SekatApi uses from it:
+What Fire Septum uses from it:
 - the Horn kernel (`slopeAspect` in `src/sim/landscape.ts`)
 - weather that changes hour by hour
 - antecedent rain as a dryness term (`Scenario.antecedentRainMm`, computed from 72 h of Open-Meteo history)

@@ -7,6 +7,7 @@
 //   assumption – no published value found; our placeholder, meant to be overridden
 // The UI shows the status next to each number and lets the user edit it.
 
+import type { MathLib } from './detmath';
 import type { FuelId } from './types';
 
 export type SourceStatus = 'verified' | 'secondary' | 'assumption';
@@ -313,7 +314,7 @@ export function dropsPerHeliHour(r: Pick<Rates, 'dipKm' | 'heliCruiseKmh' | 'hel
 }
 
 /** Byram flame length (m) from fireline intensity (kW/m). */
-export const flameLengthM = (intensityKWm: number) => 0.0775 * Math.pow(Math.max(0, intensityKWm), 0.46);
+export const flameLengthM = (intensityKWm: number, m: Pick<MathLib, 'pow'> = Math) => 0.0775 * m.pow(Math.max(0, intensityKWm), 0.46);
 
 /** IRPG / Andrews & Rothermel interpretation of a flame length. */
 export function flameBand(L: number, r: Pick<Rates, 'crewMaxFlameM' | 'equipMaxFlameM' | 'headMaxFlameM'>): { band: 0 | 1 | 2 | 3; text: string } {

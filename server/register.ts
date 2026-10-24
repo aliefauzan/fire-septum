@@ -49,12 +49,12 @@ export function registerHandler(req: IncomingMessage, res: ServerResponse, next:
       return send(200, { entries });
     }
     if (req.method !== 'POST') return send(405, { error: 'method not allowed' });
-    if (READ_ONLY) return send(405, { error: 'The hosted register is read-only. Run SekatApi locally to seal or score a forecast; entries are published with the code.' });
+    if (READ_ONLY) return send(405, { error: 'The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code.' });
     const body = await readJson(req);
     if (path === '/api/register') {
       const e = body.entry as { kind?: string; issuedAt?: string; record?: { receipt?: unknown; receiptSha256?: string } } | undefined;
       const hash = String(e?.record?.receiptSha256 ?? '');
-      if (e?.kind !== 'sekatapi.preregistered-forecast' || !HEX64.test(hash) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: 'not a register entry' });
+      if ((e?.kind !== 'fireseptum.preregistered-forecast' && e?.kind !== 'sekatapi.preregistered-forecast') || !HEX64.test(hash) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: 'not a register entry' });
       // The record must hash to what it claims, so a stored entry is self-consistent.
       if (createHash('sha256').update(canonical(e.record!.receipt)).digest('hex') !== hash) return send(400, { error: 'receipt does not match its hash' });
       if (fileFor(hash)) return send(409, { error: 'already registered' });

@@ -3,7 +3,7 @@ import { emissions, fmtTonnes } from '../sim/carbon';
 import { observedEmissions, scenarioNow } from '../sim/frp';
 import type { SimClient } from '../sim/client';
 import {
-  buildReceipt, canonical, checkRecord, decode, encode, engineLabel, fromB64, outputsDigest,
+  buildReceipt, canonical, checkRecord, decode, encode, engineLabel, fromB64, isRunRecord, outputsDigest,
   type CheckResult, type RunInputs, type RunRecord,
 } from '../sim/receipt';
 import type { Action, EnsembleResult, Scenario, SimParams } from '../sim/types';
@@ -81,7 +81,7 @@ export function RecordPanel(p: {
     return () => window.clearInterval(id);
   }, [state]);
   const ready = !!p.base && !!p.plan && !p.busy;
-  const name = rec ? `sekatapi-${rec.receiptSha256.slice(0, 12)}` : '';
+  const name = rec ? `fireseptum-${rec.receiptSha256.slice(0, 12)}` : '';
 
   const seal = async () => {
     if (!p.base || !p.plan) return;
@@ -131,7 +131,7 @@ export function RecordPanel(p: {
   const openFile = async (f: File) => {
     try {
       const r = JSON.parse(await f.text()) as RunRecord;
-      if (r.receipt?.kind !== 'sekatapi.run-receipt') throw new Error('Not a Fire Septum record.');
+      if (!isRunRecord(r)) throw new Error('Not a Fire Septum record.');
       setRec(r);
       await check(r);
     } catch (e) {

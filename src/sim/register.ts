@@ -19,9 +19,12 @@ export interface RegisterScore {
   result: HindcastScore;
 }
 
+/** Entry formats. Version 1 entries were written under the project's first name, SekatApi. */
+export const ENTRY_KIND = { 1: 'sekatapi.preregistered-forecast', 2: 'fireseptum.preregistered-forecast' } as const;
+
 export interface RegisterEntry {
-  v: 1;
-  kind: 'sekatapi.preregistered-forecast';
+  v: 1 | 2;
+  kind: (typeof ENTRY_KIND)[1 | 2];
   /** When the forecast was sealed. The observation window starts here. */
   issuedAt: string;
   lat: number;

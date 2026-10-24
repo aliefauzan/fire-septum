@@ -89,7 +89,7 @@ export function RegisterPanel({ run, onOpen }: { run: Runner; onOpen: (r: RunInp
         <ol className="list">
           {[...(entries ?? [])].sort((a, b) => b.issuedAt.localeCompare(a.issuedAt)).map((e) => {
             const r = e.score?.result;
-            const name = `sekatapi-${e.record.receiptSha256.slice(0, 12)}`;
+            const name = `fireseptum-${e.record.receiptSha256.slice(0, 12)}`;
             return (
               <li key={e.record.receiptSha256} className="row-item">
                 <div className="row-head static">

@@ -17,6 +17,7 @@
 //   * suppression effects: wetting (water/retardant), control lines, crews.
 
 import { DEFAULT_RATES, chainsToCells, dropsPerHeliHour, flameLengthM, perFuel, type Rates } from './doctrine';
+import { NATIVE, mathLib, type MathLib } from './detmath';
 import { FUEL_LIST, ON_PEAT } from './fuels';
 import { cloneState } from './landscape';
 import { gaussian, hash4, mulberry32 } from './rng';
@@ -47,27 +48,31 @@ export const DEFAULT_PARAMS: SimParams = {
   // it also beat τ = 3 h on held-out Sumatra. τ = 3 h spread about 6× too much new fire.
   tauH: 6,
   rates: DEFAULT_RATES,
+  // Engine-independent maths, so a record re-runs bit-for-bit in Chromium, Firefox and Safari.
+  math: 'det1',
 };
 
 /** Hectares one bucket drop knocks down: bucket litres ÷ litres needed per hectare. */
 export const dropHa = (r: Rates) => r.bucketL / Math.max(100, r.coverageLPerHa);
 
 // 8-neighbourhood, bearing measured clockwise from north (y grows south).
-const NEIGH = [
-  [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1],
-].map(([dx, dy]) => ({ dx, dy, dist: Math.hypot(dx, dy), bearing: Math.atan2(dx, -dy) }));
+const OFFSETS = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+const neighFor = (m: MathLib) => OFFSETS.map(([dx, dy]) => ({ dx, dy, dist: m.hypot(dx, dy), bearing: m.atan2(dx, -dy) }));
+const NEIGH = neighFor(NATIVE);
+const NEIGH_BY_LIB = new Map<MathLib, typeof NEIGH>([[NATIVE, NEIGH]]);
+const neighOf = (m: MathLib) => NEIGH_BY_LIB.get(m) ?? NEIGH_BY_LIB.set(m, neighFor(m)).get(m)!;
 
 /** Fuel dryness multiplier (heuristic). ~1.6 at RH 40 %, ~1 at RH 55 %, ~0.3 at RH 90 %. */
-export function dryness(w: WeatherHour, antecedentRainMm = 0): number {
-  const rhF = Math.min(1.6, Math.max(0.25, Math.exp(-0.035 * (w.rh - 55))));
-  const rainF = Math.exp(-0.6 * w.precipMm) * Math.exp(-0.02 * antecedentRainMm);
+export function dryness(w: WeatherHour, antecedentRainMm = 0, m: MathLib = NATIVE): number {
+  const rhF = Math.min(1.6, Math.max(0.25, m.exp(-0.035 * (w.rh - 55))));
+  const rainF = m.exp(-0.6 * w.precipMm) * m.exp(-0.02 * antecedentRainMm);
   const tempF = Math.max(0.5, 1 + 0.015 * (w.tempC - 30));
   return rhF * rainF * tempF;
 }
 
 /** Wind term p_w of Alexandridis et al. for a spread direction differing by θ (radians) from the wind. */
-export function windFactor(windMs: number, theta: number): number {
-  return Math.exp(C1 * windMs) * Math.exp(C2 * windMs * (Math.cos(theta) - 1));
+export function windFactor(windMs: number, theta: number, m: MathLib = NATIVE): number {
+  return m.exp(C1 * windMs) * m.exp(C2 * windMs * (m.cos(theta) - 1));
 }
 
 export function weatherAt(weather: WeatherHour[], tH: number): WeatherHour {
@@ -82,12 +87,12 @@ export function weatherAt(weather: WeatherHour[], tH: number): WeatherHour {
  * (cell size × head-fire hazard / τ), then L = 0.0775·I^0.46. Because R comes
  * from this simplified model, treat the result as a class, not a measurement.
  */
-export function flameLengthAt(fuelIdx: number, w: WeatherHour, params: Pick<SimParams, 'tauH' | 'rates'>, cellM: number, antecedentRainMm = 0): number {
+export function flameLengthAt(fuelIdx: number, w: WeatherHour, params: Pick<SimParams, 'tauH' | 'rates'>, cellM: number, antecedentRainMm = 0, m: MathLib = NATIVE): number {
   const f = FUEL_LIST[fuelIdx];
   if (!f.burnable) return 0;
-  const pHead = PH * (1 + f.pveg) * (1 + f.pden) * Math.exp(C1 * (w.windKmh / 3.6)) * dryness(w, antecedentRainMm);
+  const pHead = PH * (1 + f.pveg) * (1 + f.pden) * m.exp(C1 * (w.windKmh / 3.6)) * dryness(w, antecedentRainMm, m);
   const rosMs = (cellM * pHead) / (params.tauH * 3600);
-  return flameLengthM(params.rates.heatKJkg * perFuel(params.rates.fuelLoadKgM2, f.id) * rosMs);
+  return flameLengthM(params.rates.heatKJkg * perFuel(params.rates.fuelLoadKgM2, f.id) * rosMs, m);
 }
 
 /** 4-connected line (Bresenham with diagonal steps split) so diagonal spread cannot slip through. */
@@ -207,6 +212,8 @@ export function runOnce(
 ): RunOutput {
   const l = scn.landscape;
   const n = l.w * l.h;
+  const M = mathLib(params.math);
+  const NB = neighOf(M);
   const s = cloneState(scn.init);
   const ign = new Float32Array(n).fill(-1);
   const out = new Float32Array(n).fill(-1);
@@ -221,9 +228,9 @@ export function runOnce(
 
   // Per-run weather perturbation (constant offsets per member).
   const rnd = mulberry32(seed * 7919 + 13);
-  const dirOff = opts.central ? 0 : gaussian(rnd) * params.windDirSdDeg;
-  const spdMul = opts.central ? 1 : Math.max(0.3, 1 + gaussian(rnd) * params.windSpeedSdFrac);
-  const rhOff = opts.central ? 0 : gaussian(rnd) * params.rhSd;
+  const dirOff = opts.central ? 0 : gaussian(rnd, M) * params.windDirSdDeg;
+  const spdMul = opts.central ? 1 : Math.max(0.3, 1 + gaussian(rnd, M) * params.windSpeedSdFrac);
+  const rhOff = opts.central ? 0 : gaussian(rnd, M) * params.rhSd;
 
   const dt = params.dtH;
   const dtOverTau = dt / params.tauH;
@@ -273,13 +280,13 @@ export function runOnce(
     };
     const windMs = w.windKmh / 3.6;
     const spreadDir = (((w.windFromDeg + 180) % 360) * Math.PI) / 180;
-    const pw = NEIGH.map((nb) => windFactor(windMs, nb.bearing - spreadDir));
-    const dry = dryness(w, opts.antecedentRainMm ?? 0);
+    const pw = NB.map((nb) => windFactor(windMs, nb.bearing - spreadDir, M));
+    const dry = dryness(w, opts.antecedentRainMm ?? 0, M);
     // A finished control line removes most fuel; it leaks a little more in strong wind.
     const brkEff = Math.min(0.99, Math.max(0.85, 0.99 - 0.003 * w.windKmh));
     const wetTau = 6 * Math.max(0.5, w.rh / 60);
     // Flame length per fuel this step (IRPG tactic limits apply to it).
-    const flame = FUEL_LIST.map((_, fi) => flameLengthAt(fi, w, params, l.cellM, opts.antecedentRainMm ?? 0));
+    const flame = FUEL_LIST.map((_, fi) => flameLengthAt(fi, w, params, l.cellM, opts.antecedentRainMm ?? 0, M));
 
     // ── Suppression actions ──
     compiled.forEach((c, ci) => {
@@ -340,7 +347,7 @@ export function runOnce(
           if (flame[l.fuel[k]] >= R.crewMaxFlameM) continue; // IRPG: too hot for hand tools
           const x = k % l.w, y = (k / l.w) | 0;
           let edge = false;
-          for (const nb of NEIGH) {
+          for (const nb of NB) {
             const xx = x + nb.dx, yy = y + nb.dy;
             if (xx >= 0 && yy >= 0 && xx < l.w && yy < l.h && s.state[yy * l.w + xx] === Cell.Fuel) { edge = true; break; }
           }
@@ -360,19 +367,19 @@ export function runOnce(
       const x = k % l.w, y = (k / l.w) | 0;
       const hk = l.elev[k];
       for (let ni = 0; ni < 8; ni++) {
-        const nb = NEIGH[ni];
+        const nb = NB[ni];
         const xx = x + nb.dx, yy = y + nb.dy;
         if (xx < 0 || yy < 0 || xx >= l.w || yy >= l.h) continue;
         const j = yy * l.w + xx;
         if (s.state[j] !== Cell.Fuel || pending[j]) continue;
         const f = FUEL_LIST[l.fuel[j]];
-        const thetaS = (Math.atan((l.elev[j] - hk) / (nb.dist * l.cellM)) * 180) / Math.PI;
+        const thetaS = (M.atan((l.elev[j] - hk) / (nb.dist * l.cellM)) * 180) / Math.PI;
         const p =
-          PH * (1 + f.pveg) * (1 + f.pden) * pw[ni] * Math.exp(A_SLOPE * thetaS) * dry *
+          PH * (1 + f.pveg) * (1 + f.pden) * pw[ni] * M.exp(A_SLOPE * thetaS) * dry *
           (1 - 0.9 * s.wet[j]) * (1 - brkEff * s.brk[j]);
         // Treat p_burn as a hazard so it rescales to our step length and keeps
         // wind/slope anisotropy when p > 1: p_step = 1 − exp(−p · dt/τ).
-        const pStep = 1 - Math.exp(-p * dtOverTau);
+        const pStep = 1 - M.exp(-p * dtOverTau);
         if (hash4(seed, step, k, ni) < pStep) { pending[j] = 1; next.push(j); }
       }
       // Wind-driven spotting: embers land 2–4 cells downwind and ignore control lines.
@@ -381,8 +388,8 @@ export function runOnce(
         if (hash4(seed, step, k, 11) < pSpot) {
           const dist = 2 + Math.floor(hash4(seed, step, k, 12) * 3);
           const ang = spreadDir + (hash4(seed, step, k, 13) - 0.5) * 0.7;
-          const sx = Math.round(x + Math.sin(ang) * dist);
-          const sy = Math.round(y - Math.cos(ang) * dist);
+          const sx = Math.round(x + M.sin(ang) * dist);
+          const sy = Math.round(y - M.cos(ang) * dist);
           if (sx >= 0 && sy >= 0 && sx < l.w && sy < l.h) {
             const j = sy * l.w + sx;
             if (s.state[j] === Cell.Fuel && !pending[j] && s.brk[j] < 1 && hash4(seed, step, j, 14) < 1 - 0.9 * s.wet[j]) {
@@ -401,7 +408,7 @@ export function runOnce(
     }
     // Wetness evaporates (faster when hot and dry). Retardant decays 4× slower.
     {
-      const decay = Math.exp(-dt / wetTau), decayRet = Math.exp(-dt / (wetTau * 4));
+      const decay = M.exp(-dt / wetTau), decayRet = M.exp(-dt / (wetTau * 4));
       for (let k = 0; k < n; k++) if (s.wet[k] > 0) s.wet[k] *= retardant[k] ? decayRet : decay;
     }
     active = [];

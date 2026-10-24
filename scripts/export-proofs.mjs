@@ -1,5 +1,5 @@
 // Export every pre-registered forecast in data/register/ as the exact receipt bytes plus
-// its OpenTimestamps proof, so anyone can check the timestamps without SekatApi:
+// its OpenTimestamps proof, so anyone can check the timestamps without Fire Septum:
 //
 //   node scripts/export-proofs.mjs            # writes proofs/<hash>.receipt.json(.ots)
 //   pip install opentimestamps-client
@@ -28,7 +28,7 @@ for (const f of readdirSync(DIR).filter((x) => x.endsWith('.json')).sort()) {
   const { receipt, receiptSha256, anchor } = e.record;
   const bytes = Buffer.from(canonical(receipt));
   const ok = createHash('sha256').update(bytes).digest('hex') === receiptSha256;
-  const name = `sekatapi-${receiptSha256.slice(0, 12)}.receipt.json`;
+  const name = `fireseptum-${receiptSha256.slice(0, 12)}.receipt.json`;
   writeFileSync(join(OUT, name), bytes);
   if (anchor) writeFileSync(join(OUT, `${name}.ots`), Buffer.from(anchor.otsB64, 'base64'));
   console.log(`${ok ? 'ok ' : 'BAD'} ${e.issuedAt}  ${e.lat.toFixed(3)}, ${e.lon.toFixed(3)}  ${name}${anchor ? ' + .ots' : ' (no timestamp)'}`);

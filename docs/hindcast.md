@@ -1,10 +1,10 @@
-# Hindcast: SekatApi against NASA FIRMS, 8–19 October 2026
+# Hindcast: Fire Septum against NASA FIRMS, 8–19 October 2026
 
 Run on 20 October 2026 with the code in this repository (`src/data/hindcast.ts`, `src/sim/hindcast.ts`). In the app it is under *Live fires → Test on a past day*.
 
 ## Question
 
-If SekatApi had been run at the last satellite pass of day D, using only the data available then, how well would its 24 h forecast of **new** fire have matched what VIIRS detected next?
+If Fire Septum had been run at the last satellite pass of day D, using only the data available then, how well would its 24 h forecast of **new** fire have matched what VIIRS detected next?
 
 ## Method
 
@@ -22,7 +22,7 @@ If SekatApi had been run at the last satellite pass of day D, using only the dat
   - Squares more than 3 km from the fire at t0 are excluded too, since no spread model can predict a fresh ignition there. No event had any such ignition.
   - A square is forecast if it ignites in at least half the runs.
   - Metrics: POD (share of observed squares caught), FAR (share of forecast squares not observed), CSI = hits / (hits + misses + false alarms), and the Brier skill of the probabilities against the observed base rate.
-- **Reference forecast.** A *distance-only* forecast marks the same number of squares, chosen as the ones nearest the fire. If SekatApi scores higher, wind, slope and fuel added information beyond "fire grows outward".
+- **Reference forecast.** A *distance-only* forecast marks the same number of squares, chosen as the ones nearest the fire. If Fire Septum scores higher, wind, slope and fuel added information beyond "fire grows outward".
 
 ## Results with the default model (τ = 3 h)
 
