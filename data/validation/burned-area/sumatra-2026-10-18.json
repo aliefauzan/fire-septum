@@ -1,0 +1,158 @@
+{
+ "id": "sumatra-2026-10-18",
+ "island": "Sumatra",
+ "lat": -3.393,
+ "lon": 105.2368,
+ "day": "2026-10-18",
+ "t0": "2026-10-18T19:06:00Z",
+ "grid": {
+  "w": 64,
+  "h": 64,
+  "cellM": 100,
+  "geo": {
+   "north": -3.364254042400287,
+   "south": -3.4217459575997125,
+   "west": 105.2080035641521,
+   "east": 105.26559643584791
+  },
+  "origin": "cell (0,0) = north-west corner; arrays row-major (y*64+x)",
+  "encoding": "base64 of numpy.packbits(mask.ravel()), MSB first, 4096 bits"
+ },
+ "masks": {
+  "burned": "Tz/fAAABj4iv//+AAAABCB/v/gAAAAAI/v7/wAAACAB+f/1AAADSAGv/PqAAALgQM//+cAAAgID33//AAoAHEP8f9vAAAAVgvkP2/ASABAHwB/74A4VJgIMA/vwAA+WAAAH+4AEAEBAAAH/wBjCEAAAAP+AAIAAAAAA+8AsAoAoAAB/wBgxIDgAADXABQDQGAAAb+AAAAAAAAACoAAAZYAAAALwAABvgAAAAtgAAAaAAAAGTAAARzwAAAd8AAAP/AAAAOwAAAf8AAAAKgAAB/wAAAAAAAAH/AAAAAoAAAfwAAAAQIAQAJgAAAA4AAAAPAAAADgAAADIAAAAEQABACwAAAAAAAAAPAAAAAAAAAAgAAAAAAAAA5wAAAAAABACRAAAABgAAAUEAAABAAAABiAAAAEAAgAAIAAAAgAAAAAAAAADAAAAAAAAABYAAAAAAAAATAAAAAAAAABwAAAAAAAAB8AAAAAAAAAHgAAAAAAAAB4AAAAAAAAAeAAAAAAAAAHgAAAAAAAAAYAAAAAAAAADgAAAAAAAABu+BAAAAAAAD/8CAAAAAABPfwBAAAAAAf/RT6AAAAAD/0APwAAAAAD+AE+gAAAAAL4Br+QAAAAAX/sP/QAAAAA3nx/vAAAAAJaAD/8AAAAAcAAP/+AAAAAYAG//8AAAACQAr/fgAAAA=",
+  "clear": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "sensorS2": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "sensorS1": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "firmsFootprint": "AP//+A7//AcB///4Dv/8BwH/7/wG///AAP///w///8A+P///j/+/wP/v//////nA////////nAD///////+8AP////////wA/////////gD///3/////4P/////////g/+z///////j/4B//////+N/vP//////4z/9///////vP/3///////8/sP///7///BcAAH//P//8B8AAf/f///wfwAA//////D/AAP//+//8H8Bl//8H//wBzv//wAe//AH+/u/wB//8g/5uH/ADj/3D/AD/8AAP/cOD4f/AAB//94Ph/8AAHv93g/H/gAAcP3MY5/+AAAAeADwH/+AAADwAPAf/4AAAPAB4D//gAAA8APGf/9zAADwA8////OAAGADj///94AAAAAP///vwAAAAD/////AAAAAf////8AAAAB////7wAAAAD////kAAAAAH/+fAAAAAAAf/4AAAAAAAA//AAAAAAAB5/8AAAAAAAP//gAAAAAAH///gAAAAAE////cAAAAA/////wAAAAH/////AAAAA/////8AAAAD/////wAAAAP/////wAAAAf/////wAAAB//////gAAAP//////AAAA//////8AAAD//////wAAAP//////gAAA///////gAAD//////+AAAP//////4AAA//////+AAAA="
+ },
+ "thresholds": {
+  "dnbr": 0.27,
+  "post_nbr": 0.1,
+  "s1_dvh_db": -3.0,
+  "s1_water_vh": 0.003981071705534973,
+  "s2_valid_scl": [
+   2,
+   4,
+   5,
+   6
+  ],
+  "s2_max_blue": 0.1,
+  "s2_cell_rule": ">=13 of 25 20-m pixels with pre and post; burned if >=50% of them pass",
+  "combine": "S2 where clear, else S1 where available"
+ },
+ "sentinel2": {
+  "pre_window": [
+   "2026-09-16",
+   "2026-10-16"
+  ],
+  "post_window": [
+   "2026-10-19",
+   "2026-10-24"
+  ],
+  "pre_dates_clear_frac": [
+   [
+    "2026-09-18",
+    0.0
+   ],
+   [
+    "2026-09-23",
+    0.001
+   ],
+   [
+    "2026-09-28",
+    0.0
+   ],
+   [
+    "2026-09-30",
+    0.0
+   ],
+   [
+    "2026-10-03",
+    0.0
+   ],
+   [
+    "2026-10-08",
+    0.002
+   ],
+   [
+    "2026-10-13",
+    0.0
+   ]
+  ],
+  "post_dates_clear_frac": [
+   [
+    "2026-10-20",
+    0.014
+   ],
+   [
+    "2026-10-23",
+    0.253
+   ]
+  ],
+  "burned_cells_sensitivity_on_s2_clear_cells": {
+   "dnbr>0.10,post<0.00": 0,
+   "dnbr>0.10,post<0.10": 0,
+   "dnbr>0.10,post<0.20": 0,
+   "dnbr>0.27,post<0.00": 0,
+   "dnbr>0.27,post<0.10": 0,
+   "dnbr>0.27,post<0.20": 0,
+   "dnbr>0.44,post<0.00": 0,
+   "dnbr>0.44,post<0.10": 0,
+   "dnbr>0.44,post<0.20": 0
+  }
+ },
+ "s1_vs_s2_where_both_clear": {
+  "cells_with_both": 0,
+  "s2_burned": 0
+ },
+ "sentinel1": {
+  "orbits": [
+   {
+    "relative_orbit": 171,
+    "pre": [
+     "2026-09-27",
+     "2026-10-09"
+    ],
+    "post": [
+     "2026-10-21"
+    ]
+   }
+  ],
+  "note": "",
+  "water_cells": 0,
+  "burned_cells_sensitivity_on_s1_cells": {
+   "dVH<=-2dB": 1428,
+   "dVH<=-3dB": 819,
+   "dVH<=-4dB": 281
+  }
+ },
+ "firms": {
+  "window_utc_dates": [
+   "2026-10-16",
+   "2026-10-24"
+  ],
+  "sources": [
+   "VIIRS_SNPP_NRT",
+   "VIIRS_NOAA20_NRT",
+   "VIIRS_NOAA21_NRT"
+  ],
+  "footprint": "375 m disc (radius 187.5 m) per detection, rasterised at cell centres"
+ },
+ "metrics": {
+  "burned_ha": 819.0,
+  "burned_ha_s2": 0.0,
+  "burned_ha_s1": 819.0,
+  "observed_ha": 4096.0,
+  "observed_frac": 1.0,
+  "s2_clear_frac": 0.0,
+  "s1_frac": 1.0,
+  "s1_only_frac": 1.0,
+  "firms_detections": 1120,
+  "firms_footprint_ha": 2462.0,
+  "firms_footprint_observed_ha": 2462.0,
+  "overlap_ha": 736.0,
+  "share_of_burned_inside_firms_footprint": 0.899,
+  "share_of_observed_firms_footprint_burned": 0.299
+ },
+ "forecast": null
+}

@@ -1,0 +1,198 @@
+{
+ "id": "kalimantan-2026-10-10",
+ "island": "Kalimantan",
+ "lat": -3.1011,
+ "lon": 112.1923,
+ "day": "2026-10-10",
+ "t0": "2026-10-10T18:36:00Z",
+ "grid": {
+  "w": 64,
+  "h": 64,
+  "cellM": 100,
+  "geo": {
+   "north": -3.0723540424002875,
+   "south": -3.129845957599713,
+   "west": 112.1635118860046,
+   "east": 112.2210881139954
+  },
+  "origin": "cell (0,0) = north-west corner; arrays row-major (y*64+x)",
+  "encoding": "base64 of numpy.packbits(mask.ravel()), MSB first, 4096 bits"
+ },
+ "masks": {
+  "burned": "AAAAAAAAAAAAAAAAAAAAAACAAQAAAAAAAaAYAAAAAAAAEBgAAAAAAAJaTAAAAAAAAM5AAAAAAAAATAAgAAAAAIDYAGAAAAAA0AAAMAAAAAD0AAEAAAAAAKAAATAAAAAAgoAD4AAIAABDYB5AAAAAAAgAPvAAAABADABo8AAAAYATgIDwAAgAiIfhwHAIB8BggeFAeAAAwEhJ4U/6QArgAC9gRf8AAsSgiqtHv6AD0GDTvsn+gAPwIM8/UH/QA/gARoQUe/gA/AgAPBQ5+ACuAAAADCX4CAwAAAgEAfiAJwAABwkC+AAVAAAHB4P4AaOAAAQfg/gCh8AABx0B/gPHwAAH4QH+IcOAAgCiAf+B5eAAATYB/8BjwAAA5AHrihLAAAAwA8yQHIAAAAADBuAoQAAAIAAM8HmAAABAAAHUYfAAASBAAfBGEAAADOZAGDYAAAAO/gB5vwAAAAf/gP++gAAAB/+L5z8AAAAH/8P+HAAAAAP/4vsMAAAAB//36eQAAEAH/////AABwAf/8//+IAHAAf////99A4AD+5///+MDCCXb///fowNQCcD/v5+jBAAC8P+/v+4EAAwAf5f/fgYAAoB45//fAAAAgCDz/N8AAAAAADX83wAAAAIAHH7/AgAAAAAM/D8PAAAAAAz8bw+AAAAAAfpvD4AAAAAB/O8=",
+  "clear": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "sensorS2": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAACwAAAAAAAAAfgAAAAAAAAAPgAAAAAAAAA+AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG4IAAAAAAAB/wABAAAAAAP/AAAAAAAAAf4CAAAAAAAB+wQAAAAAAADBAAAAAAAIAAMAAABAAAAAAAAAAEAAABAAAAAAAAADOYAAAAAAAAO/gAAAAAAAA//gIAAAAAAD//AAAAAAAAX/+IwAAAAAAf/4nAAAAAAB9//eOAABkAPn//+/AAPwA4f///+IA/AAA/////wH8AAA////+Af6AAD///f4B9YAAH//5/gHAAAAP//v+AcAAAAf//v/gcAAAB4/9//AwAAACD//P8QAAAAAD/8/xgAAAAAH///GAAAAAAP/z8fAAAAAA7/fx/8AAAABnt/H/4AAAAN//8=",
+  "sensorS1": "/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////3/////////9P/////////gf/////////wf/////////B/////////+///////////////////////+//////////5////////////////////////////////////////////////////////////////////////////////////////////////5H3///////+AP/+//////wA/////////gH9///////+BPv///////8+///////3//z///+//////////7///+/////////8xn////////xAf////////AAf3//////8AA////////oAB3P//////gAHY//////+CAAhx//+b/wYAABA//wP/HgAAAB3/A///AAAAAP4D///AAAAB/gF//8AAAgH+Cn//4AAGAf4////wAAQB/j////gAAQAfj///+HACAA/P///98AAwDv/////8ADAOf/////4AAA5//////wAMDg//////EAgOAD////+YSA4AH////yAAA=",
+  "firmsFootprint": "//f/7f5//D7/9////n3/v//////7Pf///f////+d////j////53/v///////3d/////////gz///////f+AP///+//+/7v///+5//4///////gf/B//////+7/8H/v////z//3f8f////v///////////////////739////////+f/////////////////////t/////////+H93///////z9wf/////////B/8//////+8P/v//////94//////////7/v////////n+///////////////////////////v////////////////////////P/////////8////////////////////////7//////////v/////////////////////////73+3/f////////u+//////////7///+//////f/////////j////////j8H/////79+ecP///////z54/3//////+Hb////7///7v////////8O////////f477/////////uf//////////////////f//////////3//////9////v////9z///9//////////3//////////Nf///////////9/33/8/////z//9///////f/7////fx/9//v////zv///+P/+P/v////w5/4H/9g8="
+ },
+ "thresholds": {
+  "dnbr": 0.27,
+  "post_nbr": 0.1,
+  "s1_dvh_db": -3.0,
+  "s1_water_vh": 0.003981071705534973,
+  "s2_valid_scl": [
+   2,
+   4,
+   5,
+   6
+  ],
+  "s2_max_blue": 0.1,
+  "s2_cell_rule": ">=13 of 25 20-m pixels with pre and post; burned if >=50% of them pass",
+  "combine": "S2 where clear, else S1 where available"
+ },
+ "sentinel2": {
+  "pre_window": [
+   "2026-09-08",
+   "2026-10-08"
+  ],
+  "post_window": [
+   "2026-10-11",
+   "2026-10-24"
+  ],
+  "pre_dates_clear_frac": [
+   [
+    "2026-09-09",
+    0.0
+   ],
+   [
+    "2026-09-11",
+    0.016
+   ],
+   [
+    "2026-09-14",
+    0.322
+   ],
+   [
+    "2026-09-19",
+    0.734
+   ],
+   [
+    "2026-09-24",
+    0.0
+   ],
+   [
+    "2026-09-29",
+    0.0
+   ],
+   [
+    "2026-10-01",
+    0.0
+   ],
+   [
+    "2026-10-04",
+    0.189
+   ]
+  ],
+  "post_dates_clear_frac": [
+   [
+    "2026-10-14",
+    0.0
+   ],
+   [
+    "2026-10-19",
+    0.0
+   ],
+   [
+    "2026-10-21",
+    0.172
+   ]
+  ],
+  "burned_cells_sensitivity_on_s2_clear_cells": {
+   "dnbr>0.10,post<0.00": 305,
+   "dnbr>0.10,post<0.10": 561,
+   "dnbr>0.10,post<0.20": 633,
+   "dnbr>0.27,post<0.00": 288,
+   "dnbr>0.27,post<0.10": 540,
+   "dnbr>0.27,post<0.20": 612,
+   "dnbr>0.44,post<0.00": 121,
+   "dnbr>0.44,post<0.10": 288,
+   "dnbr>0.44,post<0.20": 318
+  }
+ },
+ "s1_vs_s2_where_both_clear": {
+  "cells_with_both": 660,
+  "s2_burned": 540,
+  "dVH<=-2dB": {
+   "both_burned": 227,
+   "s1_only": 5,
+   "s2_only": 313,
+   "s1_recall_of_s2": 0.42,
+   "s1_precision_vs_s2": 0.978
+  },
+  "dVH<=-3dB": {
+   "both_burned": 110,
+   "s1_only": 0,
+   "s2_only": 430,
+   "s1_recall_of_s2": 0.204,
+   "s1_precision_vs_s2": 1.0
+  },
+  "dVH<=-4dB": {
+   "both_burned": 20,
+   "s1_only": 0,
+   "s2_only": 520,
+   "s1_recall_of_s2": 0.037,
+   "s1_precision_vs_s2": 1.0
+  }
+ },
+ "sentinel1": {
+  "orbits": [
+   {
+    "relative_orbit": 3,
+    "pre": [
+     "2026-09-15",
+     "2026-09-27"
+    ],
+    "post": [
+     "2026-10-21"
+    ]
+   },
+   {
+    "relative_orbit": 76,
+    "pre": [
+     "2026-09-08",
+     "2026-09-20",
+     "2026-10-02"
+    ],
+    "post": [
+     "2026-10-14"
+    ]
+   }
+  ],
+  "note": "",
+  "water_cells": 0,
+  "burned_cells_sensitivity_on_s1_cells": {
+   "dVH<=-2dB": 1749,
+   "dVH<=-3dB": 750,
+   "dVH<=-4dB": 149
+  }
+ },
+ "firms": {
+  "window_utc_dates": [
+   "2026-10-08",
+   "2026-10-24"
+  ],
+  "sources": [
+   "VIIRS_SNPP_NRT",
+   "VIIRS_NOAA20_NRT",
+   "VIIRS_NOAA21_NRT"
+  ],
+  "footprint": "375 m disc (radius 187.5 m) per detection, rasterised at cell centres"
+ },
+ "metrics": {
+  "burned_ha": 1180.0,
+  "burned_ha_s2": 540.0,
+  "burned_ha_s1": 640.0,
+  "observed_ha": 4096.0,
+  "observed_frac": 1.0,
+  "s2_clear_frac": 0.161,
+  "s1_frac": 1.0,
+  "s1_only_frac": 0.839,
+  "firms_detections": 1108,
+  "firms_footprint_ha": 3839.0,
+  "firms_footprint_observed_ha": 3839.0,
+  "overlap_ha": 1094.0,
+  "share_of_burned_inside_firms_footprint": 0.927,
+  "share_of_observed_firms_footprint_burned": 0.285
+ },
+ "forecast": null
+}

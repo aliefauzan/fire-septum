@@ -1,0 +1,207 @@
+{
+ "id": "sumatra-2026-10-10",
+ "island": "Sumatra",
+ "lat": -3.5741,
+ "lon": 105.7519,
+ "day": "2026-10-10",
+ "t0": "2026-10-10T18:36:00Z",
+ "grid": {
+  "w": 64,
+  "h": 64,
+  "cellM": 100,
+  "geo": {
+   "north": -3.5453540424002874,
+   "south": -3.6028459575997127,
+   "west": 105.72309802285147,
+   "east": 105.78070197714854
+  },
+  "origin": "cell (0,0) = north-west corner; arrays row-major (y*64+x)",
+  "encoding": "base64 of numpy.packbits(mask.ravel()), MSB first, 4096 bits"
+ },
+ "masks": {
+  "burned": "AQANf/wAAAAHwAc//oAAAGHgB///4AAA9/AD//+4AABw/wB/+3gAAAoPwP//RAAAHj+Q/AeAAAB/f338CAIAAP//ff8CAAAA8//7t/8AAAD///fP/8DAAP//n9//wGAAz/+6///gAAD/+yD//+AQAPv2Qf//oBAA//57///AEAD//v///4AGAP//////hAHA////4/+ACfj////7/+AA+C////v/4AAYDD/////kAJzB/////+gABv///////AIOP//////uAAT//////8eAAP/////u48AA///////x4AD///////hQAP//////+FgA///////fjkD//////5+GOP/n////zgDw///7///mAHD//9P///8FYP//gH///AAg//8Af///gDz/8CB///e3QP/wID///14A//ggf///Dgb//mB///98AH//3////84G/////////v7/////6//+vH/////v//5Af////////AB////////8GH//gf///4MAP8AB/l/+JAAAAAD+PXwAYAAAAHx4+AAAAAAABvD8AAAAAAAD/fwBgAAAAAPxeAAAAAAAA/P44AEAAAADA/x4AAAAAAAD/ngAAAAAAAH/D8AAAAAAAf+PGAAAAAAAA6AAAAAAAAAA4QAAAAAAAAD/wAAAAAAAAP/gAAAAAAAAf+A=",
+  "clear": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "sensorS2": "/5EAf////////YA/////////wC////////4AD////////9x//////////H////////+ez/+N/////28H/D7/////9A9+Pv////8gP/87f////5D//9mf////gf//7+//D/+H//9v9/8H/b/z/7///wP/////PP//Af////5+//8A/v///D///wB////8/O//AD//4/////8AP//xv/3//wAf//kf////AD//+Y////8AP///z///5wA////P////AH///4f///z5////4////P/////kf////8////9//////////j////8n/////////gf//8ffv///D///45+f//4n///Dzp///nMD/4PmHf///gM/h/8d///8AB/n/QL///gAH/f/wH//8CAH//eAR5/wIDf//wAD//ggf///ACf//GB////9t///2f///9+E/////////87/////+//3///////9f/////////h//////8/3/H///////+c8P///////7h5//f/////+HT////////4wv////////tD////7///+Xf/3v/P+///xf+EP//////P/4A/////////4B/////+///gH/////7//78P///////////7//////wP/4H+f////4f/gHx///n/9/+Af///+P///4D////gT//8=",
+  "sensorS1": "AG7/gAAAAAAAAn/AAAAAAAAAP9AAAAAAAAH/8AAAAAAAACOAAAAAAAAAA4AAAAAAAABhMAByAAAAAJD4A8EAAAAAC/CBwQAAAADfwADEgAAAAG8AACZgAAAAfgAAEBAA8AB4AACQCAD4AkAMAEAAAPwAAAAAwwAA/gAAAAGBAAD/AQAAA8AAAP+AAAADAxAA/8AAHAAAAAD/wAAOQAIAAP/gAAbgAAAA/8AABnAAAAD/wAAAMAAAGP/AAAAwAAAA/4AAAHgAAAMGAAAAHAAAAwAAAAAbgAAAADAAAACAAAAAAAAAAcAAAADYAAAAAAAAAfgAADggQAAA8AAAHGBgAAHYAAA8MWAAAYz8AHwZ4gAAAfzAeADiAAAD/+AYAv0AAAf/4AgAP4AAD9/4AAh/uGAP38gAAP/8AAffgAAA/9gAA5+AAAACSAAAJgAAACB7AAAAAAAAADEAAAAABAAIAAAAAAACgAAAAAAAAAeAAAAAADAIA4AAAAAAABjDwAAAAAAAEeGAAgAAAAAB4sAAAAAAAAHPQAAAAAAAAS8AAAAEAAABogAIQAwBAAAOgB7wAAAAAAwAH/AAAAAAAAAH+AAAAABAAAf4AAAAAEAAEDwAAAAAAAAAAAEAAAAAAPwAH4BgAAAAHgAf4OAAAYACAB/gAAABwAAAH8AAAAfsAAA=",
+  "firmsFootprint": "AAAD9/+AAAAADgP//+AAAAP+B///4AAAj/+D///4AADf/4P///gAAP//j//3+AAA///f//92AAD///////cAAP///////wAA////////gAD///////8AAP///////kAA///////+4AD////////wAP///////uAA///////8XAD////////8AP////////wA////////yAD///////2eAP///////B4A///////8HAD///////weAP///////54A////////3Bz////////APP///////4Ac////////8AD////////+AP////////84/////////zj////////+OP////////gQ/////////AD/////////MP/////////4////////////////////////////////////////////////////+P/////////+/////////+//////////z//////////P/////////w7////////+AP////////wA////////wAD////////uAP///////+4Av/ff////7gB/4w/////AAHnAB////gAAeAAB///8AAAAAAB///54cAAAAH///nzwAAAAH///eHAAAAAP///GAAAAAAAf//8AAAAAAAv//8AAAAAAAY//wAAAAAAAB//AAAAAAAAH/4A="
+ },
+ "thresholds": {
+  "dnbr": 0.27,
+  "post_nbr": 0.1,
+  "s1_dvh_db": -3.0,
+  "s1_water_vh": 0.003981071705534973,
+  "s2_valid_scl": [
+   2,
+   4,
+   5,
+   6
+  ],
+  "s2_max_blue": 0.1,
+  "s2_cell_rule": ">=13 of 25 20-m pixels with pre and post; burned if >=50% of them pass",
+  "combine": "S2 where clear, else S1 where available"
+ },
+ "sentinel2": {
+  "pre_window": [
+   "2026-09-08",
+   "2026-10-08"
+  ],
+  "post_window": [
+   "2026-10-11",
+   "2026-10-24"
+  ],
+  "pre_dates_clear_frac": [
+   [
+    "2026-09-08",
+    0.294
+   ],
+   [
+    "2026-09-10",
+    0.305
+   ],
+   [
+    "2026-09-13",
+    0.0
+   ],
+   [
+    "2026-09-18",
+    0.16
+   ],
+   [
+    "2026-09-23",
+    0.513
+   ],
+   [
+    "2026-09-28",
+    0.0
+   ],
+   [
+    "2026-09-30",
+    0.925
+   ],
+   [
+    "2026-10-03",
+    0.08
+   ],
+   [
+    "2026-10-08",
+    0.1
+   ]
+  ],
+  "post_dates_clear_frac": [
+   [
+    "2026-10-13",
+    0.0
+   ],
+   [
+    "2026-10-18",
+    0.004
+   ],
+   [
+    "2026-10-20",
+    0.772
+   ],
+   [
+    "2026-10-23",
+    0.224
+   ]
+  ],
+  "burned_cells_sensitivity_on_s2_clear_cells": {
+   "dnbr>0.10,post<0.00": 1703,
+   "dnbr>0.10,post<0.10": 1962,
+   "dnbr>0.10,post<0.20": 2146,
+   "dnbr>0.27,post<0.00": 1671,
+   "dnbr>0.27,post<0.10": 1912,
+   "dnbr>0.27,post<0.20": 2047,
+   "dnbr>0.44,post<0.00": 1605,
+   "dnbr>0.44,post<0.10": 1751,
+   "dnbr>0.44,post<0.20": 1813
+  }
+ },
+ "s1_vs_s2_where_both_clear": {
+  "cells_with_both": 3396,
+  "s2_burned": 1912,
+  "dVH<=-2dB": {
+   "both_burned": 1533,
+   "s1_only": 28,
+   "s2_only": 379,
+   "s1_recall_of_s2": 0.802,
+   "s1_precision_vs_s2": 0.982
+  },
+  "dVH<=-3dB": {
+   "both_burned": 1048,
+   "s1_only": 4,
+   "s2_only": 864,
+   "s1_recall_of_s2": 0.548,
+   "s1_precision_vs_s2": 0.996
+  },
+  "dVH<=-4dB": {
+   "both_burned": 521,
+   "s1_only": 0,
+   "s2_only": 1391,
+   "s1_recall_of_s2": 0.272,
+   "s1_precision_vs_s2": 1.0
+  }
+ },
+ "sentinel1": {
+  "orbits": [
+   {
+    "relative_orbit": 98,
+    "pre": [
+     "2026-09-10",
+     "2026-09-22",
+     "2026-10-04"
+    ],
+    "post": [
+     "2026-10-16"
+    ]
+   },
+   {
+    "relative_orbit": 120,
+    "pre": [
+     "2026-09-11",
+     "2026-09-23",
+     "2026-10-05"
+    ],
+    "post": [
+     "2026-10-17"
+    ]
+   }
+  ],
+  "note": "",
+  "water_cells": 0,
+  "burned_cells_sensitivity_on_s1_cells": {
+   "dVH<=-2dB": 1986,
+   "dVH<=-3dB": 1367,
+   "dVH<=-4dB": 725
+  }
+ },
+ "firms": {
+  "window_utc_dates": [
+   "2026-10-08",
+   "2026-10-24"
+  ],
+  "sources": [
+   "VIIRS_SNPP_NRT",
+   "VIIRS_NOAA20_NRT",
+   "VIIRS_NOAA21_NRT"
+  ],
+  "footprint": "375 m disc (radius 187.5 m) per detection, rasterised at cell centres"
+ },
+ "metrics": {
+  "burned_ha": 2227.0,
+  "burned_ha_s2": 1912.0,
+  "burned_ha_s1": 315.0,
+  "observed_ha": 4096.0,
+  "observed_frac": 1.0,
+  "s2_clear_frac": 0.829,
+  "s1_frac": 1.0,
+  "s1_only_frac": 0.171,
+  "firms_detections": 3410,
+  "firms_footprint_ha": 3002.0,
+  "firms_footprint_observed_ha": 3002.0,
+  "overlap_ha": 2140.0,
+  "share_of_burned_inside_firms_footprint": 0.961,
+  "share_of_observed_firms_footprint_burned": 0.713
+ },
+ "forecast": null
+}

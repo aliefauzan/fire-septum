@@ -1,0 +1,171 @@
+{
+ "id": "kalimantan-2026-10-08",
+ "island": "Kalimantan",
+ "lat": -2.5235,
+ "lon": 113.0298,
+ "day": "2026-10-08",
+ "t0": "2026-10-08T18:53:00Z",
+ "grid": {
+  "w": 64,
+  "h": 64,
+  "cellM": 100,
+  "geo": {
+   "north": -2.494754042400287,
+   "south": -2.5522459575997125,
+   "west": 113.00102613886081,
+   "east": 113.05857386113918
+  },
+  "origin": "cell (0,0) = north-west corner; arrays row-major (y*64+x)",
+  "encoding": "base64 of numpy.packbits(mask.ravel()), MSB first, 4096 bits"
+ },
+ "masks": {
+  "burned": "AAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGIAAAAAAAAANAAAAAAAAAAQAAAAAAAAAIAAAAAAAAABAAAAAAAAAAsAAAAAAAAAFwAAAAAAAAA/AAAAAAAAAHMAAAAAAAAAIAAAAAAAAAAwCQAAAAAAABAEAAAAAAAgAAAAAAAAAegAAQAAAAAFwAABAAAAAAfAACAAAAAAB8AC4AAAAAAHgAAzgAAAAAbAApkAAAAAB8AAAQAAAAAHwAAkAAAAAAPgAJAAAAAAA/gAAAAAAAAB8AAEAAAAAADgABwAAAAAAHQAAAAAAAAAQAAIAAAAAAAAIB4AAAAAAAAOHAAAAAAAAB4wAAAAAAQAbjwAAAAAAAAf/gAAAAAAHYA0AAAAAAA9wPwAAAAAADzAdAAAAAAAMkAAAAAAAAADRAIAAAAAAAIQAkAAAAAAAQACIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIQAAAAAAAAAAAAAAAAAAAIBAAAAAAAAAoAAAAAAAAABQAAAAAAAAAGAAAAAAAAAAggCAAAAAAACgAAAAAAAAAMAAAAAAAAAAQAAAAAAAAAEAAAEAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "clear": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "sensorS2": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "sensorS1": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "firmsFootprint": "AAAAAA++AHwAAAAAH/8AfwAAAABv//b/AAAAAP////8AAAAA/////wAAAAB+////AAAAAP////8AAAAP/////wAAAA//////AAAAH/////8AAAA//////wAAAD//////AAAMf/////8AAA7//////wAADv//////AABP//////8AAf9//////wAD////////AAP///////8AA7///////wAAP///////AAf///////8AB////////wDn////////APf///////8A9////////wB/////////AP////////8B/////////wHv////////AP////////8B/////////wD/////////A/////////8D/////////x//////////P/////////8f/////////w//////////b/////////v3////////+f/////////4//////////f/9f4////////Azg///////8AAB/////7/gAAD//v//v8AAAH/8///BwAAA//3v/4AAAAD//e/+AAAAAP/973+AAAAA//nuf4AAAAD/+877gAAAAf/73veAAAAB//ve94AAAA//+97nwAAAD//7nv+AAAAP//OM/wAAAAf/+4AfwAAAB//wOY/AAAAD/vA7x8AAAAP/93/DwAAAA//3v5/AAAAB//cdn8="
+ },
+ "thresholds": {
+  "dnbr": 0.27,
+  "post_nbr": 0.1,
+  "s1_dvh_db": -3.0,
+  "s1_water_vh": 0.003981071705534973,
+  "s2_valid_scl": [
+   2,
+   4,
+   5,
+   6
+  ],
+  "s2_max_blue": 0.1,
+  "s2_cell_rule": ">=13 of 25 20-m pixels with pre and post; burned if >=50% of them pass",
+  "combine": "S2 where clear, else S1 where available"
+ },
+ "sentinel2": {
+  "pre_window": [
+   "2026-09-06",
+   "2026-10-06"
+  ],
+  "post_window": [
+   "2026-10-09",
+   "2026-10-24"
+  ],
+  "pre_dates_clear_frac": [
+   [
+    "2026-09-09",
+    0.0
+   ],
+   [
+    "2026-09-11",
+    0.132
+   ],
+   [
+    "2026-09-14",
+    0.078
+   ],
+   [
+    "2026-09-19",
+    0.0
+   ],
+   [
+    "2026-09-24",
+    0.0
+   ],
+   [
+    "2026-09-29",
+    0.0
+   ],
+   [
+    "2026-10-01",
+    0.0
+   ],
+   [
+    "2026-10-04",
+    0.0
+   ]
+  ],
+  "post_dates_clear_frac": [
+   [
+    "2026-10-09",
+    0.0
+   ],
+   [
+    "2026-10-14",
+    0.0
+   ],
+   [
+    "2026-10-19",
+    0.0
+   ],
+   [
+    "2026-10-21",
+    0.0
+   ]
+  ],
+  "burned_cells_sensitivity_on_s2_clear_cells": {
+   "dnbr>0.10,post<0.00": 0,
+   "dnbr>0.10,post<0.10": 0,
+   "dnbr>0.10,post<0.20": 0,
+   "dnbr>0.27,post<0.00": 0,
+   "dnbr>0.27,post<0.10": 0,
+   "dnbr>0.27,post<0.20": 0,
+   "dnbr>0.44,post<0.00": 0,
+   "dnbr>0.44,post<0.10": 0,
+   "dnbr>0.44,post<0.20": 0
+  }
+ },
+ "s1_vs_s2_where_both_clear": {
+  "cells_with_both": 0,
+  "s2_burned": 0
+ },
+ "sentinel1": {
+  "orbits": [
+   {
+    "relative_orbit": 3,
+    "pre": [
+     "2026-09-15",
+     "2026-09-27"
+    ],
+    "post": [
+     "2026-10-09",
+     "2026-10-21"
+    ]
+   }
+  ],
+  "note": "",
+  "water_cells": 0,
+  "burned_cells_sensitivity_on_s1_cells": {
+   "dVH<=-2dB": 797,
+   "dVH<=-3dB": 234,
+   "dVH<=-4dB": 48
+  }
+ },
+ "firms": {
+  "window_utc_dates": [
+   "2026-10-06",
+   "2026-10-24"
+  ],
+  "sources": [
+   "VIIRS_SNPP_NRT",
+   "VIIRS_NOAA20_NRT",
+   "VIIRS_NOAA21_NRT"
+  ],
+  "footprint": "375 m disc (radius 187.5 m) per detection, rasterised at cell centres"
+ },
+ "metrics": {
+  "burned_ha": 234.0,
+  "burned_ha_s2": 0.0,
+  "burned_ha_s1": 234.0,
+  "observed_ha": 4096.0,
+  "observed_frac": 1.0,
+  "s2_clear_frac": 0.0,
+  "s1_frac": 1.0,
+  "s1_only_frac": 1.0,
+  "firms_detections": 1402,
+  "firms_footprint_ha": 2759.0,
+  "firms_footprint_observed_ha": 2759.0,
+  "overlap_ha": 233.0,
+  "share_of_burned_inside_firms_footprint": 0.996,
+  "share_of_observed_firms_footprint_burned": 0.084
+ },
+ "forecast": null
+}

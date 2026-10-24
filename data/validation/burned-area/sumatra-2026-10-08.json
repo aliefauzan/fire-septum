@@ -1,0 +1,221 @@
+{
+ "id": "sumatra-2026-10-08",
+ "island": "Sumatra",
+ "lat": -1.8698,
+ "lon": 103.9044,
+ "day": "2026-10-08",
+ "t0": "2026-10-08T19:13:00Z",
+ "grid": {
+  "w": 64,
+  "h": 64,
+  "cellM": 100,
+  "geo": {
+   "north": -1.8410540424002875,
+   "south": -1.8985459575997123,
+   "west": 103.87563872854327,
+   "east": 103.93316127145673
+  },
+  "origin": "cell (0,0) = north-west corner; arrays row-major (y*64+x)",
+  "encoding": "base64 of numpy.packbits(mask.ravel()), MSB first, 4096 bits"
+ },
+ "masks": {
+  "burned": "AAAAAAAAA/AAAAAAAAAD8AAAAAAAAAfgAAAAAAAAC+AAAAAAAQAHwAAAAAAfAAOEAAAAADcAQ+8AAAAAPkDD/wAAABG+cQf/AAAACd4TAf8AAAHMn6AL/wAAAx/fiw//AAAAHvfPH/8AAAAd//83/wAEBHj//zf/AAACef5+3/8AAAFx/n7//wAAB7///H//AAAH//+8//8AAB//99v//wAAD///1///AAAn///D//8AACb//8P//wACAf//6/v/AAIJ/9////8ABsn/+///+wADz///////AAP///////8AK+///////wA97///////AY6///////8Fnj///////Qd/H//////7ED/P7////2kGtl//////+SAAF///////AAAG//////fwAAv//////wIAc//////8AALx/////+gAAAn///89/gAAAAv//gPOAAAAAB+iD8wAAAAAAB0OowAAAAAAAB+vAAAAAAAAAD8AAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "clear": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "sensorS2": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "sensorS1": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=",
+  "firmsFootprint": "ADD//+wAD/8AeP///kef/gB4///+7//+AD7///7///4wHn///////3j+7///////f/////////9////////////////////+////////9/7//////////v////////+8/////////77/////////vP/////////P/////////8f/////////x//////////H//////////f////////+///////////4//////////z//////////v/////////+//////////4/////////7n////////3+f/////////R/////////8H/////////43/////////z//////////P/////////8//////////z/////////+f/////////z//////////v////////////////////8//////////4f/////////wH/////////Ad////////8An////////wAP////////OAP///////94Y9///////zjz3/////ifAPH/////8wcAYeP////HhwAAw7+9/8eAAAADvx3DhwAAAAAWHAAAAAAAAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+ },
+ "thresholds": {
+  "dnbr": 0.27,
+  "post_nbr": 0.1,
+  "s1_dvh_db": -3.0,
+  "s1_water_vh": 0.003981071705534973,
+  "s2_valid_scl": [
+   2,
+   4,
+   5,
+   6
+  ],
+  "s2_max_blue": 0.1,
+  "s2_cell_rule": ">=13 of 25 20-m pixels with pre and post; burned if >=50% of them pass",
+  "combine": "S2 where clear, else S1 where available"
+ },
+ "sentinel2": {
+  "pre_window": [
+   "2026-09-06",
+   "2026-10-06"
+  ],
+  "post_window": [
+   "2026-10-09",
+   "2026-10-24"
+  ],
+  "pre_dates_clear_frac": [
+   [
+    "2026-09-06",
+    0.206
+   ],
+   [
+    "2026-09-08",
+    0.992
+   ],
+   [
+    "2026-09-10",
+    0.0
+   ],
+   [
+    "2026-09-11",
+    0.0
+   ],
+   [
+    "2026-09-13",
+    0.0
+   ],
+   [
+    "2026-09-16",
+    0.0
+   ],
+   [
+    "2026-09-18",
+    0.0
+   ],
+   [
+    "2026-09-21",
+    0.224
+   ],
+   [
+    "2026-09-23",
+    0.266
+   ],
+   [
+    "2026-09-26",
+    0.0
+   ],
+   [
+    "2026-09-28",
+    0.003
+   ],
+   [
+    "2026-09-30",
+    0.0
+   ],
+   [
+    "2026-10-01",
+    0.0
+   ],
+   [
+    "2026-10-03",
+    0.0
+   ],
+   [
+    "2026-10-06",
+    0.0
+   ]
+  ],
+  "post_dates_clear_frac": [
+   [
+    "2026-10-11",
+    0.0
+   ],
+   [
+    "2026-10-13",
+    0.0
+   ],
+   [
+    "2026-10-16",
+    0.0
+   ],
+   [
+    "2026-10-18",
+    0.0
+   ],
+   [
+    "2026-10-20",
+    0.0
+   ],
+   [
+    "2026-10-21",
+    0.0
+   ],
+   [
+    "2026-10-23",
+    0.0
+   ]
+  ],
+  "burned_cells_sensitivity_on_s2_clear_cells": {
+   "dnbr>0.10,post<0.00": 0,
+   "dnbr>0.10,post<0.10": 0,
+   "dnbr>0.10,post<0.20": 0,
+   "dnbr>0.27,post<0.00": 0,
+   "dnbr>0.27,post<0.10": 0,
+   "dnbr>0.27,post<0.20": 0,
+   "dnbr>0.44,post<0.00": 0,
+   "dnbr>0.44,post<0.10": 0,
+   "dnbr>0.44,post<0.20": 0
+  }
+ },
+ "s1_vs_s2_where_both_clear": {
+  "cells_with_both": 0,
+  "s2_burned": 0
+ },
+ "sentinel1": {
+  "orbits": [
+   {
+    "relative_orbit": 18,
+    "pre": [
+     "2026-09-16"
+    ],
+    "post": [
+     "2026-10-10",
+     "2026-10-22"
+    ]
+   },
+   {
+    "relative_orbit": 171,
+    "pre": [
+     "2026-09-15",
+     "2026-09-27"
+    ],
+    "post": [
+     "2026-10-09",
+     "2026-10-21"
+    ]
+   }
+  ],
+  "note": "",
+  "water_cells": 0,
+  "burned_cells_sensitivity_on_s1_cells": {
+   "dVH<=-2dB": 1830,
+   "dVH<=-3dB": 1488,
+   "dVH<=-4dB": 967
+  }
+ },
+ "firms": {
+  "window_utc_dates": [
+   "2026-10-06",
+   "2026-10-24"
+  ],
+  "sources": [
+   "VIIRS_SNPP_NRT",
+   "VIIRS_NOAA20_NRT",
+   "VIIRS_NOAA21_NRT"
+  ],
+  "footprint": "375 m disc (radius 187.5 m) per detection, rasterised at cell centres"
+ },
+ "metrics": {
+  "burned_ha": 1488.0,
+  "burned_ha_s2": 0.0,
+  "burned_ha_s1": 1488.0,
+  "observed_ha": 4096.0,
+  "observed_frac": 1.0,
+  "s2_clear_frac": 0.0,
+  "s1_frac": 1.0,
+  "s1_only_frac": 1.0,
+  "firms_detections": 1681,
+  "firms_footprint_ha": 2981.0,
+  "firms_footprint_observed_ha": 2981.0,
+  "overlap_ha": 1433.0,
+  "share_of_burned_inside_firms_footprint": 0.963,
+  "share_of_observed_firms_footprint_burned": 0.481
+ },
+ "forecast": null
+}

@@ -1,0 +1,22 @@
+[project]
+name = "fire-septum-rs"
+version = "0.1.0"
+description = "Fire Septum: burned-area validation (Sentinel-2/1) and emission cross-check (GFED/GFAS)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy>=1.26",
+  "pystac-client>=0.8",
+  "planetary-computer>=1.0",
+  "rasterio>=1.3",
+  "pyproj>=3.6",
+  "pillow>=10",
+  "requests>=2.31",
+  "h5py>=3.10",
+  "matplotlib>=3.8",
+  "pandas>=2.1",
+  "netCDF4>=1.6",
+  "cdsapi>=0.7",
+]
+
+[tool.uv]
+package = false
