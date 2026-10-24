@@ -630,7 +630,7 @@ export default function App() {
               <RecordPanel client={client} scn={eff} actions={actions} params={params} base={base} plan={plan} busy={planBusy} onOpen={openRecord} />
             </div>
             <div hidden={tab !== 'brief'}>
-              <BriefPanel scn={eff} base={base} plan={plan} rec={rec} recLoading={recLoading} actions={actions} params={params} inventory={inventory} logistics={logistics} onApplyPlan={applyBriefPlan} />
+              <BriefPanel scn={eff} base={base} plan={plan} rec={rec} recLoading={recLoading} actions={actions} params={params} inventory={inventory} logistics={logistics} onApplyPlan={applyBriefPlan} mapCaption={`${hasPlan ? 'With your plan' : 'No action yet'}: ${view === 'probability' ? 'chance of burning' : 'one example run'} by +${t} h. Dark = already burned; outlined = seen by satellite, last 24 h.`} />
             </div>
           </div>
         </aside>

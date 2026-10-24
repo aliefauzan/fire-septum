@@ -9,6 +9,7 @@ import { FACILITY_LABEL, type Inventory, type Logistics } from '../sim/resources
 import type { Action, EnsembleResult, Scenario, SimParams } from '../sim/types';
 import { FUEL_LIST } from '../sim/fuels';
 import { Segmented } from './Controls';
+import { PdfBriefButton } from './PdfBrief';
 
 const r1 = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
 
@@ -79,6 +80,8 @@ export interface BriefPick {
 export function BriefPanel(p: {
   scn: Scenario; base: EnsembleResult | null; plan: EnsembleResult | null; rec: RecommendOutput | null; recLoading: boolean; actions: Action[]; params: SimParams; inventory: Inventory; logistics: Logistics | null;
   onApplyPlan: (picks: BriefPick[]) => void;
+  /** What the map shows, printed under it in the PDF brief. */
+  mapCaption?: string;
 }) {
   const [status, setStatus] = useState<{ enabled: boolean; model: string | null } | null>(null);
   const [lang, setLang] = useState<'id' | 'en'>('id');
@@ -139,6 +142,7 @@ export function BriefPanel(p: {
         <h2>Situation brief</h2>
         <Segmented label="Language" value={lang} onChange={setLang} options={[{ value: 'id', label: 'Bahasa' }, { value: 'en', label: 'English' }]} />
       </header>
+      <PdfBriefButton lang={lang} scn={p.scn} base={p.base} plan={p.plan} rec={p.rec} actions={p.actions} params={p.params} inventory={p.inventory} mapCaption={p.mapCaption ?? ''} />
       {status && !status.enabled && <p className="muted small">Not set up. Add <code>LLM_API_KEY</code> to <code>.env</code> and restart.</p>}
       {status?.enabled && (
         <>
