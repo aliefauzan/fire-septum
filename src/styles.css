@@ -454,6 +454,20 @@ details.more > p { margin-top: 6px; }
 .bar-fill.plan { background: var(--ink); }
 .bar-fill.saved { background: rgba(52, 199, 89, 0.9); animation: saved-flash 1600ms ease-out both; }
 
+/* What drives the emission range: variance shares of spread, burn depth and emission factors. */
+.drivers { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--fill); margin: 6px 0 4px; }
+.drivers i { display: block; height: 100%; }
+.drivers .spread, .driver-key .spread { background: var(--ink); }
+.drivers .depth, .driver-key .depth { background: var(--base); }
+.drivers .ef, .driver-key .ef { background: var(--faint); }
+.driver-key { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); }
+.driver-key i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+.class-list { display: grid; gap: 2px; margin: 6px 0 8px; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.class-list > div { display: grid; grid-template-columns: 1fr 96px 104px; gap: 8px; }
+.class-list > .head { font-size: 11px; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+.class-list .ha-cell { text-align: right; color: var(--ink); }
+.class-list .head span:last-child { text-align: right; }
+
 .seal-steps { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
 .seal-step { display: grid; grid-template-columns: 20px 1fr; gap: 8px; align-items: center; color: var(--muted); opacity: 0; animation: fade 240ms ease-out forwards; }
 .seal-step.done, .seal-step.active { color: var(--ink); }

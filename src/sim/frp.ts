@@ -5,8 +5,9 @@
 // emission factors: peat from the 2013 Wetlands Supplement (the same editable rates as the
 // forecast), other covers from the 2006 Guidelines Vol. 4, Table 2.5. Smouldering peat radiates
 // little of its heat to the sky, so on peat this is a floor.
-import { CO2_PER_C } from './carbon';
-import type { Rates } from './doctrine';
+import { CO2_PER_C, normalDraw, quantilesOf, type Quantiles } from './carbon';
+import { DET1 } from './detmath';
+import { DEFAULT_RATES, type Rates } from './doctrine';
 import { ON_PEAT, fuelOf } from './fuels';
 import type { FuelId, Hotspot, Landscape, Scenario } from './types';
 
@@ -20,6 +21,28 @@ export const IPCC_FIRE_EF: Record<Exclude<Cover, 'peat'>, { co2: number; ch4: nu
   tropicalForest: { co2: 1580, ch4: 6.8 },
   savanna: { co2: 1613, ch4: 2.3 },
   agriculture: { co2: 1515, ch4: 2.7 },
+};
+
+/** IPCC 2006 Vol. 4, Table 2.5: the ± values (standard deviations) of the factors above. Agricultural CH4 has none. */
+export const IPCC_FIRE_EF_SD: Record<Exclude<Cover, 'peat'>, { co2: number; ch4: number }> = {
+  tropicalForest: { co2: 90, ch4: 2.0 },
+  savanna: { co2: 95, ch4: 0.9 },
+  agriculture: { co2: 177, ch4: 0 },
+};
+
+/**
+ * How this method compared with GFED (docs/emissions-crosscheck.md, data/validation/emissions-crosscheck.json,
+ * run 24 Oct 2026, VIIRS S-NPP only, 12 h holds): context for reading the number, not a correction.
+ */
+export const GFED_CROSSCHECK = {
+  /** Pooled top-5 cells per season, dry matter, this method / GFED4.1s: 2023, 2019, 2015. */
+  gfed4Pooled: [1.01, 1.2, 3.03] as const,
+  /** Geometric mean and range of the 15 per-cell ratios. */
+  gfed4CellGeoMean: 1.57,
+  gfed4CellRange: [0.62, 3.95] as const,
+  /** All Indonesia, whole year, CO2, this method / GFED5.1 region EQAS (2015, 2019, 2023). */
+  gfed5Year: [1.47, 1.56] as const,
+  doc: 'docs/emissions-crosscheck.md',
 };
 
 /** A pass holds until the next one for at most this long: each VIIRS platform revisits within about 12 h. */
@@ -69,6 +92,44 @@ export interface ObservedEmissions {
   windowH: number;
   /** Share of the energy seen on peat soil, 0..1. */
   peatShare: number;
+  /** Monte Carlo over the GFAS conversion (and holding rule) and the emission factors. Always set by observedEmissions. */
+  range?: Quantiles;
+}
+
+const OBS_SEED = 0x0b5e7f2b;
+
+/**
+ * Monte Carlo of the satellite number: one log-normal multiplier on every β per draw (SD of ln =
+ * gfasBetaLnSd, centred on the point value: the cross-check spread is in ratio space), peat
+ * emission factors as in the forecast (carbon.ts), other covers with the IPCC 2006 SDs. Normals
+ * clamped at 0. Deterministic: counter-based draws with a fixed seed.
+ */
+export function observedRange(fre: Record<Cover, number>, r: Rates, n = 2000): Quantiles {
+  const lnSd = r.gfasBetaLnSd ?? DEFAULT_RATES.gfasBetaLnSd!;
+  const co2Sd = r.peatCo2cRelSd ?? DEFAULT_RATES.peatCo2cRelSd!;
+  const ch4Sd = r.peatCh4RelSd ?? DEFAULT_RATES.peatCh4RelSd!;
+  const covers = Object.keys(fre) as Cover[];
+  const xs = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const beta = DET1.exp(lnSd * normalDraw(OBS_SEED, i, 0));
+    let t = 0;
+    covers.forEach((c, j) => {
+      if (fre[c] <= 0) return;
+      const dm = (fre[c] * GFAS_BETA[c] * beta) / 1000;
+      let co2: number, ch4: number;
+      if (c === 'peat') {
+        co2 = Math.max(0, r.peatCo2cGkg * (1 + co2Sd * normalDraw(OBS_SEED, i, 1))) * CO2_PER_C;
+        ch4 = Math.max(0, r.peatCh4Gkg * (1 + ch4Sd * normalDraw(OBS_SEED, i, 2)));
+      } else {
+        const e = IPCC_FIRE_EF[c], sd = IPCC_FIRE_EF_SD[c];
+        co2 = Math.max(0, e.co2 + sd.co2 * normalDraw(OBS_SEED, i, 3 + 2 * j));
+        ch4 = Math.max(0, e.ch4 + sd.ch4 * normalDraw(OBS_SEED, i, 4 + 2 * j));
+      }
+      t += (dm * (co2 + ch4 * r.ch4Gwp100)) / 1000;
+    });
+    xs[i] = t;
+  }
+  return quantilesOf(xs);
 }
 
 /** The moment a scenario's observations end: the hindcast start, else when the data was fetched. */
@@ -107,5 +168,5 @@ export function observedEmissions(l: Landscape, hotspots: Hotspot[], nowMs: numb
     const t = (fre[c] * GFAS_BETA[c]) / 1000;
     freMJ += fre[c]; dm += t; tco2e += t * tco2ePerTdm(c, rates);
   }
-  return { tco2e, freMJ, dryMatterT: dm, detections: used.length, passes: seq.length, windowH, peatShare: freMJ > 0 ? fre.peat / freMJ : 0 };
+  return { tco2e, freMJ, dryMatterT: dm, detections: used.length, passes: seq.length, windowH, peatShare: freMJ > 0 ? fre.peat / freMJ : 0, range: observedRange(fre, rates) };
 }

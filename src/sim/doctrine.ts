@@ -127,7 +127,7 @@ export const SOURCES = {
   },
   konecny: {
     short: 'Konecny et al. 2016',
-    full: 'K. Konecny et al., "Variable carbon losses from recurrent fires in drained tropical peatlands," Global Change Biology 22(4):1469–1480, 2016. Airborne LiDAR before and after fire on drained peat in Central Kalimantan: about 206, 115, 69 and 23 t dry peat/ha consumed by the first, second, third and later fires on the same ground (58% to 7% of the IPCC Tier 1 default), and deeper burns and more repeat fires closer to drainage canals.',
+    full: 'K. Konecny et al., "Variable carbon losses from recurrent fires in drained tropical peatlands," Global Change Biology 22(4):1469–1480, 2016. Recurrent fires on drained peat in the ex-Mega Rice Project, Central Kalimantan. Table 3: relative burn depth 0.17, 0.10, 0.06 and 0.02 m and dry peat consumed 206, 115, 69 and 23 t/ha for the first, second, third and fourth-or-later fire on the same ground (58% to 7% of the IPCC Tier 1 default); bulk density 0.121 ± 0.018 g/cm³ (first fire) and 0.115 ± 0.020 (later), carbon content 55.3 ± 4.2%, combustion efficiency 1.0. Deeper burns and more repeat fires closer to drainage canals. One drained site.',
     url: 'https://doi.org/10.1111/gcb.13186',
   },
   ritzema: {
@@ -218,6 +218,23 @@ export interface Rates {
    */
   drainK?: number;
   drainLM?: number;
+  /**
+   * Peat burnt per hectare on ground that FIRMS saw burn in 1, 2, or 3+ earlier years (Konecny et
+   * al. 2016, second, third and fourth-or-later fire), t dry matter/ha. Cells with no earlier fire
+   * year use peatBurntTdmHa. Used only when the landscape carries fireYears. Optional: rates in
+   * records made before 24 Oct 2026 do not have them.
+   */
+  peatBurnt2ndTdmHa?: number;
+  peatBurnt3rdTdmHa?: number;
+  peatBurnt4thTdmHa?: number;
+  /** Monte Carlo spread of the Konecny classes: relative SD of burn depth and of bulk density. */
+  peatDepthRelSd?: number;
+  peatBdRelSd?: number;
+  /** Monte Carlo spread of the peat emission factors: relative SD of CO2-C and of CH4. */
+  peatCo2cRelSd?: number;
+  peatCh4RelSd?: number;
+  /** Monte Carlo spread of the satellite number: SD of ln(β × holding rule), GFAS conversion. */
+  gfasBetaLnSd?: number;
 }
 
 export interface RateInfo {
@@ -266,6 +283,14 @@ export const DEFAULT_RATES: Rates = {
   brkTrack: 0.3,
   drainK: 0.5,
   drainLM: 100,
+  peatBurnt2ndTdmHa: 115,
+  peatBurnt3rdTdmHa: 69,
+  peatBurnt4thTdmHa: 23,
+  peatDepthRelSd: 0.4,
+  peatBdRelSd: 0.17,
+  peatCo2cRelSd: 0.11,
+  peatCh4RelSd: 0.44,
+  gfasBetaLnSd: 0.6,
 };
 
 export const RATE_INFO: Record<keyof Rates, RateInfo> = {
@@ -308,7 +333,15 @@ export const RATE_INFO: Record<keyof Rates, RateInfo> = {
   seedChanceMedium: { label: 'Seeding works (medium cloud potential)', unit: 'share of runs', source: 'bmkgClouds', status: 'assumption', note: 'Placeholder. With low cloud potential the model gives seeding no effect (BMKG: OMC fails when clouds do not form).' },
   dryIceLagH: { label: 'Dry ice: hours until haze opens', unit: 'h', source: 'bnpbDryIce', status: 'secondary', note: 'Visibility improved the same day in Sumsel (Oct 2026).' },
   dryIceClearH: { label: 'Dry ice: hours haze stays open per sortie', unit: 'h', source: 'bnpbDryIce', status: 'assumption', note: 'How long the effect lasted was not reported. BMKG said its effectiveness is not yet established.' },
-  peatBurntTdmHa: { label: 'Peat burnt per hectare of fire', unit: 't dry matter/ha', source: 'ipccWetlands', status: 'verified', note: 'Table 2.6, tropical wildfire on drained peat: 353 (95% CI 170–536), from 1997–2006 El Niño burns of 0.3–0.5 m. Konecny et al. 2016 measured 206, 115, 69 and 23 t/ha for the first, second, third and later fires on the same ground, so on land that has burned before the default is high. The range mostly reflects burn depth. Counted once per burned peat cell, for the whole fire event, not only the 48 h shown.' },
+  peatBurntTdmHa: { label: 'Peat burnt per hectare: no fire seen since 2001', unit: 't dry matter/ha', source: 'ipccWetlands', status: 'verified', note: 'Table 2.6, tropical wildfire on drained peat: 353 (95% CI 170–536), from 1997–2006 El Niño burns of 0.3–0.5 m, mostly on ground burning for the first time since drainage. Used for burned peat cells where FIRMS saw no fire in any earlier year since 2001 (MODIS-era history can miss older fires, and a first burn goes deeper), and for every peat cell in records made without fire history. The 95% CI enters the Monte Carlo range as a normal distribution (SD 93 t/ha). Counted once per burned peat cell, for the whole fire event, not only the hours shown.' },
+  peatBurnt2ndTdmHa: { label: 'Peat burnt per hectare: 1 earlier fire year', unit: 't dry matter/ha', source: 'konecny', status: 'verified', note: 'Konecny et al. 2016, Table 3, second fire on the same ground: 0.10 m relative burn depth × bulk density 0.115 g/cm³ × combustion efficiency 1.0 = 115 t/ha. Used for burned peat cells where FIRMS saw fire in exactly one earlier calendar year. One drained site (ex-Mega Rice Project, Central Kalimantan). A FIRMS detection is not a burned-area map: an old detection may not have burned the whole cell, which makes this class too shallow there.' },
+  peatBurnt3rdTdmHa: { label: 'Peat burnt per hectare: 2 earlier fire years', unit: 't dry matter/ha', source: 'konecny', status: 'verified', note: 'Konecny et al. 2016, Table 3, third fire: 0.06 m × 0.115 g/cm³ = 69 t/ha. Same caveats as the 1-year class.' },
+  peatBurnt4thTdmHa: { label: 'Peat burnt per hectare: 3+ earlier fire years', unit: 't dry matter/ha', source: 'konecny', status: 'verified', note: 'Konecny et al. 2016, Table 3, fourth and later fires: 0.02 m × 0.115 g/cm³ = 23 t/ha. Same caveats as the 1-year class.' },
+  peatDepthRelSd: { label: 'Burn depth spread, repeat-fire classes', unit: 'relative SD', source: 'konecny', status: 'assumption', note: 'Konecny et al. 2016 measured one drained site; how well its class depths transfer to another site is not published. 0.4 is our placeholder (log-normal, mean kept), shared by the three repeat-fire classes in each Monte Carlo draw.' },
+  peatBdRelSd: { label: 'Peat bulk density spread', unit: 'relative SD', source: 'konecny', status: 'verified', note: 'Konecny et al. 2016: 0.115 ± 0.020 g/cm³ after the first fire (0.121 ± 0.018 before), so about 17%. Normal, shared by the repeat-fire classes in each Monte Carlo draw. Combustion efficiency is 1.0 in the paper and is not varied.' },
+  peatCo2cRelSd: { label: 'CO2-C emission factor spread', unit: 'relative SD', source: 'ipccWetlands', status: 'assumption', note: 'Table 2.7 gives no uncertainty for the tropical factors, which come from one study (Christian et al. 2003). We borrow the boreal/temperate 95% half-width (362 ± 41 g/kg, 11%) and use it as one standard deviation, wider than its source. Normal, truncated at 0.' },
+  peatCh4RelSd: { label: 'CH4 emission factor spread', unit: 'relative SD', source: 'ipccWetlands', status: 'assumption', note: 'As for CO2-C: the boreal/temperate CH4 factor is 9 ± 4 g/kg (44%), used here as one standard deviation for the single-study tropical 21 g/kg. Normal, truncated at 0, independent of CO2-C.' },
+  gfasBetaLnSd: { label: 'Satellite number spread (β and holding rule)', unit: 'SD of ln', source: 'gfas', status: 'assumption', note: 'Kaiser et al. 2012 give the GFAS conversion factors without an uncertainty (fitted by regression to GFED3.1; for tropical Asia they call peat combustion estimates intrinsically very uncertain). Our cross-check of this method against GFED4.1s on 15 busy 0.25° cells (docs/emissions-crosscheck.md) found per-cell ratios of 0.6–4.0 with an SD of ln(ratio) of 0.6, so 0.6 it is: about ×/÷ 2.7 at 90%. Log-normal centred on the point value.' },
   peatCo2cGkg: { label: 'Peat fire CO2-C emission factor', unit: 'g C/kg', source: 'ipccWetlands', status: 'verified', note: 'Table 2.7, tropical organic soil. Multiplied by 44/12 to give CO2 (1,701 g/kg).' },
   peatCh4Gkg: { label: 'Peat fire CH4 emission factor', unit: 'g/kg', source: 'ipccWetlands', status: 'verified', note: 'Table 2.7, tropical organic soil. Based on one study (Christian et al. 2003).' },
   brkNarrowWater: {

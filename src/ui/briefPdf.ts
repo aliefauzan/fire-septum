@@ -40,7 +40,7 @@ export interface BriefPdfData {
   runs: number;
   burned: { mean: number; p10: number; p90: number };
   withPlan: { mean: number; p10: number; p90: number; actions: number } | null;
-  emissions: { mean: number; p10: number; p90: number; illustrative: boolean; factorLo: number; factorHi: number };
+  emissions: { mean: number; p10: number; p90: number; illustrative: boolean; factorLo: number; factorHi: number; mc?: { median: number; p5: number; p95: number } };
   observed: { tco2e: number; windowH: number; detections: number; peatShare: number } | null;
   zones: { id: string; name: string; status: ZoneStatus; pIgnite: number; etaP10: number | null; etaP90: number | null; planP: number | null }[];
   recommendations: { title: string; where: string; what: string; when: string; impact: string; resources: string; savedHa: number; inPlan: boolean; unknown: boolean }[];
@@ -60,6 +60,7 @@ const T = {
     withPlan: (n: number) => `With the current plan (${n} action${n === 1 ? '' : 's'})`,
     peat: 'Peat emissions, forecast if nothing is done', illustrative: 'illustrative: peat map synthetic',
     factor: (lo: number, hi: number) => `burn depth could make it x${lo.toFixed(1)} to x${hi.toFixed(1)}`,
+    mc: (m: string) => `median ${m}, 5-95% over fire spread, burn depth and emission factors`,
     observed: (h: number) => `Already released, seen by satellite (last ${h} h)`, noObserved: 'No satellite detections with fire radiative power in the area.',
     zones: 'Zone risk', zone: 'Zone', status: 'Status', share: 'Runs ignited', eta: 'Fire arrives (p10-p90)', plan: 'With plan',
     shareNote: (n: number, h: number) => `Share of ${n} simulated runs in which the zone catches fire within ${h} h. No forecast is a guarantee.`,
@@ -85,6 +86,7 @@ const T = {
     withPlan: (n: number) => `Dengan rencana saat ini (${n} tindakan)`,
     peat: 'Emisi gambut, prakiraan jika tidak ada tindakan', illustrative: 'ilustrasi: peta gambut sintetis',
     factor: (lo: number, hi: number) => `kedalaman bakar bisa x${lo.toFixed(1)} sampai x${hi.toFixed(1)}`,
+    mc: (m: string) => `median ${m}, 5-95% atas sebaran api, kedalaman bakar dan faktor emisi`,
     observed: (h: number) => `Sudah terlepas, terlihat satelit (${h} jam terakhir)`, noObserved: 'Tidak ada deteksi satelit dengan daya radiasi api di area ini.',
     zones: 'Risiko zona', zone: 'Zona', status: 'Status', share: 'Simulasi terbakar', eta: 'Api tiba (p10-p90)', plan: 'Dengan rencana',
     shareNote: (n: number, h: number) => `Bagian dari ${n} simulasi di mana zona terbakar dalam ${h} jam. Prakiraan bukan jaminan.`,
@@ -154,7 +156,7 @@ export function briefPdfData(o: {
     runs: base.runs.length,
     burned: burnedBy(base, H),
     withPlan: p ? { ...p, actions: o.actions } : null,
-    emissions: { mean: em.base.mean, p10: em.base.p10, p90: em.base.p90, illustrative: peatIsSynthetic(scn), factorLo: em.factorRange[0], factorHi: em.factorRange[1] },
+    emissions: { mean: em.base.mean, p10: em.base.p10, p90: em.base.p90, illustrative: peatIsSynthetic(scn), factorLo: em.factorRange[0], factorHi: em.factorRange[1], mc: { median: em.range.base.median, p5: em.range.base.p5, p95: em.range.base.p95 } },
     observed: o.observed ? { tco2e: o.observed.tco2e, windowH: o.observed.windowH, detections: o.observed.detections, peatShare: o.observed.peatShare } : null,
     zones: scn.landscape.zones.map((z, i) => {
       const s = base.zoneStats[i];
@@ -238,7 +240,9 @@ export function buildBriefPdf(d: BriefPdfData): jsPDF {
   };
   block(L.burns(d.horizonH), `${ha(d.burned.mean)} ${L.ha}`, `${L.range} ${ha(d.burned.p10)}-${ha(d.burned.p90)} ${L.ha}`);
   if (d.withPlan) block(L.withPlan(d.withPlan.actions), `${ha(d.withPlan.mean)} ${L.ha}`, `${L.range} ${ha(d.withPlan.p10)}-${ha(d.withPlan.p90)} ${L.ha}`);
-  block(L.peat, `~${r2(d.emissions.mean)} t CO2e`, `${L.range} ${r2(d.emissions.p10)}-${r2(d.emissions.p90)} t; ${L.factor(d.emissions.factorLo, d.emissions.factorHi)}${d.emissions.illustrative ? `; ${L.illustrative}` : ''}`);
+  const mc = d.emissions.mc;
+  if (mc) block(L.peat, `${r2(mc.p5)}-${r2(mc.p95)} t CO2e`, `${L.mc(r2(mc.median))}${d.emissions.illustrative ? `; ${L.illustrative}` : ''}`);
+  else block(L.peat, `~${r2(d.emissions.mean)} t CO2e`, `${L.range} ${r2(d.emissions.p10)}-${r2(d.emissions.p90)} t; ${L.factor(d.emissions.factorLo, d.emissions.factorHi)}${d.emissions.illustrative ? `; ${L.illustrative}` : ''}`);
   if (d.observed) block(L.observed(d.observed.windowH), `~${r2(d.observed.tco2e)} t CO2e`, `VIIRS FRP, ${d.observed.detections} detections, ${Math.round(d.observed.peatShare * 100)}% peat; a floor for smouldering peat`);
   else { ry = text(L.noObserved, rx, ry, { size: 8, gray: 80, maxW: rw }) + 2.2; }
   // Resources entered

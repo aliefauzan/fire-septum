@@ -7,7 +7,7 @@
 // OpenTimestamps, which anchors it in a Bitcoin block: proof that the record existed,
 // unchanged, at that time. No wallet, token or smart contract is involved.
 import { pairedSaving } from './ensemble';
-import type { Emissions } from './carbon';
+import type { Drivers, Emissions, Quantiles } from './carbon';
 import type { ObservedEmissions } from './frp';
 import type { Action, EnsembleResult, Scenario, SimParams } from './types';
 
@@ -123,12 +123,35 @@ export interface Receipt {
     burnedHa: { base: number; plan: number };
     savedHa: { mean: number; p10: number; p90: number; pBetter: number };
     tco2e: { base: number; plan: number | null; avoided: number | null; avoidedP10: number | null; avoidedP90: number | null; perHa: number };
+    /**
+     * Monte Carlo range of the emissions (spread × burn depth × emission factors), t CO2e. Added
+     * 24 Oct 2026; optional, so earlier v2 receipts keep their exact bytes and still verify.
+     */
+    tco2eRange?: {
+      method: string;
+      samples: number;
+      /** True when burn depth came from the per-cell fire history, false = flat IPCC default. */
+      history: boolean;
+      base: RangeQ;
+      plan: RangeQ | null;
+      avoided: RangeQ | null;
+      /** Variance shares of spread, burn depth and emission factors (one at a time, summing to 1). */
+      drivers: { base: { spread: number; depth: number; ef: number }; avoided: { spread: number; depth: number; ef: number } | null };
+      /** Mean newly burned peat ha with no, 1, 2 and 3+ earlier fire years (no plan). */
+      classHa: number[];
+    };
     /** Emissions the satellites had already seen when the record was made (FRP method), if there were detections. */
-    observed?: { tco2e: number; freMJ: number; detections: number; passes: number; windowH: number; method: string };
+    observed?: { tco2e: number; freMJ: number; detections: number; passes: number; windowH: number; method: string; range?: RangeQ };
   };
   /** Browser engine that produced the outputs; floating-point maths may differ between engines. */
   engine: string;
 }
+
+/** Median and 5–95% / 10–90% quantiles, t CO2e. */
+export interface RangeQ { median: number; p5: number; p95: number; p10: number; p90: number }
+
+const rangeQ = (q: Quantiles): RangeQ => ({ median: round(q.median, 0), p5: round(q.p5, 0), p95: round(q.p95, 0), p10: round(q.p10, 0), p90: round(q.p90, 0) });
+const shares = (d: Drivers) => ({ spread: round(d.spread, 2), depth: round(d.depth, 2), ef: round(d.ef, 2) });
 
 export interface Signature {
   alg: 'Ed25519';
@@ -234,7 +257,17 @@ export async function buildReceipt(inputs: RunInputs, base: EnsembleResult, plan
         avoidedP90: hasPlan && em.avoided ? round(em.avoided.p90, 0) : null,
         perHa: round(em.perHa, 1),
       },
-      ...(obs ? { observed: { tco2e: round(obs.tco2e, 0), freMJ: round(obs.freMJ, 0), detections: obs.detections, passes: obs.passes, windowH: obs.windowH, method: 'VIIRS FRP held to next pass (max 12 h) × GFAS β × IPCC EF' } } : {}),
+      tco2eRange: {
+        method: `Monte Carlo, ${em.range.samples} draws: spread run i mod runs × burn depth (${em.range.history ? 'fire-history class: IPCC 353 t/ha ± 26% with no earlier fire, Konecny 2016 115/69/23 t/ha for 1/2/3+ earlier fire years' : 'flat IPCC 353 t/ha ± 26%'}) × emission factors; paired base and plan`,
+        samples: em.range.samples,
+        history: em.range.history,
+        base: rangeQ(em.range.base),
+        plan: hasPlan && em.range.plan ? rangeQ(em.range.plan) : null,
+        avoided: hasPlan && em.range.avoided ? rangeQ(em.range.avoided) : null,
+        drivers: { base: shares(em.range.drivers.base), avoided: hasPlan && em.range.drivers.avoided ? shares(em.range.drivers.avoided) : null },
+        classHa: em.range.classHa.base.map((x) => round(x, 0)),
+      },
+      ...(obs ? { observed: { tco2e: round(obs.tco2e, 0), freMJ: round(obs.freMJ, 0), detections: obs.detections, passes: obs.passes, windowH: obs.windowH, method: 'VIIRS FRP held to next pass (max 12 h) × GFAS β × IPCC EF', ...(obs.range ? { range: rangeQ(obs.range) } : {}) } } : {}),
     },
     engine,
   };

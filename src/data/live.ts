@@ -23,6 +23,7 @@ import { Cell, type DataProvenance, type FuelId, type Hotspot, type Landscape, t
 import { loadBarrierIndex, loadBarriers, rasterizeBarriers, snapshotCovers, snapshotDate } from './barriers';
 import { browserEnv, type DataEnv } from './env';
 import { FIRMS_SOURCES, FirmsKeyMissing, type RawHotspot } from './firms';
+import { sampleFireHistory } from './fireHistorySample';
 import { fetchLandCover, fuelFromCover, onPeatSoil } from './landcover';
 import { fetchWeather, fetchWeatherAt } from './openmeteo';
 import { fetchOsmFuel } from './osm';
@@ -118,13 +119,16 @@ export async function buildLiveScenario(o: LiveOptions, env: DataEnv = browserEn
   const w = GRID, h = GRID;
 
   const past = o.past;
-  const [weatherR, firesR, elevR, peatR, coverR, barrierR] = await Promise.allSettled([
+  // Fire history counts only years before the scenario's own, so a fire never counts itself.
+  const fireYear = new Date(past ? Date.parse(past.t0) : Date.now()).getUTCFullYear();
+  const [weatherR, firesR, elevR, peatR, coverR, barrierR, historyR] = await Promise.allSettled([
     past ? fetchWeatherAt(o.lat, o.lon, past.t0, horizonH, env.getJson) : fetchWeather(o.lat, o.lon, horizonH, env.getJson),
     past ? Promise.resolve({ hotspots: past.known, sources: FIRMS_SOURCES, fetchedAt: '' }) : env.firms([geo.west, geo.south, geo.east, geo.north], 2),
     fetchElevationGrid(geo, w, h, 13, env.fetchTile),
     fetchPeatMask(geo, w, h, env.fetchTile),
     fetchLandCover(geo, w, h, env.fetchTile),
     useBarriers ? loadBarrierLayer(geo, w, h, env, rates) : Promise.resolve<BarrierLayer>({ source: 'off', fuel: null, brk: null, drainM: null, features: 0 }),
+    sampleFireHistory(geo, w, h, fireYear, env),
   ]);
   if (weatherR.status === 'rejected') throw new Error(`Weather unavailable: ${weatherR.reason}`);
   const weather = weatherR.value;
@@ -225,8 +229,28 @@ export async function buildLiveScenario(o: LiveOptions, env: DataEnv = browserEn
     if (top) z.fuel = top[0];
   }
 
+  // Earlier fire years per cell set the burn-depth class of burned peat (carbon.ts).
+  const history = historyR.status === 'fulfilled' ? historyR.value : null;
+  if (history) {
+    let peatCells = 0;
+    const byClass = [0, 0, 0, 0];
+    for (let k = 0; k < w * h; k++) {
+      if (!peat || peat.peat[k] !== 1) continue;
+      peatCells++;
+      byClass[Math.min(3, history.years[k])]++;
+    }
+    notes.push(
+      `Fire history: NASA FIRMS MODIS and VIIRS detections ${history.archive[0]}–${Math.min(history.archive[1], history.beforeYear - 1)} (real), years before ${history.beforeYear} only` +
+      (peatCells ? `; of ${peatCells} peat cells ${pct(byClass[0] / peatCells)} had no earlier fire year, ${pct(byClass[1] / peatCells)} one, ${pct(byClass[2] / peatCells)} two, ${pct(byClass[3] / peatCells)} three or more` : ''),
+    );
+  } else {
+    notes.push('Fire history: not loaded, so burned peat uses the flat IPCC burn depth');
+    if (historyR.status === 'rejected') warnings.push(`Fire history could not be loaded (${String(historyR.reason)}): emissions use the flat IPCC burn depth.`);
+  }
+
   const l: Landscape = { w, h, cellM: CELL_M, fuel, elev, zoneOf, zones, geo };
   if (drainM) l.drainM = drainM;
+  if (history) l.fireYears = history.years;
   const init = emptyState(l);
   if (bl.brk) for (let k = 0; k < w * h; k++) if (bl.brk[k] > 0 && init.state[k] === Cell.Fuel) init.brk[k] = bl.brk[k];
   const now = past ? Date.parse(past.t0) : Date.now();

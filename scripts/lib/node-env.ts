@@ -137,6 +137,13 @@ export function nodeEnv(o: NodeEnvOptions = {}): DataEnv {
       return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
     },
 
+    async fetchBuffer(path) {
+      const file = join(root, 'public', path);
+      if (!existsSync(file)) return null;
+      const b = readFileSync(file);
+      return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+    },
+
     async getJson(url) {
       // Archived weather does not change; the live forecast does.
       const cacheable = new URL(url).host.startsWith('historical-forecast-api.');

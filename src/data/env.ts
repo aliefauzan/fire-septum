@@ -32,6 +32,8 @@ export interface DataEnv {
   firms(bbox: [number, number, number, number], days: number, date?: string): Promise<FirmsResult>;
   /** Raw Overpass JSON for the fixed fuel query over bbox "s,w,n,e" (osm.ts). Rejects when unavailable. */
   overpass(bbox: string): Promise<unknown>;
+  /** A binary file shipped under public/ (path without a leading slash); null when it is missing. Optional: without it there is no fire history. */
+  fetchBuffer?(path: string): Promise<ArrayBuffer | null>;
 }
 
 /** Fetch and decode one tile in the browser. fetch + createImageBitmap keeps a timeout and works in background tabs. */
@@ -64,6 +66,16 @@ export const browserEnv: DataEnv = {
     return r.json();
   },
   firms: (bbox, days, date) => fetchHotspots(bbox, days, date),
+  fetchBuffer: async (path) => {
+    try {
+      const r = await fetch(`/${path}`);
+      // Unknown paths come back as index.html from the dev server.
+      if (!r.ok || (r.headers.get('content-type') ?? '').includes('text/html')) return null;
+      return await r.arrayBuffer();
+    } catch {
+      return null;
+    }
+  },
   overpass: async (bbox) => {
     // Proxied through the dev server (server/firmsProxy.ts) so Overpass gets a User-Agent.
     // Overpass is often overloaded: give up after 15 s rather than blocking the live scenario.

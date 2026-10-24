@@ -46,6 +46,13 @@ export interface Landscape {
    * drainLM). Absent in records made before 24 Oct 2026, which therefore run exactly as before.
    */
   drainM?: Float32Array;
+  /**
+   * Number of distinct calendar years before the scenario's year in which NASA FIRMS (MODIS 2001+,
+   * VIIRS 2012+) saw fire on each cell, capped at 255 (src/data/fireHistory.ts). Sets the burn-depth
+   * class of each burned peat cell (carbon.ts). The simulation never reads it. Absent in records
+   * made before 24 Oct 2026, whose emissions therefore use the flat IPCC default as before.
+   */
+  fireYears?: Uint8Array;
 }
 
 export interface WeatherHour {
