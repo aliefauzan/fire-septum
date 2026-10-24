@@ -40,6 +40,12 @@ export interface Landscape {
   zones: Zone[];
   /** Geographic anchor (cell 0,0 north-west corner) when the scenario is real. */
   geo?: { north: number; west: number; south: number; east: number };
+  /**
+   * Metres from each cell centre to the nearest mapped canal, ditch or drain (capped at 5 km), from
+   * the OSM snapshot. When present, peat-soil fuel near drainage spreads faster (rates drainK,
+   * drainLM). Absent in records made before 24 Oct 2026, which therefore run exactly as before.
+   */
+  drainM?: Float32Array;
 }
 
 export interface WeatherHour {
@@ -205,6 +211,12 @@ export interface DataProvenance {
   fuel: string;
   /** Whether the peat soil map behind the emission numbers is real. Unset in older records: read `fuel`. */
   peatMap?: 'real' | 'synthetic';
+  /**
+   * Where rivers, canals and roads came from: the dated OSM snapshot, a live Overpass query (boxes
+   * the snapshot does not cover), nowhere ('none': the forecast ignores them), or switched off by
+   * the caller ('off', reference runs). Unset in records made before 24 Oct 2026.
+   */
+  barriers?: 'snapshot' | 'overpass' | 'none' | 'off';
   fetchedAt?: string;
 }
 

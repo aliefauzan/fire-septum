@@ -81,6 +81,26 @@ const indexCache = new WeakMap<JsonFetcher, Promise<BarrierIndex | null>>();
 const tileCache = new WeakMap<JsonFetcher, Map<string, Promise<BarrierTile | null>>>();
 const TILE_CACHE_MAX = 64;
 
+/** The snapshot's index.json, memoised per fetcher; null when the snapshot is not shipped. */
+export function loadBarrierIndex(fetchJson: JsonFetcher): Promise<BarrierIndex | null> {
+  return getIndex(fetchJson);
+}
+
+/**
+ * Whether the snapshot covers a box: some tile within `marginM` of it has mapped features. Tiles
+ * exist only where OSM has a barrier, so an inland box with no tile of its own but mapped
+ * neighbours is covered (and simply has no barriers), while a box off Kalimantan and Sumatra is not.
+ */
+export function snapshotCovers(index: BarrierIndex, geo: BarrierGeo, marginM = 10_000): boolean {
+  return barrierTileKeys(expandGeo(geo, marginM), index.tileDeg).some((k) => index.tiles[k]);
+}
+
+/** The OSM data date of the snapshot (latest source timestamp, else when it was generated), YYYY-MM-DD. */
+export function snapshotDate(index: BarrierIndex): string {
+  const ts = index.sources.map((s) => s.osmTimestamp).filter((t): t is string => !!t).sort();
+  return (ts.at(-1) ?? index.generatedAt).slice(0, 10);
+}
+
 function getIndex(fetchJson: JsonFetcher): Promise<BarrierIndex | null> {
   let p = indexCache.get(fetchJson);
   if (!p) {
@@ -223,9 +243,23 @@ const KIND_FUEL: Record<string, { fuel: FuelId; priority: number }> = {
   built: { fuel: 'settlement', priority: 3 },
 };
 
+export interface RasterizeOptions {
+  /**
+   * Kinds that only slow fire, with their fuel-break strength 0..1 (as FireState.brk). Their cells
+   * keep their own fuel and get `brk` instead of becoming water or settlement. Kinds not listed
+   * here are full barriers (non-burnable cells), as before.
+   */
+  partial?: Partial<Record<string, number>>;
+}
+
 export interface BarrierRaster {
-  /** Fuel override per cell (null = no OSM barrier there). */
+  /** Fuel override per cell (null = no full OSM barrier there). */
   fuel: (FuelId | null)[];
+  /**
+   * Partial fuel-break strength per cell (max over the partial kinds crossing it), 0 where there is
+   * none or where a full barrier already makes the cell non-burnable.
+   */
+  brk: Float32Array;
   /** Number of features that set at least one cell. */
   features: number;
   /**
@@ -260,13 +294,16 @@ function walk4(ax: number, ay: number, bx: number, by: number, visit: (x: number
 
 /**
  * Rasterise barrier features onto a w × h grid over `geo` (cell 0,0 = north-west, y grows south).
- * Fuel uses the same mapping and 4-connected line rasterisation as osm.ts. Drainage metrics use a
+ * Fuel uses the same mapping and 4-connected line rasterisation as osm.ts; kinds listed in
+ * `opts.partial` go to `brk` instead (live.ts passes ditch/drain/stream and road_minor/track). Drainage metrics use a
  * grid extended by DRAIN_CAP_M on every side so canals outside the box are counted.
  */
-export function rasterizeBarriers(geo: BarrierGeo, w: number, h: number, features: BarrierFeature[]): BarrierRaster {
+export function rasterizeBarriers(geo: BarrierGeo, w: number, h: number, features: BarrierFeature[], opts: RasterizeOptions = {}): BarrierRaster {
   const n = w * h;
   const fuel: (FuelId | null)[] = new Array(n).fill(null);
+  const brk = new Float32Array(n);
   const prio = new Int8Array(n).fill(-1);
+  const partial = opts.partial ?? {};
   const toCell = (p: LatLon) => ({
     x: ((p.lon - geo.west) / (geo.east - geo.west)) * w - 0.5,
     y: ((geo.north - p.lat) / (geo.north - geo.south)) * h - 0.5,
@@ -284,7 +321,21 @@ export function rasterizeBarriers(geo: BarrierGeo, w: number, h: number, feature
   for (const f of sorted) {
     const c = KIND_FUEL[f.kind];
     hit = false;
-    if (f.closed && f.pts.length >= 3) {
+    const strength = f.closed ? undefined : partial[f.kind];
+    if (strength !== undefined) {
+      // Partial barrier line: strengthen the fuel break, leave the fuel alone.
+      const sv = Math.min(1, Math.max(0, strength));
+      for (let i = 1; i < f.pts.length; i++) {
+        const a = toCell(f.pts[i - 1]), b = toCell(f.pts[i]);
+        if ((a.x < -1 && b.x < -1) || (a.y < -1 && b.y < -1) || (a.x > w && b.x > w) || (a.y > h && b.y > h)) continue;
+        walk4(a.x, a.y, b.x, b.y, (x, y) => {
+          if (x < 0 || y < 0 || x >= w || y >= h) return;
+          hit = true;
+          const k = y * w + x;
+          if (sv > brk[k]) brk[k] = sv;
+        });
+      }
+    } else if (f.closed && f.pts.length >= 3) {
       const cells = f.pts.map(toCell);
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
       for (const p of cells) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); }
@@ -305,8 +356,9 @@ export function rasterizeBarriers(geo: BarrierGeo, w: number, h: number, feature
     if (hit) touched++;
   }
 
+  for (let k = 0; k < n; k++) if (fuel[k] !== null) brk[k] = 0; // already non-burnable
   const { drainDistM, canalKmPerKm2 } = drainageMetrics(geo, w, h, features.filter((f) => !f.closed && DRAINAGE_KINDS.has(f.kind)));
-  return { fuel, features: touched, drainDistM, canalKmPerKm2 };
+  return { fuel, brk, features: touched, drainDistM, canalKmPerKm2 };
 }
 
 /** Cell edge lengths in metres for a grid over `geo`. */

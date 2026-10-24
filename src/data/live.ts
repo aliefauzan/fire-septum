@@ -3,15 +3,26 @@
 //   hotspots   — NASA FIRMS VIIRS detections (real, needs FIRMS_MAP_KEY on the server)
 //   terrain    — AWS Terrain Tiles (real)
 //   peat soil  — Global Forest Watch global peatland layer (real)
-//   land cover — ESA WorldCover 2021 (real), with OpenStreetMap water, roads and land use on top
+//   land cover — ESA WorldCover 2021 (real)
+//   barriers   — dated OpenStreetMap snapshot (public/data/osm-barriers, barriers.ts): canals,
+//                rivers, major roads, water and built-up areas as non-burnable cells; ditches,
+//                drains, streams, minor roads and tracks as partial fuel breaks (FireState.brk);
+//                distance to drainage for the drained-peat term (Landscape.drainM). Live Overpass
+//                only for boxes the snapshot does not cover.
 //   fuel       — SYNTHETIC zone defaults only where those layers fail or have no data
+//
+// All network and file access goes through a DataEnv (env.ts): the browser by default, Node with
+// scripts/lib/node-env.ts.
+import { DEFAULT_RATES, type Rates } from '../sim/doctrine';
 import { FUEL_INDEX, FUEL_LIST } from '../sim/fuels';
 import { buildZoneIndex, burnDisc, emptyState, gridZones, igniteDisc } from '../sim/landscape';
 import { DEFAULT_PARAMS } from '../sim/model';
 import { fbm } from '../sim/rng';
 import { CELL_M, GRID } from '../sim/scenarios';
-import type { DataProvenance, FuelId, Hotspot, Landscape, Scenario, Zone } from '../sim/types';
-import { FirmsKeyMissing, fetchHotspots, type RawHotspot } from './firms';
+import { Cell, type DataProvenance, type FuelId, type Hotspot, type Landscape, type Scenario, type Zone } from '../sim/types';
+import { loadBarrierIndex, loadBarriers, rasterizeBarriers, snapshotCovers, snapshotDate } from './barriers';
+import { browserEnv, type DataEnv } from './env';
+import { FIRMS_SOURCES, FirmsKeyMissing, type RawHotspot } from './firms';
 import { fetchLandCover, fuelFromCover, onPeatSoil } from './landcover';
 import { fetchWeather, fetchWeatherAt } from './openmeteo';
 import { fetchOsmFuel } from './osm';
@@ -28,6 +39,61 @@ export interface LiveOptions {
   manualIgnitions?: { x: number; y: number }[];
   /** Replay a past moment (hindcast): start time, the detections known by then, and what was seen after. */
   past?: { t0: string; known: RawHotspot[]; observed: RawHotspot[]; windowH: number };
+  /** Map rivers, canals and roads (default true). False only for reference runs without them. */
+  barriers?: boolean;
+  /** Drained-peat term from distance to canals and ditches (default true; needs the snapshot). */
+  drainage?: boolean;
+  /** Rates for the partial fuel-break strengths (default DEFAULT_RATES). */
+  rates?: Rates;
+}
+
+/** Barriers for one box, ready to lay over the fuel map. */
+export interface BarrierLayer {
+  source: NonNullable<DataProvenance['barriers']>;
+  /** Full barriers: water / settlement override per cell. */
+  fuel: (FuelId | null)[] | null;
+  /** Partial fuel-break strength per cell. */
+  brk: Float32Array | null;
+  /** Metres to the nearest canal, ditch or drain. */
+  drainM: Float32Array | null;
+  /** Features that touched the grid. */
+  features: number;
+  /** Snapshot OSM date, YYYY-MM-DD (snapshot source only). */
+  date?: string;
+  /** Why the snapshot was not used, when it was not. */
+  why?: string;
+}
+
+/** Kinds that only slow fire, and the rate that sets each one's strength. */
+export function partialStrengths(r: Rates = DEFAULT_RATES): Record<string, number> {
+  const water = r.brkNarrowWater ?? DEFAULT_RATES.brkNarrowWater!, track = r.brkTrack ?? DEFAULT_RATES.brkTrack!;
+  return { ditch: water, drain: water, stream: water, road_minor: track, track };
+}
+
+/**
+ * Barriers from the OSM snapshot where it covers the box, else from a live Overpass query, else
+ * none. Never rejects: the source says what happened.
+ */
+export async function loadBarrierLayer(geo: { north: number; south: number; west: number; east: number }, w: number, h: number, env: DataEnv, rates: Rates = DEFAULT_RATES): Promise<BarrierLayer> {
+  let why = '';
+  try {
+    const index = await loadBarrierIndex(env.fetchJson);
+    if (!index) why = 'the OSM snapshot is not shipped with this build';
+    else if (!snapshotCovers(index, geo)) why = 'the OSM snapshot (Kalimantan and Sumatra) does not cover this box';
+    else {
+      const feats = await loadBarriers(geo, env.fetchJson);
+      const r = rasterizeBarriers(geo, w, h, feats, { partial: partialStrengths(rates) });
+      return { source: 'snapshot', fuel: r.fuel, brk: r.brk, drainM: r.drainDistM, features: r.features, date: snapshotDate(index) };
+    }
+  } catch (e) {
+    why = `the OSM snapshot failed to load (${e instanceof Error ? e.message : String(e)})`;
+  }
+  try {
+    const o = await fetchOsmFuel(geo, w, h, env.overpass);
+    return { source: 'overpass', fuel: o.fuel, brk: null, drainM: null, features: o.features, why };
+  } catch (e) {
+    return { source: 'none', fuel: null, brk: null, drainM: null, features: 0, why: `${why}, and Overpass is unavailable (${e instanceof Error ? e.message : String(e)})` };
+  }
 }
 
 export function bboxAround(lat: number, lon: number, sizeM = GRID * CELL_M) {
@@ -41,22 +107,24 @@ export interface LiveBuild {
   warnings: string[];
 }
 
-const pct = (x: number) => `${Math.round(x * 100)}%`;
+const pct = (x: number) => (x > 0 && x < 0.01 ? `${(x * 100).toFixed(1)}%` : `${Math.round(x * 100)}%`);
 
-export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
+export async function buildLiveScenario(o: LiveOptions, env: DataEnv = browserEnv): Promise<LiveBuild> {
   const horizonH = o.horizonH ?? 48;
+  const rates = o.rates ?? DEFAULT_RATES;
+  const useBarriers = o.barriers ?? true, useDrainage = o.drainage ?? true;
   const geo = bboxAround(o.lat, o.lon);
   const warnings: string[] = [];
   const w = GRID, h = GRID;
 
   const past = o.past;
-  const [weatherR, firesR, elevR, osmR, peatR, coverR] = await Promise.allSettled([
-    past ? fetchWeatherAt(o.lat, o.lon, past.t0, horizonH) : fetchWeather(o.lat, o.lon, horizonH),
-    past ? Promise.resolve({ hotspots: past.known, sources: ['VIIRS_SNPP_NRT', 'VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT'], fetchedAt: '' }) : fetchHotspots([geo.west, geo.south, geo.east, geo.north], 2),
-    fetchElevationGrid(geo, w, h),
-    fetchOsmFuel(geo, w, h),
-    fetchPeatMask(geo, w, h),
-    fetchLandCover(geo, w, h),
+  const [weatherR, firesR, elevR, peatR, coverR, barrierR] = await Promise.allSettled([
+    past ? fetchWeatherAt(o.lat, o.lon, past.t0, horizonH, env.getJson) : fetchWeather(o.lat, o.lon, horizonH, env.getJson),
+    past ? Promise.resolve({ hotspots: past.known, sources: FIRMS_SOURCES, fetchedAt: '' }) : env.firms([geo.west, geo.south, geo.east, geo.north], 2),
+    fetchElevationGrid(geo, w, h, 13, env.fetchTile),
+    fetchPeatMask(geo, w, h, env.fetchTile),
+    fetchLandCover(geo, w, h, env.fetchTile),
+    useBarriers ? loadBarrierLayer(geo, w, h, env, rates) : Promise.resolve<BarrierLayer>({ source: 'off', fuel: null, brk: null, drainM: null, features: 0 }),
   ]);
   if (weatherR.status === 'rejected') throw new Error(`Weather unavailable: ${weatherR.reason}`);
   const weather = weatherR.value;
@@ -111,13 +179,36 @@ export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
   if (cover) notes.push(`Land cover: ESA WorldCover 2021 (real), ${pct(cover.known)} of cells${synthetic ? `; ${pct(synthetic / (w * h))} SYNTHETIC` : ''}`);
   else { notes.push('Land cover: SYNTHETIC zone types'); warnings.push(coverR.status === 'rejected' ? 'Land cover tiles could not be loaded: vegetation types are synthetic.' : 'No land-cover data here: vegetation types are synthetic.'); }
 
-  // Real barriers and land use from OpenStreetMap where mapped, made to agree with the peat mask.
-  if (osmR.status === 'fulfilled' && osmR.value.features > 0) {
-    let mapped = 0;
-    osmR.value.fuel.forEach((f, k) => { if (f) { fuel[k] = FUEL_INDEX[peat ? onPeatSoil(f, peat.peat[k] === 1) : f]; mapped++; } });
-    notes.push(`OpenStreetMap water/roads/land use on ${pct(mapped / (w * h))} of cells (${osmR.value.features} features)`);
+  // Rivers, canals and roads: full barriers become water / settlement cells; partial ones (ditches,
+  // tracks) are fuel breaks laid into the initial state below.
+  const bl: BarrierLayer = barrierR.status === 'fulfilled' ? barrierR.value : { source: 'none', fuel: null, brk: null, drainM: null, features: 0, why: String(barrierR.reason) };
+  let fullCells = 0;
+  if (bl.fuel) {
+    bl.fuel.forEach((f, k) => {
+      if (!f) return;
+      // Snapshot barriers are water / settlement only; Overpass also brings land use, bent to the peat mask.
+      fuel[k] = FUEL_INDEX[peat ? onPeatSoil(f, peat.peat[k] === 1) : f];
+      fullCells++;
+    });
+  }
+  const drainM = useDrainage && bl.drainM ? bl.drainM : undefined;
+  if (bl.source === 'snapshot') {
+    const partialCells = bl.brk ? bl.brk.reduce((a, v, k) => a + (v > 0 && FUEL_LIST[fuel[k]].burnable ? 1 : 0), 0) : 0;
+    const ps = partialStrengths(rates);
+    notes.push(
+      `Barriers: OpenStreetMap snapshot of ${bl.date} (Geofabrik extract, ${bl.features} features): canals, rivers, major roads, water and built-up areas non-burnable on ${pct(fullCells / (w * h))} of cells (${fullCells}); ` +
+      `ditches, drains and streams (fuel-break strength ${ps.ditch}) and minor roads and tracks (${ps.track}) slow spread on ${pct(partialCells / (w * h))} (${partialCells} cells)` +
+      (drainM ? `. Drained peat: spread hazard on peat soil × (1 + ${rates.drainK ?? 0}·exp(−d/${rates.drainLM ?? 1} m)), d = distance to the nearest canal, ditch or drain` : '. No drained-peat term'),
+    );
+    if (bl.features === 0) warnings.push(`The OpenStreetMap snapshot (${bl.date}) has no rivers, canals or roads mapped in this box.`);
+  } else if (bl.source === 'overpass') {
+    notes.push(`Barriers: live OpenStreetMap (Overpass) query, because ${bl.why}: water, roads and land use on ${pct(fullCells / (w * h))} of cells (${bl.features} features), every waterway and road a full barrier, no drained-peat term`);
+    if (bl.features === 0) warnings.push('No OpenStreetMap water, road or land-use features in this box.');
+  } else if (bl.source === 'off') {
+    notes.push('Barriers: switched off for this run (rivers, canals and roads ignored)');
   } else {
-    warnings.push(osmR.status === 'rejected' ? 'OpenStreetMap (Overpass) unavailable: rivers and roads are not in the fuel map.' : 'No OpenStreetMap water/land-use features here.');
+    notes.push('Barriers: NONE. Rivers, canals and roads are not in the fuel map');
+    warnings.push(`NO BARRIERS: ${bl.why}. Rivers, canals and roads are missing from this forecast, so fire can cross them.`);
   }
   // Sea level cells from the DEM are water too.
   if (elevR.status === 'fulfilled') {
@@ -135,7 +226,9 @@ export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
   }
 
   const l: Landscape = { w, h, cellM: CELL_M, fuel, elev, zoneOf, zones, geo };
+  if (drainM) l.drainM = drainM;
   const init = emptyState(l);
+  if (bl.brk) for (let k = 0; k < w * h; k++) if (bl.brk[k] > 0 && init.state[k] === Cell.Fuel) init.brk[k] = bl.brk[k];
   const now = past ? Date.parse(past.t0) : Date.now();
   const toCell = (r: RawHotspot): Hotspot => ({
     ...r,
@@ -166,6 +259,7 @@ export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
     hotspots: hotspotNote,
     fuel: `${notes.join('. ')}. Terrain: ${terrainNote}`,
     peatMap: peat ? 'real' : 'synthetic',
+    barriers: bl.source,
     fetchedAt: weather.fetchedAt,
   };
   return {

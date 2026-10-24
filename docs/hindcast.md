@@ -107,7 +107,7 @@ The honest next test is prospective, not another hindcast: see the forecast regi
 
 - **Satellites miss fire.** VIIRS passes about twice a day per satellite and misses fire under thick smoke and cloud, as well as low-temperature smouldering peat. Some "false alarms" may be real fire that was not detected.
 - **Real fires were fought.** The forecast assumes no suppression; the observations include whatever firefighting happened.
-- **The fuel map was synthetic** in the 20–21 Oct runs (Overpass timed out). The 24 Oct re-run below uses the real peat and land-cover map; OpenStreetMap was still unavailable, so rivers, canals and roads are not in any of the fuel maps.
+- **The fuel map was synthetic** in the 20–21 Oct runs (Overpass timed out). The first 24 Oct re-run below uses the real peat and land-cover map but no OpenStreetMap features. The later 24 Oct re-run adds rivers, canals and roads from a dated OSM snapshot.
 - **The sample is small and partly repeated.** 12 events and 114 new squares; some fires appear on several days.
 
 ## Re-run with the real peat and land-cover map (24 October 2026)
@@ -142,6 +142,43 @@ On 24 Oct the live scenario builder gained a real peat mask (Global Forest Watch
 - **τ = 6 h is still the better default** on every subset, so the choice made on 21 Oct stands.
 - The recorded fire that opens the app (Kalimantan 18 Oct) was re-recorded with the real map on 24 Oct; its score card now reads CSI 0.60 vs 0.07 for distance alone. It remains the most flattering event in the set.
 
+## Re-run with rivers, canals and drained peat (24 October 2026, later)
+
+The live builder now takes rivers, canals, ditches and roads from a dated OpenStreetMap snapshot (Geofabrik extracts of 23 Oct 2026, `public/data/osm-barriers/`) instead of the per-box Overpass query that had timed out in every earlier run. Canals, rivers, major roads, water and built-up areas are non-burnable cells. Ditches, drains and streams (fuel-break strength 0.5) and minor roads and tracks (0.3) are partial fuel breaks. Peat-soil cells near a canal, ditch or drain spread faster by 1 + 0.5·exp(−d / 100 m) (rates `brkNarrowWater`, `brkTrack`, `drainK`, `drainLM` in `src/sim/doctrine.ts`). The barrier strengths and k are assumptions. L = 100 m is a fit to Ritzema et al. 2014. None of them were tuned on these events.
+
+All 12 events were rebuilt in Node (`npx tsx scripts/hindcast-batch.ts`, using `scripts/lib/node-env.ts`) at τ = 6 h, three ways. The rows are in `docs/hindcast-rerun-2026-10-24-barriers.json`, with a `variant` key on each. Variant *none* reproduces the earlier 24 Oct re-run exactly: 326 forecast squares, 82 hits. The Node pipeline also rebuilt the browser-recorded 18 Oct event bit for bit.
+
+| Variant (τ = 6 h) | Forecast | Hits of 114 | POD | FAR | CSI, all (distance) | CSI, Kalimantan (distance) | CSI, Sumatra (distance) | Brier skill* |
+|---|---|---|---|---|---|---|---|---|
+| none (as earlier on 24 Oct) | 326 | 82 | 0.72 | 0.75 | 0.229 (0.176) | 0.353 (0.243) | 0.117 (0.111) | −1.66 |
+| + barriers | 321 | 81 | 0.71 | 0.75 | 0.229 (0.179) | 0.351 (0.247) | 0.118 (0.112) | −1.62 |
+| + barriers + drained peat | 328 | 82 | 0.72 | 0.75 | 0.228 (0.176) | 0.351 (0.242) | 0.116 (0.111) | −1.62 |
+
+\* Pooled over the 9 events with new fire: 1 − Σ n·BS / Σ n·BS_ref, with n the candidate squares and BS_ref each event's own base-rate reference.
+
+Per event (forecast / hits / CSI; distance-only CSI in brackets), with the snapshot's features in the box:
+
+| Island | D | New squares | none | + barriers | + barriers + drainage | OSM features | Non-burnable / partial-break cells |
+|---|---|---|---|---|---|---|---|
+| Kalimantan | 08 Oct | 2 | 53 / 2 / 0.04 (0.04) | 52 / 2 / 0.04 (0.04) | 53 / 2 / 0.04 (0.04) | 23 | 0% / 4% |
+| Kalimantan | 10 Oct | 57 | 42 / 38 / 0.62 (0.55) | 41 / 37 / 0.61 (0.56) | 42 / 38 / 0.62 (0.55) | 1 | 0% / 1% |
+| Kalimantan | 12 Oct | 8 | 14 / 7 / 0.47 (0.38) | 14 / 7 / 0.47 (0.38) | 14 / 7 / 0.47 (0.38) | 0 | – |
+| Kalimantan | 14 Oct | 2 | 7 / 0 / 0.00 | 7 / 0 / 0.00 | 8 / 0 / 0.00 | 51 | 0.5% / 7% |
+| Kalimantan | 16 Oct | 3 | 10 / 1 / 0.08 (0.00) | 9 / 1 / 0.09 (0.00) | 9 / 1 / 0.09 (0.00) | 50 | 1% / 7% |
+| Kalimantan | 18 Oct | 18 | 14 / 12 / 0.60 (0.07) | 14 / 12 / 0.60 (0.07) | 15 / 12 / 0.57 (0.06) | 20 | 0% / 5% |
+| Sumatra | 08 Oct | 0 | 10 / 0 / – | 9 / 0 / – | 12 / 0 / – | 129 | 1% / 23% |
+| Sumatra | 10 Oct | 0 | 3 / 0 / – | 3 / 0 / – | 3 / 0 / – | 1 | 1% / 0% |
+| Sumatra | 12 Oct | 2 | 16 / 0 / 0.00 (0.06) | 16 / 0 / 0.00 (0.06) | 16 / 0 / 0.00 (0.06) | 2 | 1% / 0% |
+| Sumatra | 14 Oct | 20 | 83 / 20 / 0.24 (0.21) | 82 / 20 / 0.24 (0.21) | 82 / 20 / 0.24 (0.21) | 5 | 0.5% / 0.5% |
+| Sumatra | 16 Oct | 0 | 35 / 0 / – | 35 / 0 / – | 35 / 0 / – | 3 | 0.4% / 0.5% |
+| Sumatra | 18 Oct | 2 | 39 / 2 / 0.05 (0.05) | 39 / 2 / 0.05 (0.05) | 39 / 2 / 0.05 (0.05) | 1 | 0% / < 0.1% |
+
+- **Barriers barely change these scores.** Most of the 12 boxes have few mapped barriers: one has none, five have three or fewer features, and the busiest has 129 (Sumatra 8 Oct, no new fire). The changes are one square either way, well inside the noise of 114 observed squares.
+- **The drained-peat term adds a few forecast squares and no hits** (+7 squares against barriers alone). These events give no evidence for or against it; it stays on by default because the drawdown is measured, not because it scored better.
+- **No default was changed** because of these runs. τ = 6 h, the barrier strengths and k, L are as stated above.
+- The recorded fire that opens the app (Kalimantan 18 Oct) was re-recorded with barriers and drainage. Its score card now reads CSI 0.57 against 0.06 for distance alone.
+- OpenStreetMap is uneven in rural Kalimantan and Sumatra. Unmapped ditches count as no barrier, so the effect of barriers here is a lower bound. The snapshot is from 23 Oct, after the events; canals and roads rarely change within two weeks.
+
 ## Reproduce
 
 Open the app, then *Live fires → Test on a past day*. Enter a location from the table and the day D. The score card shows the same numbers for the default parameters. The 20–21 Oct batches were run in the browser console of the dev server by looping `buildHindcast`, then `runEnsemble`, then `scoreHindcast` over the 12 events, and again with `tauH` set to 6, 12, 24, 48 and 96 h. The 24 Oct batch is the same loop packaged as `src/data/hindcastBatch.ts`; run it from the dev server's console:
@@ -150,4 +187,12 @@ Open the app, then *Live fires → Test on a past day*. Enter a location from th
 const b = await import('/src/data/hindcastBatch.ts');
 const r = await b.runHindcastBatch(b.VALIDATION_EVENTS, [3, 6], console.log);
 copy(JSON.stringify(r));
+```
+
+Since the later 24 Oct run the same batch also runs in Node, with data cached under `.cache/` (FIRMS_MAP_KEY from the environment or `.env`):
+
+```sh
+npx tsx scripts/hindcast-batch.ts                        # 3 variants at τ = 6 h → docs/hindcast-rerun-2026-10-24-barriers.json
+npx tsx scripts/hindcast-batch.ts --taus 3,6 --variants barriers+drainage --out /tmp/rerun.json
+npx tsx scripts/record-event.ts                          # re-record src/data/events/kalimantan-2026-10-18.json
 ```

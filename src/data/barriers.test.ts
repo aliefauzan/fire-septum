@@ -7,6 +7,8 @@ import {
   decodeBarrierTile,
   loadBarriers,
   rasterizeBarriers,
+  snapshotCovers,
+  snapshotDate,
   type BarrierFeature,
   type BarrierGeo,
   type BarrierIndex,
@@ -137,6 +139,51 @@ describe('rasterizeBarriers', () => {
     expect(r.fuel[30 * w + 5]).toBe('settlement');
     expect(r.fuel[30 * w + 30]).toBe('water'); // river wins over track where they cross
     expect(r.drainDistM.every((d) => d === DRAIN_CAP_M)).toBe(true);
+  });
+});
+
+describe('rasterizeBarriers with partial kinds', () => {
+  const w = 64, h = 64;
+  const g = box(-2.95, 114.37, w, h);
+  const c = (x: number, y: number) => ({ lat: g.north - (y / h) * (g.north - g.south), lon: g.west + (x / w) * (g.east - g.west) });
+  const partial = { ditch: 0.5, drain: 0.5, stream: 0.5, road_minor: 0.3, track: 0.3 };
+
+  it('narrow waterways and tracks become fuel-break strength, wide ones stay water', () => {
+    const ditch: BarrierFeature = { kind: 'ditch', closed: false, pts: [c(10.5, 0), c(10.5, 64)] };
+    const track: BarrierFeature = { kind: 'track', closed: false, pts: [c(0, 40.5), c(64, 40.5)] };
+    const canal: BarrierFeature = { kind: 'canal', closed: false, pts: [c(30.5, 0), c(30.5, 64)] };
+    const r = rasterizeBarriers(g, w, h, [ditch, track, canal], { partial });
+    expect(r.features).toBe(3);
+    expect(r.fuel[20 * w + 10]).toBeNull();
+    expect(r.brk[20 * w + 10]).toBeCloseTo(0.5);
+    expect(r.brk[40 * w + 5]).toBeCloseTo(0.3);
+    expect(r.brk[40 * w + 10]).toBeCloseTo(0.5); // the stronger break wins where they cross
+    expect(r.fuel[20 * w + 30]).toBe('water');
+    expect(r.brk[40 * w + 30]).toBe(0); // full barrier: no partial strength on top
+    // The ditch still drains the peat; the track does not.
+    expect(r.drainDistM[20 * w + 10]).toBe(0);
+    expect(r.drainDistM[20 * w + 12]).toBeCloseTo(200, -1);
+    // Every row of the ditch is marked: the break has no diagonal gaps.
+    for (let y = 0; y < h; y++) expect(r.brk[y * w + 10]).toBeGreaterThan(0);
+  });
+
+  it('without the option every kind is a full barrier, as before', () => {
+    const ditch: BarrierFeature = { kind: 'ditch', closed: false, pts: [c(10.5, 0), c(10.5, 64)] };
+    const r = rasterizeBarriers(g, w, h, [ditch]);
+    expect(r.fuel[20 * w + 10]).toBe('water');
+    expect(r.brk.every((v) => v === 0)).toBe(true);
+  });
+});
+
+describe('snapshot coverage', () => {
+  const index = { v: 1, kind: 'fireseptum.osm-barriers', tileDeg: 0.25, quant: 1e5, generatedAt: '2026-10-24T10:52:31+00:00', simplifyM: 7, kinds: KINDS,
+    sources: [{ region: 'k', url: '', osmTimestamp: '2026-10-23T20:20:51Z' }, { region: 's', url: '', osmTimestamp: null }],
+    tiles: { '-3.00_114.25': { bytes: 1, lines: 1, areas: 0 } } } satisfies BarrierIndex;
+  it('covers boxes on or next to a mapped tile, not far away', () => {
+    expect(snapshotCovers(index, box(-2.93, 114.37))).toBe(true);
+    expect(snapshotCovers(index, box(-3.12, 114.37))).toBe(true); // empty tile, a mapped one within 10 km
+    expect(snapshotCovers(index, box(-6.9, 107.6))).toBe(false); // Java
+    expect(snapshotDate(index)).toBe('2026-10-23');
   });
 });
 

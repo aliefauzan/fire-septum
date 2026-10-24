@@ -1,20 +1,20 @@
 {
- "ranAt": "2026-10-24T11:00:50.509Z",
+ "ranAt": "2026-10-24T11:22:39.365Z",
  "scenario": "src/data/events/kalimantan-2026-10-18.json, 40 runs, no actions",
  "det1Identical": true,
  "nativeIdentical": true,
  "results": [
   {
    "engine": "V8 (Node)",
-   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "ms": 246
+   "det1": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "native": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "ms": 329
   },
   {
    "engine": "V8 (Chromium)",
-   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "ms": 231,
+   "det1": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "native": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "ms": 229,
    "browser": "chromium 141.0.7390.37"
   },
   {
@@ -23,16 +23,16 @@
   },
   {
    "engine": "JavaScriptCore (Safari)",
-   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "ms": 346,
+   "det1": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "native": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "ms": 366,
    "browser": "webkit 26.0"
   },
   {
    "engine": "SpiderMonkey (js shell)",
-   "det1": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "native": "ceb784c84a5e795717bd90384c44187e477950bdbb124882489dc06f1ce9e906",
-   "ms": 242,
+   "det1": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "native": "91087d26772bf2ab00d0aff63d6b2141d27d73c8d81065d8e0b99671deb2a995",
+   "ms": 297,
    "browser": "SpiderMonkey shell "
   }
  ]

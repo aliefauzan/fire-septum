@@ -1,25 +1,17 @@
 // Shared sampler for Web-Mercator PNG tile layers: fetch each tile once, then read the pixel
-// under the centre of every grid cell. The peat mask and the land cover use it; terrain.ts
-// predates it and keeps its own copy of the same loop.
+// under the centre of every grid cell. Terrain, the peat mask and the land cover use it. Tiles
+// come from a DataEnv (env.ts), so the same sampler runs in the browser and in Node.
+import { browserEnv, type DecodedTile } from './env';
 
 export interface Geo { north: number; south: number; west: number; east: number }
+
+export type TileFetcher = (url: string) => Promise<DecodedTile>;
 
 export const lonToX = (lon: number, z: number) => ((lon + 180) / 360) * 2 ** z;
 export const latToY = (lat: number, z: number) => {
   const r = (lat * Math.PI) / 180;
   return ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * 2 ** z;
 };
-
-/** Fetch and decode one 256 × 256 tile. fetch + createImageBitmap keeps a timeout and works in background tabs. */
-export async function loadTileImage(url: string, timeoutMs = 15_000): Promise<ImageData> {
-  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
-  if (!res.ok) throw new Error(`tile HTTP ${res.status}`);
-  const img = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
-  const c = new OffscreenCanvas(256, 256);
-  const ctx = c.getContext('2d')!;
-  ctx.drawImage(img, 0, 0);
-  return ctx.getImageData(0, 0, 256, 256);
-}
 
 /**
  * One value per cell of a w × h grid over `geo`, read from the tile pixel under the cell centre.
@@ -32,11 +24,12 @@ export async function sampleTiles(
   h: number,
   z: number,
   urlFor: (z: number, x: number, y: number, lat: number, lon: number) => string,
-  pick: (d: ImageData, i: number) => number,
+  pick: (d: DecodedTile, i: number) => number,
+  fetchTile: TileFetcher = browserEnv.fetchTile,
 ): Promise<Float32Array> {
-  const tiles = new Map<string, Promise<ImageData>>();
+  const tiles = new Map<string, Promise<DecodedTile>>();
   const get = (url: string) => {
-    if (!tiles.has(url)) tiles.set(url, loadTileImage(url));
+    if (!tiles.has(url)) tiles.set(url, fetchTile(url));
     return tiles.get(url)!;
   };
   const out = new Float32Array(w * h);
@@ -47,9 +40,11 @@ export async function sampleTiles(
       const lon = geo.west + ((x + 0.5) / w) * (geo.east - geo.west);
       const fx = lonToX(lon, z), fy = latToY(lat, z);
       const tx = Math.floor(fx), ty = Math.floor(fy);
-      const px = Math.min(255, Math.floor((fx - tx) * 256)), py = Math.min(255, Math.floor((fy - ty) * 256));
       const k = y * w + x;
-      jobs.push(get(urlFor(z, tx, ty, lat, lon)).then((d) => { out[k] = pick(d, (py * 256 + px) * 4); }));
+      jobs.push(get(urlFor(z, tx, ty, lat, lon)).then((d) => {
+        const px = Math.min(d.width - 1, Math.floor((fx - tx) * d.width)), py = Math.min(d.height - 1, Math.floor((fy - ty) * d.height));
+        out[k] = pick(d, (py * d.width + px) * 4);
+      }));
     }
   }
   await Promise.all(jobs);

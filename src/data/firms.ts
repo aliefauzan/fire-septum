@@ -16,6 +16,9 @@ export interface FirmsResult {
   fetchedAt: string;
 }
 
+/** The VIIRS near-real-time products the app reads (server/firmsProxy.ts uses the same three). */
+export const FIRMS_SOURCES = ['VIIRS_SNPP_NRT', 'VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT'];
+
 export class FirmsKeyMissing extends Error {
   constructor() { super('FIRMS_MAP_KEY is not set on the server'); }
 }

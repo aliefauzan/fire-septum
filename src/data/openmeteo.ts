@@ -1,4 +1,5 @@
 import type { WeatherHour } from '../sim/types';
+import { browserEnv, type DataEnv } from './env';
 
 export interface LiveWeather {
   hours: WeatherHour[];
@@ -12,14 +13,12 @@ export interface LiveWeather {
  * Hourly forecast from Open-Meteo (no API key, CORS enabled).
  * Includes the past 3 days so we can compute antecedent rain.
  */
-export async function fetchWeather(lat: number, lon: number, horizonH: number): Promise<LiveWeather> {
+export async function fetchWeather(lat: number, lon: number, horizonH: number, getJson: DataEnv['getJson'] = browserEnv.getJson): Promise<LiveWeather> {
   const url =
     `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}` +
     `&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_direction_10m` +
     `&wind_speed_unit=kmh&timezone=auto&past_days=3&forecast_days=4`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Open-Meteo HTTP ${res.status}`);
-  const j = await res.json();
+  const j = (await getJson(url).catch((e) => { throw new Error(`Open-Meteo: ${e instanceof Error ? e.message : e}`); })) as any;
   const h = j.hourly as Record<string, (number | string)[]>;
   const times = h.time as string[];
   // Current local hour at the location.
@@ -50,16 +49,14 @@ export async function fetchWeather(lat: number, lon: number, horizonH: number): 
  * starting at the hour of `t0`, plus the 72 h of rain before it. Used by hindcasts so
  * the model sees the weather it would have been given at the time.
  */
-export async function fetchWeatherAt(lat: number, lon: number, t0: string, horizonH: number): Promise<LiveWeather> {
+export async function fetchWeatherAt(lat: number, lon: number, t0: string, horizonH: number, getJson: DataEnv['getJson'] = browserEnv.getJson): Promise<LiveWeather> {
   const start = new Date(Date.parse(t0) - 72 * 3.6e6).toISOString().slice(0, 10);
   const end = new Date(Date.parse(t0) + (horizonH + 1) * 3.6e6).toISOString().slice(0, 10);
   const url =
     `https://historical-forecast-api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}` +
     `&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_direction_10m` +
     `&wind_speed_unit=kmh&timezone=UTC&start_date=${start}&end_date=${end}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Open-Meteo archive HTTP ${res.status}`);
-  const j = await res.json();
+  const j = (await getJson(url).catch((e) => { throw new Error(`Open-Meteo archive: ${e instanceof Error ? e.message : e}`); })) as any;
   const h = j.hourly as Record<string, (number | string)[]>;
   const times = h.time as string[];
   const key = new Date(Date.parse(t0)).toISOString().slice(0, 13) + ':00';

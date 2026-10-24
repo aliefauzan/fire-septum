@@ -1,8 +1,10 @@
 // Real fuel/barrier hints from OpenStreetMap via the public Overpass API:
 // water bodies, rivers and canals, main roads, settlements and land use.
-// OSM coverage in rural Kalimantan/Sumatra is uneven; unmapped cells keep the
-// synthetic zone fuel and the UI says so.
+// Since 24 Oct 2026 this is only the fallback for boxes the dated OSM snapshot (barriers.ts)
+// does not cover; Overpass is often overloaded. Every line feature here is a full barrier and
+// there is no drainage term.
 import type { FuelId } from '../sim/types';
+import { browserEnv, type DataEnv } from './env';
 
 interface Geo { north: number; south: number; west: number; east: number }
 type LL = { lat: number; lon: number };
@@ -37,13 +39,27 @@ function inside(p: LL, poly: LL[]): boolean {
   return c;
 }
 
-export async function fetchOsmFuel(geo: Geo, w: number, h: number): Promise<OsmFuel> {
-  // Proxied through the dev server (see server/firmsProxy.ts) so Overpass gets a User-Agent.
-  const bb = [geo.south, geo.west, geo.north, geo.east].map((v) => v.toFixed(5)).join(',');
-  // Overpass is often overloaded: give up after 15 s rather than blocking the live scenario.
-  const res = await fetch(`/api/osm?bbox=${bb}`, { signal: AbortSignal.timeout(15_000) });
-  if (!res.ok) throw new Error(`Overpass proxy HTTP ${res.status}`);
-  const j = await res.json();
+/** The bbox string ("s,w,n,e", 5 decimals) the Overpass query and its disk cache are keyed by. */
+export const overpassBbox = (geo: Geo) => [geo.south, geo.west, geo.north, geo.east].map((v) => v.toFixed(5)).join(',');
+
+/**
+ * The fixed Overpass query for one box. server/firmsProxy.ts (/api/osm) sends the same query;
+ * keep the two in step.
+ */
+export const overpassFuelQuery = (bb: string) => `[out:json][timeout:25];(
+        way["natural"~"^(water|wetland|wood|scrub|grassland)$"](${bb});
+        relation["natural"="water"](${bb});
+        way["waterway"~"^(river|canal|stream|ditch|drain)$"](${bb});
+        way["landuse"~"^(residential|industrial|commercial|retail|farmland|meadow|paddy|plantation|orchard|forest|grass|reservoir|basin)$"](${bb});
+        way["highway"~"^(motorway|trunk|primary|secondary|tertiary)$"](${bb});
+      );out geom;`;
+
+export async function fetchOsmFuel(geo: Geo, w: number, h: number, overpass: DataEnv['overpass'] = browserEnv.overpass): Promise<OsmFuel> {
+  return osmFuelFromOverpass(await overpass(overpassBbox(geo)), geo, w, h);
+}
+
+/** Rasterise an Overpass response (the query above) onto a w × h grid over `geo`. */
+export function osmFuelFromOverpass(j: any, geo: Geo, w: number, h: number): OsmFuel {
   const feats: Feature[] = [];
   for (const el of j.elements ?? []) {
     if (el.type === 'way' && el.geometry) {

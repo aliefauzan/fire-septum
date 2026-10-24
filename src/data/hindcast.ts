@@ -1,7 +1,8 @@
 // Replay a past day: forecast from the last satellite pass of day D using only what was
 // known then, and keep the next 24 h of detections to score the forecast against.
-import { fetchHotspots, type RawHotspot } from './firms';
-import { bboxAround, buildLiveScenario, type LiveBuild } from './live';
+import { browserEnv, type DataEnv } from './env';
+import type { RawHotspot } from './firms';
+import { bboxAround, buildLiveScenario, type LiveBuild, type LiveOptions } from './live';
 
 export const HINDCAST_WINDOW_H = 24;
 
@@ -18,14 +19,17 @@ export function splitAtLastPass(hs: RawHotspot[], date: string, windowH = HINDCA
   };
 }
 
-export async function buildHindcast(lat: number, lon: number, date: string): Promise<LiveBuild> {
+/** Options passed through to buildLiveScenario (barriers, drainage, rates). */
+export type HindcastOptions = Pick<LiveOptions, 'barriers' | 'drainage' | 'rates'>;
+
+export async function buildHindcast(lat: number, lon: number, date: string, opts: HindcastOptions = {}, env: DataEnv = browserEnv): Promise<LiveBuild> {
   const g = bboxAround(lat, lon);
   // Two days before D (burned scars and the 24 h of active fire) through D + 1 (the observations).
   const from = new Date(Date.parse(date) - 2 * 864e5).toISOString().slice(0, 10);
-  const r = await fetchHotspots([g.west, g.south, g.east, g.north], 4, from);
+  const r = await env.firms([g.west, g.south, g.east, g.north], 4, from);
   const s = splitAtLastPass(r.hotspots, date);
   if (!s) throw new Error(`No fire detected in this 6.4 km box on ${date}. Pick a day and place with active fire.`);
-  const b = await buildLiveScenario({ lat, lon, horizonH: HINDCAST_WINDOW_H, past: { ...s, windowH: HINDCAST_WINDOW_H } });
+  const b = await buildLiveScenario({ ...opts, lat, lon, horizonH: HINDCAST_WINDOW_H, past: { ...s, windowH: HINDCAST_WINDOW_H } }, env);
   if (b.scenario.hindcast && b.scenario.hindcast.observed.length === 0) {
     b.warnings.push(`Satellites saw no fire here in the ${HINDCAST_WINDOW_H} h after the start, so there is nothing to score against.`);
   }

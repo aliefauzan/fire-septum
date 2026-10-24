@@ -130,6 +130,16 @@ export const SOURCES = {
     full: 'K. Konecny et al., "Variable carbon losses from recurrent fires in drained tropical peatlands," Global Change Biology 22(4):1469–1480, 2016. Airborne LiDAR before and after fire on drained peat in Central Kalimantan: about 206, 115, 69 and 23 t dry peat/ha consumed by the first, second, third and later fires on the same ground (58% to 7% of the IPCC Tier 1 default), and deeper burns and more repeat fires closer to drainage canals.',
     url: 'https://doi.org/10.1111/gcb.13186',
   },
+  ritzema: {
+    short: 'Ritzema et al. 2014',
+    full: 'H. P. Ritzema, S. Limin, K. Kusin, J. Jauhiainen and H. Wösten, "Canal blocking strategies for hydrological restoration of degraded tropical peatlands in Central Kalimantan, Indonesia," Catena 114:11–20, 2014 (doi:10.1016/j.catena.2013.10.009). Table 4, Kalampangan Canal (15–20 m wide, 3–4 m deep), Block C of the ex-Mega Rice Project, mean of four transects Sep 2004 – Apr 2007: dry-season (Jul–Oct) water table 0.88, 0.54, 0.35 and 0.33 m below the surface at 10, 100, 400 and 1000 m from the canal (rainy season 0.50, 0.13, 0.05, 0.06 m). The text: the water table close to the canal is 0.40–0.50 m deeper than 1000 m away.',
+    url: 'https://edepot.wur.nl/282926',
+  },
+  evans2019: {
+    short: 'Evans et al. 2019',
+    full: 'C. D. Evans et al., "Rates and spatial variability of peat subsidence in Acacia plantation and forest landscapes in Sumatra, Indonesia," Geoderma 338:410–421, 2019 (doi:10.1016/j.geoderma.2018.12.028). In forest next to drained plantations, mean water-table depth and subsidence fall log-linearly with distance from the forest/plantation boundary (usually a canal), Eq. 5 and Fig. 3: "a clear effect of plantation canals on water table drawdown and subsidence within native forest areas within 300 m of the plantation boundary, whilst evidence of effects beyond that distance is equivocal".',
+    url: 'https://nora.nerc.ac.uk/id/eprint/522239/',
+  },
   osm: {
     short: 'OpenStreetMap',
     full: 'OpenStreetMap contributors (ODbL), queried through the Overpass API. Mapped features only; a missing helipad or fire station may simply be unmapped.',
@@ -194,6 +204,20 @@ export interface Rates {
   peatCh4Gkg: number;
   /** 100-year global warming potential of non-fossil methane. */
   ch4Gwp100: number;
+  /**
+   * Fuel-break strength (FireState.brk, 0..1) of a mapped narrow waterway (ditch, drain, stream)
+   * and of a minor road or track. Applied when a scenario is built from the OSM snapshot.
+   * Optional: rates stored in records made before 24 Oct 2026 do not have them.
+   */
+  brkNarrowWater?: number;
+  brkTrack?: number;
+  /**
+   * Drained peat: spread hazard on peat-soil cells is multiplied by 1 + drainK·exp(−d / drainLM),
+   * d = metres to the nearest canal, ditch or drain (Landscape.drainM). Only scenarios that carry
+   * drainM use it. Optional for the same reason as above.
+   */
+  drainK?: number;
+  drainLM?: number;
 }
 
 export interface RateInfo {
@@ -238,6 +262,10 @@ export const DEFAULT_RATES: Rates = {
   peatCo2cGkg: 464,
   peatCh4Gkg: 21,
   ch4Gwp100: 27,
+  brkNarrowWater: 0.5,
+  brkTrack: 0.3,
+  drainK: 0.5,
+  drainLM: 100,
 };
 
 export const RATE_INFO: Record<keyof Rates, RateInfo> = {
@@ -283,6 +311,22 @@ export const RATE_INFO: Record<keyof Rates, RateInfo> = {
   peatBurntTdmHa: { label: 'Peat burnt per hectare of fire', unit: 't dry matter/ha', source: 'ipccWetlands', status: 'verified', note: 'Table 2.6, tropical wildfire on drained peat: 353 (95% CI 170–536), from 1997–2006 El Niño burns of 0.3–0.5 m. Konecny et al. 2016 measured 206, 115, 69 and 23 t/ha for the first, second, third and later fires on the same ground, so on land that has burned before the default is high. The range mostly reflects burn depth. Counted once per burned peat cell, for the whole fire event, not only the 48 h shown.' },
   peatCo2cGkg: { label: 'Peat fire CO2-C emission factor', unit: 'g C/kg', source: 'ipccWetlands', status: 'verified', note: 'Table 2.7, tropical organic soil. Multiplied by 44/12 to give CO2 (1,701 g/kg).' },
   peatCh4Gkg: { label: 'Peat fire CH4 emission factor', unit: 'g/kg', source: 'ipccWetlands', status: 'verified', note: 'Table 2.7, tropical organic soil. Based on one study (Christian et al. 2003).' },
+  brkNarrowWater: {
+    label: 'Ditch / drain / stream as a fuel break', unit: 'strength 0–1', source: 'osm', status: 'assumption',
+    note: 'Narrow mapped waterways (OSM ditch, drain, stream; typically 1–5 m) slow spread into their cell by about this share, instead of becoming non-burnable water cells as canals and rivers do: a 100 m cell is mostly land, and a dry ditch or one the smouldering peat passes under does not stop a peat fire. No published crossing probability was found. Applied when the scenario is built.',
+  },
+  brkTrack: {
+    label: 'Minor road / track as a fuel break', unit: 'strength 0–1', source: 'osm', status: 'assumption',
+    note: 'Minor roads and tracks (OSM unclassified, residential, service, track) are bare strips a few metres wide: partial fuel breaks. Major roads stay non-burnable. No published value; placeholder. The snapshot keeps minor roads only on peat. Applied when the scenario is built.',
+  },
+  drainK: {
+    label: 'Drained peat: extra spread hazard next to a canal', unit: '× (1 + k)', source: 'konecny', status: 'assumption',
+    note: 'Canals lower the peat water table (Ritzema 2014: 0.55 m deeper at 10 m than at 1 km in the dry season) and burns are deeper and repeat more often near canals (Konecny 2016). How much faster fire spreads on drier peat has no published value: k = 0.5 means up to 1.5× the hazard on peat soil beside a canal, ditch or drain. Not tuned on the hindcast events.',
+  },
+  drainLM: {
+    label: 'Drained peat: distance scale of the canal effect', unit: 'm', source: 'ritzema', status: 'verified',
+    note: 'Our exponential fit to Ritzema et al. 2014 Table 4 (dry season): the extra water-table drop beyond its 1 km value is 0.55, 0.21 and 0.02 m at 10, 100 and 400 m, an e-folding distance of about 100 m. One 15–20 m canal in Central Kalimantan; small ditches drain less. Evans et al. 2019 found a clear drawdown within about 300 m of plantation canals in Sumatra, so 100 m is the short end.',
+  },
   ch4Gwp100: { label: 'Methane warming potential (100 yr)', unit: '× CO2', source: 'ar6Gwp', status: 'secondary', note: 'Non-fossil methane, AR6 Table 7.15. Value seen quoted (GHG Management Institute; Muñoz 2024, ERL 19:121002), not read in the table itself.' },
 };
 

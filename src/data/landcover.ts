@@ -2,7 +2,7 @@
 // Microsoft Planetary Computer tile API (keyless, open CORS). Without a colormap the PNG carries
 // the class code in the grey channel; alpha 0 means the pixel lies outside the requested item.
 import type { FuelId } from '../sim/types';
-import { sampleTiles, type Geo } from './tiles';
+import { sampleTiles, type Geo, type TileFetcher } from './tiles';
 
 /** WorldCover class codes. */
 export const WC = { tree: 10, shrub: 20, grass: 30, crop: 40, built: 50, bare: 60, snow: 70, water: 80, wetland: 90, mangrove: 95, moss: 100 } as const;
@@ -27,8 +27,8 @@ export interface LandCover {
   known: number;
 }
 
-export async function fetchLandCover(geo: Geo, w: number, h: number): Promise<LandCover> {
-  const v = await sampleTiles(geo, w, h, LANDCOVER_Z, landcoverTileUrl, (d, i) => (d.data[i + 3] > 0 ? d.data[i] : 0));
+export async function fetchLandCover(geo: Geo, w: number, h: number, fetchTile?: TileFetcher): Promise<LandCover> {
+  const v = await sampleTiles(geo, w, h, LANDCOVER_Z, landcoverTileUrl, (d, i) => (d.data[i + 3] > 0 ? d.data[i] : 0), fetchTile);
   const cls = Uint8Array.from(v);
   let n = 0;
   for (let k = 0; k < cls.length; k++) if (cls[k] > 0) n++;

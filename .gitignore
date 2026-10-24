@@ -11,3 +11,4 @@ tsconfig.tsbuildinfo
 video/hf/.hyperframes
 .vercel
 .env*
+.claude/worktrees

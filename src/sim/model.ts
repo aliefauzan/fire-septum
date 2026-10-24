@@ -14,7 +14,8 @@
 // Our additions (heuristic, documented in README, not from the paper):
 //   * a fuel-dryness multiplier from relative humidity, temperature and rain,
 //   * multi-hour burning (peat smoulders) and wind-driven spotting,
-//   * suppression effects: wetting (water/retardant), control lines, crews.
+//   * suppression effects: wetting (water/retardant), control lines, crews,
+//   * mapped fuel breaks (ditches, tracks: partial FireState.brk) and drier peat near drainage.
 
 import { DEFAULT_RATES, chainsToCells, dropsPerHeliHour, flameLengthM, perFuel, type Rates } from './doctrine';
 import { NATIVE, mathLib, type MathLib } from './detmath';
@@ -252,6 +253,15 @@ export function runOnce(
   for (const c of compiled) if (c.a.kind === 'water' && c.a.product === 'retardant' && c.cells) for (const k of c.cells) retardant[k] = 1;
   const cellHa = (l.cellM * l.cellM) / 1e4;
   const isPeat = FUEL_LIST.map((f) => ON_PEAT.has(f.id));
+  // Drained peat: canals and ditches lower the water table around them, so peat-soil fuel near
+  // drainage is drier and ignites more readily. Only landscapes that carry drainM (built from the
+  // OSM snapshot) get this term; without it the spread hazard below is computed exactly as before.
+  let drainF: Float64Array | null = null;
+  if (l.drainM) {
+    const kD = R.drainK ?? 0, lD = Math.max(1, R.drainLM ?? 1);
+    drainF = new Float64Array(n);
+    for (let j = 0; j < n; j++) drainF[j] = isPeat[l.fuel[j]] ? 1 + kD * M.exp(-l.drainM[j] / lD) : 1;
+  }
 
   // Cloud seeding: in a share of runs (cloud potential), rain falls over the whole map for a while.
   const rainAdd: { from: number; to: number; mmH: number }[] = [];
@@ -374,9 +384,10 @@ export function runOnce(
         if (s.state[j] !== Cell.Fuel || pending[j]) continue;
         const f = FUEL_LIST[l.fuel[j]];
         const thetaS = (M.atan((l.elev[j] - hk) / (nb.dist * l.cellM)) * 180) / Math.PI;
-        const p =
+        let p =
           PH * (1 + f.pveg) * (1 + f.pden) * pw[ni] * M.exp(A_SLOPE * thetaS) * dry *
           (1 - 0.9 * s.wet[j]) * (1 - brkEff * s.brk[j]);
+        if (drainF) p *= drainF[j];
         // Treat p_burn as a hazard so it rescales to our step length and keeps
         // wind/slope anisotropy when p > 1: p_step = 1 − exp(−p · dt/τ).
         const pStep = 1 - M.exp(-p * dtOverTau);
