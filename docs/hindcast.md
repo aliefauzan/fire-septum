@@ -107,9 +107,47 @@ The honest next test is prospective, not another hindcast: see the forecast regi
 
 - **Satellites miss fire.** VIIRS passes about twice a day per satellite and misses fire under thick smoke and cloud, as well as low-temperature smouldering peat. Some "false alarms" may be real fire that was not detected.
 - **Real fires were fought.** The forecast assumes no suppression; the observations include whatever firefighting happened.
-- **The fuel map is synthetic** in every event (Overpass timed out). A real peat and land-cover map (GFW, KLHK, ESA WorldCover) is the most likely next improvement.
+- **The fuel map was synthetic** in the 20–21 Oct runs (Overpass timed out). The 24 Oct re-run below uses the real peat and land-cover map; OpenStreetMap was still unavailable, so rivers, canals and roads are not in any of the fuel maps.
 - **The sample is small and partly repeated.** 12 events and 114 new squares; some fires appear on several days.
+
+## Re-run with the real peat and land-cover map (24 October 2026)
+
+On 24 Oct the live scenario builder gained a real peat mask (Global Forest Watch global peatlands, Gumbricht et al. 2017 in the tropics) and real land cover (ESA WorldCover 2021); see the README's *Live data* section. All 12 events were rebuilt from scratch with those layers and scored at τ = 3 h and τ = 6 h (`docs/hindcast-rerun-2026-10-24.json`, made with `src/data/hindcastBatch.ts`). Detections, t0 and observed squares are identical to the earlier runs; only the fuel map changed. Overpass was unavailable again, so no event has OpenStreetMap features.
+
+| Island | D | Peat cells | Next 24 h | New squares | τ=3 forecast | τ=3 hits | τ=3 CSI | Distance | τ=6 forecast | τ=6 hits | τ=6 CSI | Distance |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Kalimantan | 08 Oct | 88% | 128 | 2 | 86 | 2 | 0.02 | 0.02 | 53 | 2 | 0.04 | 0.04 |
+| Kalimantan | 10 Oct | 70% | 314 | 57 | 82 | 56 | 0.67 | 0.70 | 42 | 38 | 0.62 | 0.55 |
+| Kalimantan | 12 Oct | 95% | 20 | 8 | 42 | 8 | 0.19 | 0.19 | 14 | 7 | 0.47 | 0.38 |
+| Kalimantan | 14 Oct | 56% | 305 | 2 | 31 | 2 | 0.06 | 0.00 | 7 | 0 | 0.00 | 0.00 |
+| Kalimantan | 16 Oct | 58% | 354 | 3 | 29 | 3 | 0.10 | 0.10 | 10 | 1 | 0.08 | 0.00 |
+| Kalimantan | 18 Oct | 57% | 214 | 18 | 29 | 16 | 0.52 | 0.27 | 14 | 12 | 0.60 | 0.07 |
+| Sumatra | 08 Oct | 98% | 88 | 0 | 27 | 0 | – | – | 10 | 0 | – | – |
+| Sumatra | 10 Oct | 42% | 407 | 0 | 9 | 0 | – | – | 3 | 0 | – | – |
+| Sumatra | 12 Oct | 43% | 90 | 2 | 29 | 2 | 0.07 | 0.03 | 16 | 0 | 0.00 | 0.06 |
+| Sumatra | 14 Oct | 98% | 418 | 20 | 102 | 20 | 0.20 | 0.20 | 83 | 20 | 0.24 | 0.21 |
+| Sumatra | 16 Oct | 99% | 81 | 0 | 41 | 0 | – | – | 35 | 0 | – | – |
+| Sumatra | 18 Oct | 100% | 99 | 2 | 50 | 2 | 0.04 | 0.04 | 39 | 2 | 0.05 | 0.05 |
+
+**Pooled over all 12 events** (synthetic-map values of 21 Oct in brackets):
+
+| τ (h) | Forecast squares | Hits of 114 | POD | FAR | CSI, all (distance) | CSI, Kalimantan (distance) | CSI, Sumatra held out (distance) |
+|---|---|---|---|---|---|---|---|
+| 3 | 557 [663] | 111 [112] | 0.97 | 0.80 | 0.20 (0.18) [0.17 (0.16)] | 0.29 (0.26) [0.25 (0.23)] | 0.09 (0.09) [0.08 (0.08)] |
+| **6** | 326 [390] | 82 [90] | 0.72 | 0.75 | **0.23** (0.18) [0.22 (0.18)] | **0.35** (0.24) [0.32 (0.25)] | **0.12** (0.11) [0.11 (0.09)] |
+
+- **The real map makes the model more selective.** At τ = 6 h it forecasts 326 squares instead of 390 and keeps 82 of the 90 hits, so FAR falls from 0.77 to 0.75 and CSI rises from 0.22 to 0.23. The gain comes from the land cover: water, built-up and wet farmland cells now stop or slow the spread where the synthetic map had peat shrub everywhere.
+- **Per event at τ = 6 h** the model beats distance-only on 5 of the 9 events with new fire (Kalimantan 10, 12, 16 and 18 Oct, Sumatra 14 Oct), ties on 3 (Kalimantan 8 and 14 Oct, Sumatra 18 Oct) and loses on 1 (Sumatra 12 Oct, 0 vs 2 squares caught). Before, it was 7 wins, 2 ties, no losses; the Sumatra 12 Oct loss is 2 squares.
+- **Held-out Sumatra is now a near tie.** The distance-only reference improved as much as the model (0.09 → 0.11 against 0.11 → 0.12), because fewer forecast squares also shrink the reference. The earlier claim that wind, slope and fuel add information on Sumatra rests on about one square either way.
+- **τ = 6 h is still the better default** on every subset, so the choice made on 21 Oct stands.
+- The recorded fire that opens the app (Kalimantan 18 Oct) was re-recorded with the real map on 24 Oct; its score card now reads CSI 0.60 vs 0.07 for distance alone. It remains the most flattering event in the set.
 
 ## Reproduce
 
-Open the app, then *Live fires → Test on a past day*. Enter a location from the table and the day D. The score card shows the same numbers for the default parameters. The batch above was run in the browser console of the dev server by looping `buildHindcast`, then `runEnsemble`, then `scoreHindcast` over the 12 events, and again with `tauH` set to 6, 12, 24, 48 and 96 h.
+Open the app, then *Live fires → Test on a past day*. Enter a location from the table and the day D. The score card shows the same numbers for the default parameters. The 20–21 Oct batches were run in the browser console of the dev server by looping `buildHindcast`, then `runEnsemble`, then `scoreHindcast` over the 12 events, and again with `tauH` set to 6, 12, 24, 48 and 96 h. The 24 Oct batch is the same loop packaged as `src/data/hindcastBatch.ts`; run it from the dev server's console:
+
+```js
+const b = await import('/src/data/hindcastBatch.ts');
+const r = await b.runHindcastBatch(b.VALIDATION_EVENTS, [3, 6], console.log);
+copy(JSON.stringify(r));
+```

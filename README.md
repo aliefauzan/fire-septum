@@ -170,7 +170,7 @@ Live scenarios use a 3 × 3 zone grid (A–I), because a real fire cluster usual
 - **WorldCover cannot tell a plantation from a forest**, and OpenStreetMap canals are patchy, so the fuel types are real at the class level and heuristic below it.
 - **FIRMS geolocation is coarse.** VIIRS pixels are about 375 m and satellites pass a few times a day. Ignition positions are not jittered between runs yet; the research notes recommend doing that.
 - **Suppression effects use published rates where they exist and labelled placeholders where they don't.** The recommender's ranking is meaningful *relative to these rates*. The flame-length estimate uses the model's uncalibrated spread rate, so treat it as a class rather than a measurement.
-- **Validated only roughly.** On 12 hindcast fires the model is only slightly better than a distance-only forecast (CSI 0.22 vs 0.17), and on held-out Sumatra the margin rests on 24 observed squares from about 3 distinct fires. The probabilities are not calibrated. See [Validation](#validation-hindcasts-against-nasa-firms). The [forecast register](#pre-registered-forecasts-the-forecast-register) exists to settle this prospectively.
+- **Validated only roughly.** On 12 hindcast fires the model is only slightly better than a distance-only forecast (CSI 0.23 vs 0.18 with the real peat and land-cover map), and on held-out Sumatra the margin rests on 24 observed squares from about 3 distinct fires. The probabilities are not calibrated. See [Validation](#validation-hindcasts-against-nasa-firms). The [forecast register](#pre-registered-forecasts-the-forecast-register) exists to settle this prospectively.
 - **Not in the model:** smoke, spotting physics, crown fire, night-time inversions. Travel time from the nearest base is reported in the text but does not delay action starts. Actions in a plan run in parallel; the app warns when a plan uses more than the inventory, but it does not schedule units in sequence.
 
 ## Emissions (peat carbon)
@@ -256,19 +256,21 @@ A hindcast is easy to fool yourself with: the model can be tuned until the past 
 
 It forecasts 24 h ahead and scores the forecast against the VIIRS detections that came next. The map shows them as white rings. Only **new** fire is scored, in 400 m squares (about one satellite pixel). The score is compared with a distance-only forecast of the same size, which shows whether wind, slope and fuel add anything (`src/sim/hindcast.ts`).
 
-**Results on 12 fires (Kalimantan and Sumatra, 8–19 Oct 2026; full tables in [docs/hindcast.md](docs/hindcast.md)):**
+**Results on 12 fires (Kalimantan and Sumatra, 8–19 Oct 2026; full tables in [docs/hindcast.md](docs/hindcast.md)). Re-run on 24 Oct 2026 with the real peat and land-cover map; the synthetic-map numbers of 20–21 Oct are in brackets:**
 
-| | Default model (τ = 3 h) | Spread slowed to τ = 6 h |
+| | τ = 3 h | τ = 6 h (default) |
 |---|---|---|
-| New 400 m squares observed / forecast / caught | 114 / 663 / 112 | 114 / 390 / 90 |
-| CSI, all events (distance-only reference) | 0.17 (0.16) | 0.22 (0.18) |
-| CSI, Sumatra only, held out when choosing τ (reference) | 0.08 (0.08) | 0.11 (0.09) |
+| New 400 m squares observed / forecast / caught | 114 / 557 / 111 (663 / 112) | 114 / 326 / 82 (390 / 90) |
+| CSI, all events (distance-only reference) | 0.20 (0.18) [0.17 (0.16)] | 0.23 (0.18) [0.22 (0.18)] |
+| CSI, Kalimantan, used to choose τ (reference) | 0.29 (0.26) | 0.35 (0.24) [0.32 (0.25)] |
+| CSI, Sumatra only, held out when choosing τ (reference) | 0.09 (0.09) [0.08 (0.08)] | 0.12 (0.11) [0.11 (0.09)] |
 
 What we learned:
 - **The default model runs about 6× too hot.** Most detections on D+1 fell where fire already was: these peat fires persisted and crept.
 - **Slowing spread to τ = 6 h helps.** That value was chosen on Kalimantan only. On held-out Sumatra events it improves the score (0.08 to 0.11) and edges past distance alone (0.09). That margin is about 1 square in 24, so treat it as a hint, not proof.
 - **The probabilities are not calibrated.** Brier skill is negative at every setting.
 - **The default is now τ = 6 h** (since 21 Oct 2026). Re-running all 12 events from scratch on 21 Oct gave exactly the same pooled counts as on 20 Oct (`docs/hindcast-rerun-2026-10-21.json`), so the hindcast itself is reproducible.
+- **The real fuel map helps a little and does not change the conclusion.** With peat soil and land cover from GFW and WorldCover (24 Oct, `docs/hindcast-rerun-2026-10-24.json`) the model forecasts fewer squares (326 instead of 390 at τ = 6 h) and keeps most of its hits, so pooled CSI moves from 0.22 to 0.23 and Kalimantan from 0.32 to 0.35. On held-out Sumatra the distance-only reference improves as much as the model (0.12 vs 0.11), so the Sumatra margin is now about 1 square. The ranking of τ is unchanged.
 
 ## Project layout
 
