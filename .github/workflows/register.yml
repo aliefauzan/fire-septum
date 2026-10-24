@@ -60,7 +60,12 @@ jobs:
         run: |
           git config user.name 'fire-septum-register[bot]'
           git config user.email 'fire-septum-register[bot]@users.noreply.github.com'
-          git add data/register data/batches data/submissions proofs
+          # Keep the generated numbers in README.md and docs/submission.md in step with the new scores.
+          npx tsx scripts/gen-docs.ts
+          # A folder that does not exist yet (no submissions so far) would make git add fail.
+          for p in data/register data/batches data/submissions proofs README.md docs/submission.md; do
+            if [ -e "$p" ]; then git add "$p"; fi
+          done
           if git diff --cached --quiet; then
             echo 'Nothing new to commit.'
             exit 0

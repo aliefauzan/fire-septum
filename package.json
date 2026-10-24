@@ -14,7 +14,8 @@
     "record-event": "tsx scripts/record-event.ts",
     "seal-day": "tsx scripts/seal-day.ts",
     "attest": "node scripts/attest.mjs",
-    "wallet:testnet": "node scripts/new-testnet-wallet.mjs"
+    "wallet:testnet": "node scripts/new-testnet-wallet.mjs",
+    "docs": "tsx scripts/gen-docs.ts"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.2",

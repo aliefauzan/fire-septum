@@ -20,6 +20,8 @@ jobs:
       - run: npm run build
       - name: Committed API bundle matches the server sources
         run: npm run build:api && git diff --exit-code api/index.js
+      - name: Numbers in README.md and docs/submission.md match the data files
+        run: npx tsx scripts/gen-docs.ts --check
 
   determinism:
     # The same sealed run must give the same output hash in V8, SpiderMonkey and JavaScriptCore.

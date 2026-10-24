@@ -7,7 +7,9 @@
 **The challenge:** environmental data is fragmented and hard to verify. During Indonesia's karhutla (forest and land fire) season, the data a fire commander needs is scattered: NASA satellite hotspots, weather forecasts, terrain, rivers and roads. Forecasts and decisions made from it leave no record anyone can check later. Nobody can prove what a model said before the fire spread, so nobody knows which forecasts deserve trust.
 
 **What Fire Septum does:** it joins those open data sources into one fire-spread forecast. Then it makes the forecast accountable:
-1. **Forecast.** How a real fire is likely to spread over the next 24–48 h, with the uncertainty visible (40-run ensemble).
+1. **Forecast.** Two models, each for its own question:
+   - *Where will new hotspots appear tomorrow?* A gradient-boosted model trained on the 2015 and 2019 fire seasons (NASA FIRMS archive, ERA5 fire weather, peat, land cover, canals, fire history), calibrated with isotonic regression and tested on fires it never saw.
+   - *What if we act?* A cellular-automaton simulation of how a real fire spreads over the next 24–48 h, with the uncertainty visible (40-run ensemble) and firefighting actions on the map.
 2. **Seal before the outcome.** Each forecast is hashed, signed and timestamped on Bitcoin through OpenTimestamps *before* the satellites see what happens next. Anyone can re-run the sealed inputs and get bit-identical outputs.
 3. **Score in public.** After 24 h, the *Forecast register* scores every sealed forecast against NASA FIRMS detections and keeps it on the board, good or bad. A hindcast can be tuned after the fact; a pre-registered forecast cannot.
 4. **Plan.** Candidate firefighting actions (control lines, helicopter drops, hand crews, peat injection) are simulated at several start times and ranked by area saved. Plans are sealed the same way, so what was known and decided is on record.
@@ -22,7 +24,7 @@ It is a **research prototype**. It is not an operational fire-behaviour system a
 
 The app runs at **https://fire-septum.vercel.app** (Vercel, redeployed on every push to `main`). The browser build is static; the server routes in `server/` (FIRMS proxy, OSM, receipt signing and OpenTimestamps anchoring, the register, the brief) are served by one serverless function, `api/index.js`, bundled from `api/_entry.ts` with `npm run build:api` and committed. Re-run that after changing anything in `server/`.
 
-Hosted, the register is read-only: forecasts are sealed and scored from a local run and published with the code. Live hotspots need `FIRMS_MAP_KEY` and signing needs `RECEIPT_ED25519_KEY` (PKCS#8 PEM) in the project's environment variables; `scripts/vercel-env.sh` sets both from the local files with the Vercel CLI.
+Hosted, the register is written by the daily GitHub Actions job (see [the register](#pre-registered-forecasts-the-forecast-register)). With `BLOB_READ_WRITE_TOKEN` set, hosted writes go to Vercel Blob, write-once, and need `Authorization: Bearer $REGISTER_TOKEN`; scores are never accepted over HTTP when hosted. Without a token the hosted register is read-only. Live hotspots need `FIRMS_MAP_KEY` and signing needs `RECEIPT_ED25519_KEY` (PKCS#8 PEM) in the project's environment variables; `scripts/vercel-env.sh` sets both from the local files with the Vercel CLI.
 
 ## Run it
 
@@ -30,8 +32,15 @@ Hosted, the register is read-only: forecasts are sealed and scored from a local 
 npm install
 cp .env.example .env    # optional: add a free NASA FIRMS key for live hotspots
 npm run dev             # http://localhost:5173
-npm test                # 47 tests: model, interventions, recommender, emissions, receipts, hindcast and register scoring
+npm test                # model, forecaster, emissions, receipts, batches, register and scoreboard (see below)
 npm run build           # static site in dist/: the recorded fire and the forecast register work without any server
+```
+
+Checks CI runs on every push (`.github/workflows/ci.yml`): type check, <!-- gen:tests -->189 automated tests<!-- /gen:tests -->, build, the API bundle is up to date, the cross-engine determinism check, and the generated numbers in this README:
+
+```bash
+node scripts/determinism.mjs        # same output hash in Node, Chromium, Firefox and WebKit
+npx tsx scripts/gen-docs.ts --check  # every number between <!-- gen --> markers matches the data files
 ```
 
 Requires Node 20 or newer. There is no other backend. The Vite dev/preview server also runs a few small middlewares:
@@ -39,6 +48,8 @@ Requires Node 20 or newer. There is no other backend. The Vite dev/preview serve
 - `/api/osm` calls Overpass with an identifying User-Agent and caches results in `.cache/osm`.
 - `/api/receipt/*` signs run receipts and submits them to OpenTimestamps (`server/receipt.ts`). It only ever receives a 64-hex-digit hash.
 - `/api/register` stores pre-registered forecasts as JSON files in `data/register/` (`server/register.ts`). Entries are never overwritten, and a score is written once.
+- `/api/submissions`, `/api/scoreboard`, `/api/decisions`, `/api/evidence`, `/api/batches`: open forecast submissions, the scoreboard index, sealed decisions, carbon-project evidence and daily Merkle batches.
+- `/api/bmkg`, `/api/bmkg-fdrs`: BMKG's village forecast and fire-danger maps (`server/bmkg.ts`). `/api/sipongi/*` is off unless `SIPONGI_PERMISSION=granted` (see [Commander tools](#commander-tools-pdf-brief-bmkg-and-sipongi)).
 
 **Static hosting.** `npm run build` gives a plain static site. Without the middlewares, the recorded fire, the synthetic scenarios and the forecast register (read-only, from the files in `data/register/`) still work. Live data, sealing and scoring need `npm run dev` or `npm run preview`.
 
@@ -164,20 +175,20 @@ Live scenarios use a 3 × 3 zone grid (A–I), because a real fire cluster usual
 
 ## Assumptions and limitations
 
-- **Barely calibrated against Indonesian fire records.** Only τ was fitted, on 6 Kalimantan events (see Validation). The fuel parameters are heuristics. The Alexandridis constants were fitted to a Mediterranean island.
+- **The spread simulation is barely calibrated against Indonesian fire records.** Only τ was fitted, on 6 Kalimantan events (see Validation). The fuel parameters are heuristics. The Alexandridis constants were fitted to a Mediterranean island. The statistical forecaster is the calibrated one; use it for *where*, and the simulation for *what if*.
 - **Peat is simplified.** Real peat fires burn underground for weeks and come back to the surface. Here peat is a long-burning cell, and the model has no depth or water-table term.
-- **The peat map says where peat is, not how deep it burns.** The Global Forest Watch layer is a soil-type map at 232 m. Burn depth still uses the IPCC default (see [Emissions](#emissions-peat-carbon) and [docs/burn-depth.md](docs/burn-depth.md)). Register entries and the recorded event sealed before the peat layer existed keep their synthetic fuel maps, because the seal covers the inputs as they were; the UI labels those tonnes illustrative.
-- **WorldCover cannot tell a plantation from a forest**, and OpenStreetMap canals are patchy, so the fuel types are real at the class level and heuristic below it.
+- **The peat map says where peat is, not how deep it burns.** The Global Forest Watch layer is a soil-type map at 232 m. Burn depth comes from each cell's fire history (Konecny et al. 2016 classes, IPCC default for ground not seen burning since 2001), which is an inference from satellites, not a field measurement (see [docs/burn-depth.md](docs/burn-depth.md)). Register entries and the recorded event sealed before the peat layer existed keep their synthetic fuel maps, because the seal covers the inputs as they were; the UI labels those tonnes illustrative.
+- **WorldCover cannot tell a plantation from a forest**, and OpenStreetMap canals are patchy even in the snapshot, so the fuel types are real at the class level and heuristic below it. The canal drainage effect (k = 0.5) and the partial barrier of ditches and tracks are assumptions.
 - **FIRMS geolocation is coarse.** VIIRS pixels are about 375 m and satellites pass a few times a day. Ignition positions are not jittered between runs yet; the research notes recommend doing that.
 - **Suppression effects use published rates where they exist and labelled placeholders where they don't.** The recommender's ranking is meaningful *relative to these rates*. The flame-length estimate uses the model's uncalibrated spread rate, so treat it as a class rather than a measurement.
-- **Validated only roughly.** On 12 hindcast fires the model is only slightly better than a distance-only forecast (CSI 0.23 vs 0.18 with the real peat and land-cover map), and on held-out Sumatra the margin rests on 24 observed squares from about 3 distinct fires. The probabilities are not calibrated. See [Validation](#validation-hindcasts-against-nasa-firms). The [forecast register](#pre-registered-forecasts-the-forecast-register) exists to settle this prospectively.
+- **The simulation is validated only roughly.** On 12 hindcast fires it is only slightly better than a distance-only forecast, and on held-out Sumatra the margin rests on 24 observed squares from about 3 distinct fires. Its probabilities are not calibrated, and on the prospective register it has so far scored below the distance reference. See [Validation](#validation-hindcasts-against-nasa-firms). The [forecast register](#pre-registered-forecasts-the-forecast-register) exists to settle this prospectively.
 - **Not in the model:** smoke, spotting physics, crown fire, night-time inversions. Travel time from the nearest base is reported in the text but does not delay action starts. Actions in a plan run in parallel; the app warns when a plan uses more than the inventory, but it does not schedule units in sequence.
 
 ## Emissions (peat carbon)
 
-Hectares saved are turned into tonnes of CO₂-equivalent with the IPCC Tier 1 method for fires on organic soil (`src/sim/carbon.ts`):
+Hectares saved are turned into tonnes of CO₂-equivalent with the IPCC Tier 1 method for fires on organic soil (`src/sim/carbon.ts`), with the peat consumed per hectare taken from each cell's fire history:
 
-`t CO₂e = burned peat ha × 353 t dry matter/ha × (464 g C/kg × 44/12 + 21 g CH₄/kg × 27) / 1000 ≈ 801 t CO₂e/ha`
+`t CO₂e = Σ burned peat cells × ha × M_B(cell) × (464 g C/kg × 44/12 + 21 g CH₄/kg × 27) / 1000`, where `M_B` is 353 t dry matter/ha (≈ 801 t CO₂e/ha) on ground with no fire seen since 2001, and 115, 69 or 23 t/ha after one, two or three and more earlier fire years (Konecny et al. 2016).
 
 | Factor | Value | Source | Status |
 |---|---|---|---|
@@ -187,11 +198,11 @@ Hectares saved are turned into tonnes of CO₂-equivalent with the IPCC Tier 1 m
 | GWP-100 of non-fossil CH₄ | 27.0 | IPCC AR6 WGI, Table 7.15 | secondary |
 
 How the numbers are reported:
-- **Only newly burned cells on peat soil count.** Vegetation above mineral soil, CO, N₂O and particulates are left out, so the totals are a floor.
+- **Only newly burned cells on peat soil count.** Vegetation above mineral soil, CO, N₂O and particulates are left out. That leaves those sources out; it does not make the peat number itself a lower bound, because burn depth can be over- or under-estimated.
 - **The count is per fire event.** The 353 t/ha is the whole burn, not only the 48 h shown. This matches the event-based Tier 1 method, but it assumes each burned peat cell burns to a typical depth.
 - **Every emission number is labelled as a model estimate.** It is "if the forecast is right", not a measurement and not a carbon credit. When the peat map is synthetic, the UI says the number is illustrative only. A simulated difference between two plans is not an avoided emission anyone could claim.
-- **Two kinds of uncertainty are shown separately.** The 10–90% range comes from the 40 fire-spread runs. The IPCC 95% interval of peat burnt (×0.48 to ×1.52) mostly reflects burn depth.
-- **Burn depth is the open problem.** The 353 t/ha comes from first-time El Niño fires of 0.3–0.5 m. Konecny et al. 2016 measured about 206, 115, 69 and 23 t/ha for the first, second, third and later fires on the same ground in Central Kalimantan, so on land that has burned before the default is 2–5× high. [docs/burn-depth.md](docs/burn-depth.md) sets out what a per-cell depth would need (fire history from the FIRMS archive first).
+- **Every emission number is a range.** A deterministic Monte Carlo of 2,000 draws samples the fire-spread run, the burn depth of each class and the emission factors; the card shows the median and the 5–95% range, and the run record stores it as `results.tco2eRange`. Method and spreads: [docs/burn-depth.md](docs/burn-depth.md).
+- **Burn depth from fire history.** `public/data/fire-history/` holds the years 2001–2025 in which FIRMS saw fire on each ~550 m cell. Only years before the scenario's year count. Cells that burn almost every year are probably static heat sources and are a known caveat.
 - **Avoided emissions are paired.** Each run with the plan is compared with the same run without it (common random numbers).
 - **The factors are editable** under *Resources → Rates and limits*, like every other rate.
 
@@ -203,7 +214,9 @@ Next to the forecast, the outcome card shows what the satellites have already se
 
 `FRE (MJ) = Σ over passes of FRP (MW) × hold (s)`, each VIIRS pass (one satellite, 10-minute bin) held until the next pass and for at most 12 h; `dry matter = FRE × β`, with the GFAS conversion factors by cover (Kaiser et al. 2012, Table 2: peat 5.87, tropical forest 0.96, savanna 0.78, agriculture 0.29 kg/MJ); `CO₂e = dry matter × EF`, peat with the Wetlands Supplement factors above and other covers with IPCC 2006 Vol. 4, Table 2.5 (tropical forest CO₂ 1580, CH₄ 6.8; savanna 1613, 2.3; agricultural residues 1515, 2.7 g/kg). A detection centred on a road or canal cell is counted as the fuel around it, since a VIIRS pixel is 375 m across.
 
-Caveats: smouldering peat radiates little to the sky, so GFAS fits a large peat factor to burned-area inventories and the per-fire error is wide; passes without detections (cloud, haze) are invisible, so the number is a floor on peat. It is stored in the run record as `results.observed` with its method string.
+Caveats: smouldering peat radiates little to the sky, so GFAS fits a large peat factor to burned-area inventories and the per-fire error is wide. Passes without detections (cloud, haze) are invisible, but the holding rule can also over-count, so the number is **not** a floor. <!-- gen:carbon -->Satellite (FRP) CO₂ over GFED4.1s in the five most-burned peat cells: 2015 3.04×, 2019 1.21×, 2023 1.02×. Measured burned area (Sentinel-2 dNBR and Sentinel-1 SAR) for 9 of the October 2026 fires: 81%–100% of it lies inside the FIRMS footprints.<!-- /gen:carbon --> Details: [docs/emissions-crosscheck.md](docs/emissions-crosscheck.md) and [docs/burned-area.md](docs/burned-area.md). It is stored in the run record as `results.observed` with its method string and range.
+
+On the recorded fire the two numbers disagree by about two orders of magnitude (forecast new burn about 7,100 t CO₂e; satellite FRP over the whole cluster about 710,000 t). They measure different things: the forecast counts only cells newly burned in 48 h, the FRP number every pass over the whole cluster. Neither is a measurement of the fire's emissions.
 
 ## Trust: signed, reproducible run records
 
@@ -213,7 +226,7 @@ Caveats: smouldering peat radiates little to the sky, so GFAS fits a large peat 
 - When was that?
 - Has anything been changed since?
 
-Concession holders in Indonesia carry strict liability for fires on their land (UU 32/2009, Pasal 88), so these questions end up in audits and in court. Fire Septum answers them with three layers. Each layer does one job:
+Concession holders in Indonesia can be held strictly liable (*tanggung jawab mutlak*) for fires on their land under UU 32/2009 Pasal 88, as amended by UU 6/2023 (Cipta Kerja), so these questions end up in audits and in court. Fire Septum answers them with layers that each do one job:
 
 1. **Reproducible.** The simulation is deterministic: every random draw is a hash of (seed, step, cell, slot). A receipt stores the SHA-256 of:
    - every input: scenario, weather, the fire at t0, the plan, rates and seeds;
@@ -229,7 +242,13 @@ Concession holders in Indonesia carry strict liability for fires on their land (
    ots verify fireseptum-<hash>.receipt.json.ots
    ```
 
-**What blockchain is used for, and what not.** Bitcoin is used only as a public, append-only clock: one hash per decision, no wallet, no fee, no token. Fire data itself does not go on chain, and a smart contract could not make the simulation more correct. Re-running does that, at no cost.
+4. **Batched and attested.** Every record sealed in a UTC day (run records, register entries, decisions, evidence) is a leaf of one RFC 6962 Merkle tree (`src/sim/merkle.ts`, `src/sim/batch.ts`). `npm run seal-day` writes `data/batches/<day>.json` with the root, every leaf and its inclusion proof, and timestamps the root with OpenTimestamps. `npm run attest` also posts the root to the [Ethereum Attestation Service](https://attest.org) on Base (schema `bytes32 merkleRoot, string day, uint32 records, string uri`), a public, indexed record next to the Bitcoin proof. It runs dry without a key and never touches mainnet without `--network base`.
+5. **Co-signed by people.** The server's signature says which instance issued a record. In the Record tab, a forecaster, an incident commander and a BPBD officer can each make an Ed25519 role key in their own browser and co-sign a record (`fireseptum-cosign-v1`), saying that they saw and accepted it at that time (`src/sim/cosign.ts`).
+6. **Decisions sealed too.** A decision record (`src/sim/decision.ts`) seals what people did with a forecast: the plan chosen (by its run-record hash), the alternatives shown, the resources entered and a note. It is signed, timestamped and co-signable like a run record.
+
+**Versioned formats.** Every record names its kind and version. Records from before 24 Oct 2026 (`sekatapi.run-receipt`, signature prefix `sekatapi-receipt-v1`, engine `Math`) still verify and re-run (`src/sim/compat.test.ts`); new records are `fireseptum.run-receipt` v2 with `math: 'det1'`.
+
+**What blockchain is used for, and what not.** Bitcoin is used only as a public, append-only clock: one hash per record, no wallet, no fee, no token. EAS on Base adds one attestation per day, never fire data, and no token. Fire data itself does not go on chain, and a smart contract could not make the simulation more correct. Re-running does that, at no cost.
 
 **Same bits in every browser.** ECMAScript lets `Math.exp`, `Math.atan` and friends differ in the last bit between engines, and one flipped bit can flip a random threshold. Since 24 Oct 2026 the simulation uses its own elementary functions (`src/sim/detmath.ts`, fdlibm algorithms built only from IEEE-exact operations), recorded in the run inputs as `math: 'det1'`. `node scripts/determinism.mjs` re-runs the recorded fire in Node, Chromium (V8), WebKit (JavaScriptCore) and Firefox (SpiderMonkey) and compares the output hashes; CI runs it on every push (`docs/determinism.json`). Older records name no maths and re-run with the engine's own `Math`, as they were made.
 
@@ -245,7 +264,23 @@ A hindcast is easy to fool yourself with: the model can be tuned until the past 
 
 **Why the timestamp matters.** The proof shows that the forecast existed before the Bitcoin block that confirms it, usually within a few hours of sealing. VIIRS satellites pass over Indonesia about twice a day per satellite, mostly around 01:30 and 13:30 local time. A forecast sealed soon after a pass is in a block before the next pass observes anything. A strict auditor can start the window at the block time instead.
 
-**Status (21 Oct 2026, 00:40 WITA):** 6 forecasts sealed and timestamped, 3 in Kalimantan and 3 in Sumatra. Their windows close on 21 Oct about 16:40 UTC; scoring is due after 22:40 UTC. The `.ots` proofs parse in the reference `ots` client and were pending Bitcoin confirmation when written.
+**Runs every day by itself.** `.github/workflows/register.yml` runs `scripts/register-daily.ts` at 10:00 UTC, after the afternoon VIIRS passes are in FIRMS. It scores every forecast whose window has closed, seals the top 3 clusters per island, seals yesterday's Merkle batch, attests it on Base when a key is set, and commits the new files to `main`. Every step is idempotent; `--dry-run` signs and writes nothing. It needs the repository secrets `FIRMS_MAP_KEY` and `RECEIPT_ED25519_KEY` (and optionally `EAS_PRIVATE_KEY`, `BLOB_READ_WRITE_TOKEN`).
+
+**Open benchmark.** Anyone can submit a sealed forecast for the same boxes in the open format [`fireseptum.forecast.v1`](docs/forecast-schema.md) (256 block probabilities per 6.4 km box; JSON Schema in `schema/forecast-v1.json`) with `npx tsx scripts/submit-forecast.ts` or `POST /api/submissions`. It is hashed, timestamped on arrival, and scored by the same code as the register, next to two reference models: distance (`p = exp(−d / 1 km)`) and climatology. The public scoreboard is at [`#/scoreboard`](https://fire-septum.vercel.app/#/scoreboard): pooled CSI, POD, FAR and Brier skill per model, skill over time, and what is still pending.
+
+**Status:**
+
+<!-- gen:register -->
+6 forecasts sealed in the register, 6 scored; 0 open submissions.
+
+| Model | Boxes | CSI | POD | FAR | Brier skill |
+|---|---:|---:|---:|---:|---:|
+| `distance` | 6 | 0.18 | 0.72 | 0.80 | -1.35 |
+| `fire-septum-ca` | 6 | 0.13 | 0.68 | 0.86 | -2.98 |
+| `climatology` | 6 | 0.00 | 0.00 | 0.00 | -0.04 |
+<!-- /gen:register -->
+
+The simulation (`fire-septum-ca`) has so far scored below the distance reference on the register. That is the point of keeping score: it is on the board either way.
 
 ## Validation: hindcasts against NASA FIRMS
 
@@ -256,37 +291,99 @@ A hindcast is easy to fool yourself with: the model can be tuned until the past 
 
 It forecasts 24 h ahead and scores the forecast against the VIIRS detections that came next. The map shows them as white rings. Only **new** fire is scored, in 400 m squares (about one satellite pixel). The score is compared with a distance-only forecast of the same size, which shows whether wind, slope and fuel add anything (`src/sim/hindcast.ts`).
 
-**Results on 12 fires (Kalimantan and Sumatra, 8–19 Oct 2026; full tables in [docs/hindcast.md](docs/hindcast.md)). Re-run on 24 Oct 2026 with the real peat and land-cover map; the synthetic-map numbers of 20–21 Oct are in brackets:**
+**Results on 12 fires (Kalimantan and Sumatra, 8–18 Oct 2026; full tables and the earlier runs in [docs/hindcast.md](docs/hindcast.md)), current model with canal and road barriers:**
 
-| | τ = 3 h | τ = 6 h (default) |
-|---|---|---|
-| New 400 m squares observed / forecast / caught | 114 / 557 / 111 (663 / 112) | 114 / 326 / 82 (390 / 90) |
-| CSI, all events (distance-only reference) | 0.20 (0.18) [0.17 (0.16)] | 0.23 (0.18) [0.22 (0.18)] |
-| CSI, Kalimantan, used to choose τ (reference) | 0.29 (0.26) | 0.35 (0.24) [0.32 (0.25)] |
-| CSI, Sumatra only, held out when choosing τ (reference) | 0.09 (0.09) [0.08 (0.08)] | 0.12 (0.11) [0.11 (0.09)] |
+<!-- gen:hindcast -->
+| Fires | Events | New-fire blocks | CSI, model | CSI, distance only | Brier skill |
+|---|---:|---:|---:|---:|---:|
+| Pooled | 12 | 114 | 0.23 | 0.18 | -1.62 |
+| Kalimantan | 6 | 90 | 0.35 | 0.25 | -0.67 |
+| Sumatra | 6 | 24 | 0.12 | 0.11 | -4.08 |
+
+Source: `docs/hindcast-rerun-2026-10-24-barriers.json` (τ = 6 h, canal and road barriers on). Brier skill below 0 means the raw ensemble probabilities are not calibrated.
+<!-- /gen:hindcast -->
 
 What we learned:
 - **The default model runs about 6× too hot.** Most detections on D+1 fell where fire already was: these peat fires persisted and crept.
 - **Slowing spread to τ = 6 h helps.** That value was chosen on Kalimantan only. On held-out Sumatra events it improves the score (0.08 to 0.11) and edges past distance alone (0.09). That margin is about 1 square in 24, so treat it as a hint, not proof.
 - **The probabilities are not calibrated.** Brier skill is negative at every setting.
 - **The default is now τ = 6 h** (since 21 Oct 2026). Re-running all 12 events from scratch on 21 Oct gave exactly the same pooled counts as on 20 Oct (`docs/hindcast-rerun-2026-10-21.json`), so the hindcast itself is reproducible.
+- **Canals and roads barely change it.** With the OpenStreetMap barrier snapshot and peat drainage on (24 Oct, `docs/hindcast-rerun-2026-10-24-barriers.json`), pooled CSI stays at 0.23 against 0.18 for distance.
 - **The real fuel map helps a little and does not change the conclusion.** With peat soil and land cover from GFW and WorldCover (24 Oct, `docs/hindcast-rerun-2026-10-24.json`) the model forecasts fewer squares (326 instead of 390 at τ = 6 h) and keeps most of its hits, so pooled CSI moves from 0.22 to 0.23 and Kalimantan from 0.32 to 0.35. On held-out Sumatra the distance-only reference improves as much as the model (0.12 vs 0.11), so the Sumatra margin is now about 1 square. The ranking of τ is unchanged.
+
+## Next-day forecaster and validation at scale
+
+Twelve fires cannot tell a good model from a lucky one. The statistical forecaster (`src/sim/gbm.ts`, trained by `ml/gbm/`) is tested on hundreds.
+
+**The split was published before tuning.** `data/validation/events.json` fixes every event from the FIRMS archive by a stated rule ([docs/forecast-split.md](docs/forecast-split.md)), and its hash was timestamped on Bitcoin before any model was trained:
+
+<!-- gen:split -->
+| Split | Rule | Events |
+|---|---|---:|
+| train | 2015 and 2019, Kalimantan and Sumatra | 1,055 |
+| validation | 2023 Kalimantan: all tuning, including isotonic calibration and any hyperparameter search | 241 |
+| test | 2023 Sumatra: touched once, at the end | 184 |
+| oot | out-of-time test: the 12 events of October 2026 and the prospective forecast register | 12 |
+
+1,492 events in all, plus 2,700 training boxes. The split was fixed and timestamped on Bitcoin (`data/validation/events.json.ots`) before any tuning.
+<!-- /gen:split -->
+
+**The model.** Per 400 m block it gives the probability that VIIRS sees new fire on each of the next three days. It uses 44 features computed by the same code in training and in the app (`src/sim/features.ts`): distance to active and older fire, hotspot counts, FRP and fire duration, peat and land cover, canal density and distance to drainage (OSM snapshot), earlier fire years, terrain, the Canadian FWI system codes from ERA5 (FFMC, DMC, Drought Code, ISI, BUI, FWI; `src/sim/fwi.ts`), days since rain, humidity, wind speed and temperature. Gradient-boosted trees (scikit-learn, `ml/gbm/`) are exported to `public/data/forecaster/gbm-v1.json` and evaluated in TypeScript (`src/sim/gbm.ts`, equal to scikit-learn to 1e-12); isotonic calibration was fitted on the validation split only. The test split was opened once.
+
+**Results**, against persistence, distance and climatology baselines and the spread simulation on the same blocks:
+
+<!-- gen:forecaster -->
+| Model | validation (241 boxes) | test (184 boxes) | oot (12 boxes) | oot_allviirs (12 boxes) |
+|---|---|---|---|---|
+| `gbm` | +0.035 [+0.019, +0.051] · 0.09 · 0.81 | +0.032 [+0.018, +0.044] · 0.08 · 0.79 | +0.067 [−0.186, +0.095] · 0.14 · 0.75 | +0.056 [−0.061, +0.130] · 0.16 · 0.60 |
+| `gbm_iso` | +0.042 [+0.031, +0.052] · 0.09 · 0.81 | +0.036 [+0.026, +0.045] · 0.08 · 0.79 | +0.069 [−0.093, +0.098] · 0.14 · 0.75 | +0.062 [+0.005, +0.110] · 0.15 · 0.60 |
+| `climatology` | +0.000 [+0.000, +0.000] · 0.02 · 0.50 | +0.000 [+0.000, +0.000] · 0.02 · 0.50 | +0.000 [+0.000, +0.000] · 0.08 · 0.50 | +0.000 [+0.000, +0.000] · 0.14 · 0.50 |
+| `distance` | +0.023 [+0.019, +0.028] · 0.06 · 0.77 | +0.022 [+0.016, +0.028] · 0.06 · 0.76 | +0.026 [−0.036, +0.034] · 0.09 · 0.60 | +0.033 [+0.015, +0.038] · 0.14 · 0.58 |
+| `persistence` | +0.019 [+0.013, +0.023] · 0.05 · 0.72 | +0.020 [+0.015, +0.026] · 0.05 · 0.72 | +0.034 [−0.010, +0.042] · 0.11 · 0.66 | +0.039 [+0.026, +0.045] · 0.18 · 0.63 |
+| `ca` | −6.2 [−7.5, −5.0] · 0.07 · 0.76 | −8.5 [−11.0, −6.8] · 0.06 · 0.76 | −7.9 [−54.8, −4.4] · 0.09 · 0.77 (7 boxes) | −2.8 [−13.2, −1.2] · 0.18 · 0.77 (7 boxes) |
+
+Next 24 h, each cell: Brier skill against train climatology [95% CI, bootstrap over boxes] · CSI at the threshold fixed on validation · AUC. `gbm_iso` is the calibrated model; its validation numbers are in-sample, because the calibration was fitted there. `ca` is the spread simulation; `oot` counts VIIRS S-NPP only (as in training), `oot_allviirs` all three satellites (as the app reads). Source: `docs/validation-scale.json`.
+<!-- /gen:forecaster -->
+
+What this says:
+- **It beats distance and persistence on a season it never saw**, and keeps that at 48 and 72 h. Its calibrated probabilities track the observed frequencies on test.
+- **The absolute skill is small.** New fire hits about 2% of blocks a day, so the best CSI is under 0.1, and at p ≥ 0.5 it marks almost nothing.
+- **Distance to active fire dominates**, then degraded peat shrub and fire duration. The drought codes and wind gain weight with lead time.
+- **On the October 2026 fires it under-forecasts about 2×.** That season's new-fire rate was about three times 2015–2023, and the model learned from one satellite (S-NPP) while the app reads three. At three days it has no skill there.
+- **The spread simulation is not a probability forecast.** Its Brier skill is strongly negative because its ensemble probabilities are not calibrated; use it to compare actions, not to say where fire will be.
+- **Not yet in the model:** wind direction (the ERA5 cache has none), peat moisture (SMAP / SiPALAGA), burned area as labels.
+
+Reliability diagrams, CSI by lead (1–3 days), feature importance and a post-hoc (not pre-registered) re-score of the register: [docs/forecaster.md](docs/forecaster.md).
+
+## Carbon projects: reversal monitoring
+
+A REDD+ or VCS peat project loses credited carbon when it burns. *Record → Carbon projects: fire watch* checks VIIRS detections against the boundaries of three Indonesian peat projects (simplified from the Verra registry, with attribution; source KMLs are not redistributed): fire inside, within 1 km and within 5 km, in the last 24 h and 7 days, with the satellite (FRP) emission estimate and its range (`src/sim/reversal.ts`). *Seal evidence* writes a reversal evidence record with the raw FIRMS rows, signed and timestamped like a run record (`src/sim/evidence.ts`). It describes what satellites saw. It does not verify a project or say anything about its credits.
+
+## Commander tools: PDF brief, BMKG and SiPongi
+
+- **PDF brief.** *Brief → Download PDF brief* builds a one-page A4 brief in the browser (map, risk, recommended actions, the record hash), in Bahasa Indonesia or English, for sharing by hand. Nothing is sent anywhere.
+- **BMKG.** The Sources view shows BMKG's own village forecast for the nearest kecamatan next to the Open-Meteo hours the model runs on, and BMKG's SPARTAN fire-danger (FWI) maps, so a commander can see where they disagree. The model's weather is unchanged.
+- **SiPongi** (Kemenhut). An adapter for hotspots and peat water-table stations exists, but SiPongi's terms forbid access without written permission from the Ministry of Forestry, so it answers 403 unless an operator who holds that permission sets `SIPONGI_PERMISSION=granted`.
 
 ## Project layout
 
 ```
-src/sim/      model, ensemble, recommender, doctrine (sources + rates), resources, scenarios, worker,
-              carbon (IPCC peat emissions), receipt (hashes, records), hindcast (scoring) (pure TS, tested)
-src/sim/      register (pre-registered forecasts: observation window, pooling)
-src/data/     Open-Meteo (forecast + archive), FIRMS, terrain, OSM fuel + logistics, satellite, live and hindcast builders,
-              register (issue + score), presets + events/ (the recorded Kalimantan fire)
-data/register/ sealed, timestamped forecasts and their scores (one JSON file each)
-proofs/       receipts + .ots files exported by scripts/export-proofs.mjs
-data/         dated OpenStreetMap snapshot of bases (fallback when Overpass is busy)
-scripts/      snapshot-facilities.mjs (refresh the snapshot), export-proofs.mjs (register → proofs/)
-src/ui/       canvas renderer, map, timeline, panels
-server/       Vite middleware: FIRMS key proxy, Overpass UA + cache, LLM brief proxy, receipt signing + OpenTimestamps, forecast register store
-docs/         research notes, original idea page from the previous session
+src/sim/        pure TypeScript, tested: model, ensemble, recommender, doctrine (sources + rates), detmath (det1),
+                carbon (Monte Carlo), frp, fwi, features + gbm (forecaster), receipt, merkle, batch, cosign,
+                decision, evidence, reversal, register, forecast (open format + scoring), scoreboard, hindcast
+src/data/       Open-Meteo, FIRMS, terrain, peat, WorldCover, OSM barriers, fire history, ERA5 FWI archive,
+                live and hindcast builders, register, events/ (the recorded Kalimantan fire)
+src/ui/         map, 3D terrain, timeline, panels, Record/Trust, register, scoreboard, carbon projects, PDF brief
+server/         FIRMS proxy, Overpass, receipts + OpenTimestamps, register, submissions, scoreboard,
+                decisions, evidence, batches, BMKG/SiPongi, LLM brief; write-once store (files or Vercel Blob)
+public/data/    OSM barrier tiles, fire history, forecaster model, carbon-project boundaries, BMKG areas
+data/           register/, submissions/, batches/ (daily Merkle roots), validation/ (split, burned area,
+                GFED cross-check), fwi/ (ERA5 codes), osm-facilities.json
+ml/             Python: OSM snapshot, FIRMS archive + split + FWI + fire history, GBM training, Sentinel burned area
+scripts/        register-daily, seal-day, attest (EAS), new-testnet-wallet, submit-forecast, determinism,
+                gen-docs, hindcast-batch, record-event, export-proofs
+schema/         forecast-v1.json (open forecast format)
+docs/           methods: hindcast, forecast split, forecaster, burn depth, burned area, emissions cross-check, schema
 ```
 
 ## References
