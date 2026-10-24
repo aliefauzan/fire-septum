@@ -108,9 +108,62 @@ ${JSON.stringify(body.data)}` }
   };
 }
 
-// server/firmsProxy.ts
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+// server/evidence.ts
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+var DIR = join(process.cwd(), "data", "evidence");
+var HEX64 = /^[0-9a-f]{64}$/;
+var READ_ONLY = !!process.env.VERCEL;
+function canonical(v) {
+  if (Array.isArray(v)) return `[${v.map(canonical).join(",")}]`;
+  if (v && typeof v === "object") {
+    const o = v;
+    return `{${Object.keys(o).filter((k) => o[k] !== void 0).sort().map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(v);
+}
+async function readJson(req) {
+  const pre = req.body;
+  if (pre !== void 0) return typeof pre === "string" ? JSON.parse(pre || "{}") : pre ?? {};
+  let body = "";
+  for await (const chunk of req) {
+    body += chunk;
+    if (body.length > 2e6) throw new Error("body too large");
+  }
+  return JSON.parse(body || "{}");
+}
+var list = () => existsSync(DIR) ? readdirSync(DIR).filter((f) => f.endsWith(".json")).sort() : [];
+function evidenceHandler(req, res, next) {
+  const path = (req.url ?? "").split("?")[0];
+  if (path !== "/api/evidence") return next();
+  res.setHeader("content-type", "application/json");
+  const send = (status, body) => {
+    res.statusCode = status;
+    res.end(JSON.stringify(body));
+  };
+  (async () => {
+    if (req.method === "GET") return send(200, { entries: list().map((f) => JSON.parse(readFileSync(join(DIR, f), "utf8"))) });
+    if (req.method !== "POST") return send(405, { error: "method not allowed" });
+    if (READ_ONLY) return send(405, { error: "The hosted evidence store is read-only. Download the JSON, or run Fire Septum locally to keep evidence in data/evidence/." });
+    const body = await readJson(req);
+    const b = body.bundle;
+    const hash = String(b?.evidenceSha256 ?? "");
+    const e = b?.evidence;
+    const pid = String(e?.project?.id ?? "");
+    if (e?.kind !== "fireseptum.reversal-evidence" || !HEX64.test(hash) || !e.createdAt || Number.isNaN(Date.parse(e.createdAt)) || !/^[a-z0-9-]{1,32}$/.test(pid)) return send(400, { error: "not a reversal evidence bundle" });
+    if (createHash("sha256").update(canonical(e)).digest("hex") !== hash) return send(400, { error: "evidence does not match its hash" });
+    mkdirSync(DIR, { recursive: true });
+    if (list().some((f) => f.endsWith(`_${hash.slice(0, 16)}.json`))) return send(409, { error: "already stored" });
+    const name = `${e.createdAt.slice(0, 13).replace(/[-:T]/g, "")}_${pid}_${hash.slice(0, 16)}.json`;
+    writeFileSync(join(DIR, name), JSON.stringify(b, null, 1), { flag: "wx" });
+    return send(200, { ok: true, file: `data/evidence/${name}` });
+  })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
+}
+
+// server/firmsProxy.ts
+import { mkdirSync as mkdirSync2, readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2 } from "node:fs";
+import { join as join2 } from "node:path";
 var SOURCES = ["VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT"];
 var cache = /* @__PURE__ */ new Map();
 var TTL_MS = 10 * 60 * 1e3;
@@ -164,12 +217,12 @@ var OVERPASS = [
   "https://overpass.private.coffee/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter"
 ];
-var OSM_DIR = join(process.cwd(), ".cache", "osm");
+var OSM_DIR = join2(process.cwd(), ".cache", "osm");
 var osmCache = /* @__PURE__ */ new Map();
-var diskKey = (bb) => join(OSM_DIR, `${bb.replace(/[^0-9.,-]/g, "")}.json`);
+var diskKey = (bb) => join2(OSM_DIR, `${bb.replace(/[^0-9.,-]/g, "")}.json`);
 async function overpass(q, key, timeoutMs, deadlineMs = Infinity) {
   const until = Date.now() + deadlineMs;
-  const hit = osmCache.get(key) ?? (existsSync(diskKey(key)) ? readFileSync(diskKey(key), "utf8") : void 0);
+  const hit = osmCache.get(key) ?? (existsSync2(diskKey(key)) ? readFileSync2(diskKey(key), "utf8") : void 0);
   if (hit) {
     osmCache.set(key, hit);
     return hit;
@@ -188,8 +241,8 @@ async function overpass(q, key, timeoutMs, deadlineMs = Infinity) {
       if (r.ok && t.trimStart().startsWith("{")) {
         osmCache.set(key, t);
         try {
-          mkdirSync(OSM_DIR, { recursive: true });
-          writeFileSync(diskKey(key), t);
+          mkdirSync2(OSM_DIR, { recursive: true });
+          writeFileSync2(diskKey(key), t);
         } catch {
         }
         return t;
@@ -201,8 +254,8 @@ async function overpass(q, key, timeoutMs, deadlineMs = Infinity) {
 }
 var SNAPSHOT = "data/osm-facilities.json";
 function snapshotNear(lat, lon, radiusKm) {
-  if (!existsSync(SNAPSHOT)) return null;
-  const snap = JSON.parse(readFileSync(SNAPSHOT, "utf8"));
+  if (!existsSync2(SNAPSHOT)) return null;
+  const snap = JSON.parse(readFileSync2(SNAPSHOT, "utf8"));
   const kmPerDeg = 111.32;
   const elements = snap.elements.filter((e) => Math.hypot((e.lat - lat) * kmPerDeg, (e.lon - lon) * kmPerDeg * Math.cos(lat * Math.PI / 180)) <= radiusKm).map((e) => ({ type: e.id.split("/")[0], id: Number(e.id.split("/")[1]), lat: e.lat, lon: e.lon, tags: e.tags }));
   return { origin: "snapshot", snapshotAt: snap.fetchedAt, elements };
@@ -274,10 +327,10 @@ function osmHandler() {
 }
 
 // server/receipt.ts
-import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sign } from "node:crypto";
-import { existsSync as existsSync2, mkdirSync as mkdirSync2, readFileSync as readFileSync2, writeFileSync as writeFileSync2 } from "node:fs";
-import { dirname, join as join2 } from "node:path";
-var KEY_FILE = join2(process.cwd(), ".cache", "receipt-ed25519.pem");
+import { createHash as createHash2, createPrivateKey, createPublicKey, generateKeyPairSync, sign } from "node:crypto";
+import { existsSync as existsSync3, mkdirSync as mkdirSync3, readFileSync as readFileSync3, writeFileSync as writeFileSync3 } from "node:fs";
+import { dirname, join as join3 } from "node:path";
+var KEY_FILE = join3(process.cwd(), ".cache", "receipt-ed25519.pem");
 var KeyMissing = class extends Error {
   constructor() {
     super("RECEIPT_ED25519_KEY not set");
@@ -285,11 +338,11 @@ var KeyMissing = class extends Error {
 };
 function loadKey(pem) {
   if (pem) return createPrivateKey(pem.replace(/\\n/g, "\n"));
-  if (existsSync2(KEY_FILE)) return createPrivateKey(readFileSync2(KEY_FILE, "utf8"));
+  if (existsSync3(KEY_FILE)) return createPrivateKey(readFileSync3(KEY_FILE, "utf8"));
   if (process.env.VERCEL) throw new KeyMissing();
   const { privateKey } = generateKeyPairSync("ed25519");
-  mkdirSync2(dirname(KEY_FILE), { recursive: true });
-  writeFileSync2(KEY_FILE, privateKey.export({ type: "pkcs8", format: "pem" }), { mode: 384 });
+  mkdirSync3(dirname(KEY_FILE), { recursive: true });
+  writeFileSync3(KEY_FILE, privateKey.export({ type: "pkcs8", format: "pem" }), { mode: 384 });
   return privateKey;
 }
 var rawPublic = (k) => createPublicKey(k).export({ type: "spki", format: "der" }).subarray(-32);
@@ -313,7 +366,7 @@ async function anchor(hex) {
   }
   return null;
 }
-async function readJson(req) {
+async function readJson2(req) {
   const pre = req.body;
   if (pre !== void 0) return typeof pre === "string" ? JSON.parse(pre || "{}") : pre ?? {};
   let body = "";
@@ -323,7 +376,7 @@ async function readJson(req) {
   }
   return JSON.parse(body || "{}");
 }
-var HEX64 = /^[0-9a-f]{64}$/;
+var HEX642 = /^[0-9a-f]{64}$/;
 function receiptHandler(getPem) {
   let key = null;
   const getKey = () => key ??= loadKey(getPem());
@@ -338,12 +391,12 @@ function receiptHandler(getPem) {
     try {
       const pub = rawPublic(getKey());
       const publicKey = pub.toString("base64");
-      const keyId = createHash("sha256").update(pub).digest("hex").slice(0, 16);
+      const keyId = createHash2("sha256").update(pub).digest("hex").slice(0, 16);
       if (path === "/api/receipt/key" && req.method === "GET") return send(200, { alg: "Ed25519", publicKey, keyId });
       if (req.method !== "POST") return send(405, { error: "method not allowed" });
-      const body = await readJson(req);
+      const body = await readJson2(req);
       const hash = String(body.receiptSha256 ?? "");
-      if (!HEX64.test(hash)) return send(400, { error: "receiptSha256 must be 64 lowercase hex digits" });
+      if (!HEX642.test(hash)) return send(400, { error: "receiptSha256 must be 64 lowercase hex digits" });
       if (path === "/api/receipt/sign") {
         const scheme = String(body.scheme ?? "fireseptum-receipt-v2");
         if (scheme !== "fireseptum-receipt-v2" && scheme !== "sekatapi-receipt-v1") return send(400, { error: "unknown signature scheme" });
@@ -364,22 +417,22 @@ function receiptHandler(getPem) {
 }
 
 // server/register.ts
-import { createHash as createHash2 } from "node:crypto";
-import { mkdirSync as mkdirSync3, readFileSync as readFileSync3, readdirSync, writeFileSync as writeFileSync3 } from "node:fs";
-import { join as join3 } from "node:path";
-var DIR = join3(process.cwd(), "data", "register");
-var HEX642 = /^[0-9a-f]{64}$/;
-function canonical(v) {
-  if (Array.isArray(v)) return `[${v.map(canonical).join(",")}]`;
+import { createHash as createHash3 } from "node:crypto";
+import { mkdirSync as mkdirSync4, readFileSync as readFileSync4, readdirSync as readdirSync2, writeFileSync as writeFileSync4 } from "node:fs";
+import { join as join4 } from "node:path";
+var DIR2 = join4(process.cwd(), "data", "register");
+var HEX643 = /^[0-9a-f]{64}$/;
+function canonical2(v) {
+  if (Array.isArray(v)) return `[${v.map(canonical2).join(",")}]`;
   if (v && typeof v === "object") {
     const o = v;
-    return `{${Object.keys(o).filter((k) => o[k] !== void 0).sort().map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`).join(",")}}`;
+    return `{${Object.keys(o).filter((k) => o[k] !== void 0).sort().map((k) => `${JSON.stringify(k)}:${canonical2(o[k])}`).join(",")}}`;
   }
   return JSON.stringify(v);
 }
-var fileFor = (hash) => readdirSync(DIR).find((f) => f.endsWith(`_${hash.slice(0, 16)}.json`));
-var READ_ONLY = !!process.env.VERCEL;
-async function readJson2(req) {
+var fileFor = (hash) => readdirSync2(DIR2).find((f) => f.endsWith(`_${hash.slice(0, 16)}.json`));
+var READ_ONLY2 = !!process.env.VERCEL;
+async function readJson3(req) {
   const pre = req.body;
   if (pre !== void 0) return typeof pre === "string" ? JSON.parse(pre || "{}") : pre ?? {};
   let body = "";
@@ -398,31 +451,31 @@ function registerHandler(req, res, next) {
     res.end(JSON.stringify(body));
   };
   (async () => {
-    if (!READ_ONLY) mkdirSync3(DIR, { recursive: true });
+    if (!READ_ONLY2) mkdirSync4(DIR2, { recursive: true });
     if (req.method === "GET" && path === "/api/register") {
-      const entries = readdirSync(DIR).filter((f2) => f2.endsWith(".json")).sort().map((f2) => JSON.parse(readFileSync3(join3(DIR, f2), "utf8")));
+      const entries = readdirSync2(DIR2).filter((f2) => f2.endsWith(".json")).sort().map((f2) => JSON.parse(readFileSync4(join4(DIR2, f2), "utf8")));
       return send(200, { entries });
     }
     if (req.method !== "POST") return send(405, { error: "method not allowed" });
-    if (READ_ONLY) return send(405, { error: "The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code." });
-    const body = await readJson2(req);
+    if (READ_ONLY2) return send(405, { error: "The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code." });
+    const body = await readJson3(req);
     if (path === "/api/register") {
       const e = body.entry;
       const hash2 = String(e?.record?.receiptSha256 ?? "");
-      if (e?.kind !== "fireseptum.preregistered-forecast" && e?.kind !== "sekatapi.preregistered-forecast" || !HEX642.test(hash2) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: "not a register entry" });
-      if (createHash2("sha256").update(canonical(e.record.receipt)).digest("hex") !== hash2) return send(400, { error: "receipt does not match its hash" });
+      if (e?.kind !== "fireseptum.preregistered-forecast" && e?.kind !== "sekatapi.preregistered-forecast" || !HEX643.test(hash2) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: "not a register entry" });
+      if (createHash3("sha256").update(canonical2(e.record.receipt)).digest("hex") !== hash2) return send(400, { error: "receipt does not match its hash" });
       if (fileFor(hash2)) return send(409, { error: "already registered" });
       const name = `${e.issuedAt.slice(0, 13).replace(/[-:T]/g, "")}_${hash2.slice(0, 16)}.json`;
-      writeFileSync3(join3(DIR, name), JSON.stringify(e, null, 1));
+      writeFileSync4(join4(DIR2, name), JSON.stringify(e, null, 1));
       return send(200, { ok: true, file: `data/register/${name}` });
     }
     const hash = String(body.receiptSha256 ?? "");
-    const f = HEX642.test(hash) ? fileFor(hash) : void 0;
+    const f = HEX643.test(hash) ? fileFor(hash) : void 0;
     if (!f) return send(404, { error: "unknown forecast" });
-    const entry = JSON.parse(readFileSync3(join3(DIR, f), "utf8"));
+    const entry = JSON.parse(readFileSync4(join4(DIR2, f), "utf8"));
     if (entry.score) return send(409, { error: "already scored", score: entry.score });
     entry.score = body.score;
-    writeFileSync3(join3(DIR, f), JSON.stringify(entry, null, 1));
+    writeFileSync4(join4(DIR2, f), JSON.stringify(entry, null, 1));
     return send(200, { ok: true });
   })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
 }
@@ -433,6 +486,7 @@ var chain = [
   osmHandler(),
   receiptHandler(() => process.env.RECEIPT_ED25519_KEY),
   registerHandler,
+  evidenceHandler,
   briefHandler(() => ({ baseUrl: process.env.LLM_BASE_URL, apiKey: process.env.LLM_API_KEY, model: process.env.LLM_MODEL }))
 ];
 function handler(req, res) {

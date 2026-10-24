@@ -14,6 +14,7 @@ import type { RunInputs } from './sim/receipt';
 import type { Recommendation, RecommendOutput } from './sim/recommend';
 import type { Action, CloudPotential, EnsembleResult, Scenario, WeatherHour } from './sim/types';
 import { BriefPanel, type BriefPick } from './ui/Brief';
+import { CarbonProjectsPanel, useProjectBoundaries } from './ui/CarbonProjects';
 import { HindcastCard } from './ui/HindcastCard';
 import { LivePanel } from './ui/LivePanel';
 import { Map3D, createCamSync } from './ui/Map3D';
@@ -79,6 +80,7 @@ export default function App() {
   const [satellite, setSatellite] = useState<HTMLCanvasElement | null>(null);
   const [showLive, setShowLive] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showCarbon, setShowCarbon] = useState(false);
   // Open on today's fire: the app starts by finding the most active cluster in the latest passes.
   const [booting, setBooting] = useState(true);
   const [showObserved, setShowObserved] = useState(false);
@@ -383,6 +385,7 @@ export default function App() {
       return { status, p, protectedZone: !!other && isProtected(other.zoneStats[zi], s) };
     });
 
+  const boundaries = useProjectBoundaries(eff);
   const sampleIdx = base ? medianRunIndex(base) : 0;
   const noUseful = !!rec && !rec.strategy && !rec.draft && !rec.recommendations.some((r) => r.saved.mean >= 1 && r.evidence !== 'speculative');
   const hasPlan = actions.length > 0;
@@ -392,7 +395,7 @@ export default function App() {
     scn: eff, ens: base, t, view, sampleRun: base?.runs[sampleIdx] ?? null,
     actions: [], ghost: [], hotspots: eff.hotspots, satellite,
     zoneLabels: zoneLabels(base), tool: tool === 'ignite' ? 'ignite' : 'inspect', interactive: tool === 'ignite',
-    onPlace, busy: !base, accent: 'base', showObserved,
+    onPlace, busy: !base, accent: 'base', showObserved, boundaries,
   };
   const mapB: React.ComponentProps<typeof MapView> = {
     title: hasPlan ? 'With your plan' : '',
@@ -401,7 +404,7 @@ export default function App() {
     actions, ghost, hotspots: eff.hotspots, satellite,
     zoneLabels: zoneLabels(plan, hasPlan ? base : undefined), tool, interactive: true,
     onPlace, busy: planBusy || !plan, accent: 'plan', showObserved,
-    savedFrom: hasPlan ? base : null, flashKey,
+    savedFrom: hasPlan ? base : null, flashKey, boundaries,
   };
   const burnNow = base && plan && hasPlan && !planBusy ? { base: burnedBy(base, t).mean, plan: burnedBy(plan, t).mean } : null;
   const isLive = presetId === 'live' || presetId === 'hindcast' || presetId === 'recorded';
@@ -452,6 +455,10 @@ export default function App() {
 
       <Sheet open={showRegister} onClose={() => setShowRegister(false)} title="Forecast register">
         <RegisterPanel run={(s, prm) => client.forecast(s, prm)} onOpen={(r) => { openRecord(r); setShowRegister(false); }} />
+      </Sheet>
+
+      <Sheet open={showCarbon} onClose={() => setShowCarbon(false)} title="Carbon projects">
+        <CarbonProjectsPanel rates={rates} />
       </Sheet>
 
       {(error || notice) && (
@@ -619,6 +626,7 @@ export default function App() {
             </div>
             <div hidden={tab !== 'record'}>
               <button className="btn wide register-btn" onClick={() => setShowRegister(true)}>Open forecast register</button>
+              <button className="btn wide register-btn" onClick={() => setShowCarbon(true)}>Carbon projects: fire watch</button>
               <RecordPanel client={client} scn={eff} actions={actions} params={params} base={base} plan={plan} busy={planBusy} onOpen={openRecord} />
             </div>
             <div hidden={tab !== 'brief'}>

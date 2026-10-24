@@ -1,0 +1,76 @@
+{
+ "kind": "fireseptum.carbon-projects",
+ "v": 1,
+ "retrieved": "2026-10-24",
+ "attribution": "Project boundaries: Verra Registry (registry.verra.org), as filed by the project proponents.",
+ "terms": "Boundaries as filed by the project proponents in the Verra Registry and simplified to about 20 m. The Verra Registry Terms of Use apply to the source files. Fire Septum is not affiliated with or endorsed by Verra or the proponents, and showing a boundary here says nothing about the project’s credits or verification status.",
+ "simplifiedM": 20,
+ "projects": [
+  {
+   "id": "vcs1477",
+   "name": "Katingan Peatland Restoration and Conservation Project",
+   "vcsId": 1477,
+   "province": "Central Kalimantan",
+   "registryUrl": "https://registry.verra.org/app/projectDetail/VCS/1477",
+   "source": {
+    "name": "KatinganProjectArea.kml",
+    "documentId": "110200000381922",
+    "registry": "Verra Registry"
+   },
+   "retrieved": "2026-10-24",
+   "areaHa": 149703,
+   "bbox": [
+    113.02061,
+    -3.02851,
+    113.30474,
+    -2.06481
+   ],
+   "vertices": 190,
+   "file": "data/carbon-projects/vcs1477.geojson"
+  },
+  {
+   "id": "vcs674",
+   "name": "Rimba Raya Biodiversity Reserve Project",
+   "vcsId": 674,
+   "province": "Central Kalimantan",
+   "registryUrl": "https://registry.verra.org/app/projectDetail/VCS/674",
+   "source": {
+    "name": "VCS_KML_0674_16122021.kml",
+    "documentId": "110200000270012",
+    "registry": "Verra Registry"
+   },
+   "retrieved": "2026-10-24",
+   "areaHa": 64181,
+   "bbox": [
+    112.11619,
+    -3.38282,
+    112.50994,
+    -2.75203
+   ],
+   "vertices": 82,
+   "file": "data/carbon-projects/vcs674.geojson"
+  },
+  {
+   "id": "vcs1899",
+   "name": "Sumatra Merang Peatland Project",
+   "vcsId": 1899,
+   "province": "South Sumatra",
+   "registryUrl": "https://registry.verra.org/app/projectDetail/VCS/1899",
+   "source": {
+    "name": "VCS_KML_1899_15FEB2023.kml",
+    "documentId": "110200000381622",
+    "registry": "Verra Registry"
+   },
+   "retrieved": "2026-10-24",
+   "areaHa": 22934,
+   "bbox": [
+    104.04919,
+    -2.08748,
+    104.23947,
+    -1.95349
+   ],
+   "vertices": 44,
+   "file": "data/carbon-projects/vcs1899.geojson"
+  }
+ ]
+}

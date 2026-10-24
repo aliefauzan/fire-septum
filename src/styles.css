@@ -480,3 +480,31 @@ details.more > p { margin-top: 6px; }
   .seal-step, .checks .check { opacity: 1; animation: none; }
   .hash .caret { display: none; }
 }
+
+/* ---------- Carbon projects (reversal monitor) ---------- */
+.carbon .note { margin-bottom: 12px; }
+.rv-toolbar { margin-bottom: 10px; gap: 12px; }
+.rv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.rv-card { padding: 14px; border-radius: var(--radius-sm); background: var(--fill); display: grid; gap: 10px; min-width: 0; }
+.rv-head h3 { font-size: 14px; font-weight: 600; }
+.rv-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.rv-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); }
+.rv-badge-k { color: var(--muted); font-weight: 400; }
+.rv-badge.rv-inside { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.rv-badge.rv-inside .rv-badge-k { color: var(--faint); }
+.rv-badge.rv-within1km { border: 1.5px solid var(--ink); font-weight: 600; }
+.rv-badge.rv-within5km { border-color: var(--ink-2); }
+.rv-badge.rv-clear { color: var(--muted); }
+.rv-map { width: 100%; display: block; border-radius: 6px; background: var(--card); }
+.rv-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; font-size: 12px; }
+.rv-facts dt { color: var(--muted); }
+.rv-facts dd { margin: 0; }
+.rv-terms { margin-top: 12px; }
+
+/* ---------- Commander data sources (BMKG, SiPongi) ---------- */
+.wx-compare { width: 100%; overflow-x: auto; }
+.wx-compare .table td, .wx-compare .table th { white-space: nowrap; }
+.fdrs-img { width: 100%; display: block; border-radius: 6px; background: var(--fill); min-height: 120px; }
+.fdrs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 640px) { .fdrs-row { grid-template-columns: 1fr; } }
+.pdf-row { display: grid; gap: 6px; margin: 10px 0 14px; }

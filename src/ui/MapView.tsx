@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FUEL_LIST } from '../sim/fuels';
 import { slopeAspect } from '../sim/landscape';
+import type { ProjectBoundary } from '../sim/reversal';
 import type { Action, EnsembleResult, Hotspot, RunResult, Scenario } from '../sim/types';
 import { drawMap, drawSavedLayer, type FireView } from './render';
 import type { ZoneStatus } from './status';
@@ -30,6 +31,36 @@ interface Props {
   savedFrom?: EnsembleResult | null;
   /** Changes when a new plan result lands; restarts the flash. */
   flashKey?: number;
+  /** Carbon-project boundaries that overlap the map (drawn as dashed outlines). */
+  boundaries?: ProjectBoundary[];
+}
+
+/** Dashed outlines of carbon-project boundaries over a geo-referenced map, with each project's name. */
+function drawBoundaries(ctx: CanvasRenderingContext2D, size: number, scn: Scenario, bs: ProjectBoundary[]) {
+  const g = scn.landscape.geo;
+  if (!g || !bs.length) return;
+  const P = (lon: number, lat: number): [number, number] => [((lon - g.west) / (g.east - g.west)) * size, ((g.north - lat) / (g.north - g.south)) * size];
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 0, size, size); ctx.clip();
+  for (const b of bs) {
+    ctx.beginPath();
+    for (const poly of b.polygons) for (const ring of poly) ring.forEach(([lon, lat], i) => { const [x, y] = P(lon, lat); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+    ctx.setLineDash([7, 5]);
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)'; ctx.stroke();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  // Bottom right: the zone badges sit top left, the wind top right and the scale bar bottom left.
+  ctx.font = '600 11px system-ui, sans-serif';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  bs.forEach((b, i) => {
+    const label = `VCS ${b.vcsId} boundary`;
+    const w = ctx.measureText(label).width + 12;
+    const y = size - 26 - i * 22;
+    ctx.fillStyle = 'rgba(29, 29, 31, 0.78)'; ctx.fillRect(size - w - 8, y, w, 18);
+    ctx.fillStyle = '#fff'; ctx.fillText(label, size - w - 2, y + 13);
+  });
+  ctx.restore();
 }
 
 export function MapView(p: Props) {
@@ -61,6 +92,7 @@ export function MapView(p: Props) {
       actions: p.actions, ghost: p.ghost, hotspots: p.hotspots, satellite: p.satellite, showObserved: p.showObserved,
       zoneLabels: p.zoneLabels, hoverCell: p.interactive && p.tool !== 'inspect' ? hover : null, draft: drag,
     });
+    if (p.boundaries?.length) drawBoundaries(ctx, size, p.scn, p.boundaries);
     const sc = saved.current;
     if (sc) {
       sc.width = size * dpr; sc.height = size * dpr;
