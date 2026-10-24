@@ -504,6 +504,7 @@ details.more > p { margin-top: 6px; }
 /* ---------- Commander data sources (BMKG, SiPongi) ---------- */
 .wx-compare { width: 100%; overflow-x: auto; }
 .wx-compare .table td, .wx-compare .table th { white-space: nowrap; }
+.fdrs-row figure { margin: 0; display: grid; gap: 4px; }
 .fdrs-img { width: 100%; display: block; border-radius: 6px; background: var(--fill); min-height: 120px; }
 .fdrs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 640px) { .fdrs-row { grid-template-columns: 1fr; } }

@@ -46,7 +46,8 @@ export interface BriefPdfData {
   recommendations: { title: string; where: string; what: string; when: string; impact: string; resources: string; savedHa: number; inPlan: boolean; unknown: boolean }[];
   inventory: { helicopters: number | null; crews: number | null; dozers: number | null; aircraft: number | null; source: Inventory['source'] };
   sealed: SealedInfo | null;
-  map: { png: string; caption: string } | null;
+  /** The map as a JPEG data URL (embedded without re-encoding) and what it shows. */
+  map: { jpeg: string; caption: string } | null;
 }
 
 const T = {
@@ -219,7 +220,7 @@ export function buildBriefPdf(d: BriefPdfData): jsPDF {
   const mapW = 84;
   const top = y;
   if (d.map) {
-    try { doc.addImage(d.map.png, 'PNG', M, y, mapW, mapW, undefined, 'FAST'); }
+    try { doc.addImage(d.map.jpeg, 'JPEG', M, y, mapW, mapW); }
     catch { text(L.noMap, M, y + 30, { size: 8, gray: 90, maxW: mapW }); }
     doc.setDrawColor(150); doc.setLineWidth(0.2); doc.rect(M, y, mapW, mapW);
     text(d.map.caption, M, y + mapW + 1, { size: 6.8, gray: 90, maxW: mapW });

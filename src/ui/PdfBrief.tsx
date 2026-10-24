@@ -6,7 +6,7 @@ import type { Action, EnsembleResult, Scenario, SimParams } from '../sim/types';
 import type { Lang, SealedInfo } from './briefPdf';
 
 /**
- * The map as shown, as a PNG: the forecast canvas with the "saved by the plan" layer on top.
+ * The map as shown, as a JPEG (jsPDF embeds JPEG directly; PNG needs a decoder that can fail silently): the forecast canvas with the "saved by the plan" layer on top.
  * Uses the right-hand map ("with your plan", or the only map before there is a plan).
  */
 function captureMap(): string | null {
@@ -20,7 +20,7 @@ function captureMap(): string | null {
     const ctx = c.getContext('2d')!;
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, W);
     for (const l of layers) if (l.width && l.height) ctx.drawImage(l, 0, 0, W, W);
-    return c.toDataURL('image/png');
+    return c.toDataURL('image/jpeg', 0.88);
   } catch {
     return null; // a tainted or WebGL canvas without a kept buffer
   }
@@ -60,13 +60,13 @@ export function PdfBriefButton(p: {
     setBusy(true); setErr(null);
     try {
       const { briefPdfData, buildBriefPdf, briefFileName } = await import('./briefPdf');
-      const png = captureMap();
+      const jpeg = captureMap();
       const hasPlan = p.actions.length > 0;
       const d = briefPdfData({
         lang: p.lang, scn: p.scn, base: p.base, plan: p.plan, hasPlan, actions: p.actions.length, rec: p.rec, params: p.params, inventory: p.inventory,
         observed: observedEmissions(p.scn.landscape, p.scn.hotspots ?? [], scenarioNow(p.scn), p.params.rates),
         sealed: sealed ? { ...sealed, matches: !sealed.scenarioId || sealed.scenarioId === p.scn.id } : null,
-        map: png ? { png, caption: p.mapCaption } : null,
+        map: jpeg ? { jpeg, caption: p.mapCaption } : null,
       });
       buildBriefPdf(d).save(briefFileName(d));
     } catch (e) {

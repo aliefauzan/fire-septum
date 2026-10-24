@@ -58,17 +58,18 @@ async function firms(bbox: [number, number, number, number], days: number, date?
 export interface ProjectFires { detections: Detection[]; products: string[]; query: string; fetchedAt: string }
 
 /**
- * Detections in the project's box grown by 5 km, for the last 7 days: the last 2 days in one
- * request and the 5 days before in another (FIRMS allows at most 5 days per request).
+ * Detections in the project's box grown by 5 km, covering the last 7 days: the 5 UTC days from
+ * 7 days ago in one request and the 3 days up to today in another (FIRMS allows at most 5 days
+ * per request), so the rolling 168 h window has no gap.
  */
 export async function fetchProjectFires(b: ProjectBoundary, nowMs = Date.now()): Promise<ProjectFires> {
   const box = expandBbox(b.bbox, 5500);
   const day = (n: number) => new Date(nowMs - n * 864e5).toISOString().slice(0, 10);
-  const [recent, older] = await Promise.all([firms(box, 2), firms(box, 5, day(6))]);
+  const [older, recent] = await Promise.all([firms(box, 5, day(7)), firms(box, 3, day(2))]);
   return {
     detections: dedupe([...recent.dets, ...older.dets]),
     products: recent.sources,
-    query: `${recent.query} + ${older.query}`,
+    query: `${older.query} + ${recent.query}`,
     fetchedAt: new Date(nowMs).toISOString(),
   };
 }
