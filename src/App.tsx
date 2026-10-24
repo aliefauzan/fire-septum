@@ -417,7 +417,7 @@ export default function App() {
           <span className="logo" aria-hidden>
             <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1 13 12H1Z" fill="currentColor" /></svg>
           </span>
-          <span className="brand-name">SekatApi</span>
+          <span className="brand-name">Fire Septum</span>
         </div>
         <div className="toolbar-main">
           <select className="select" aria-label="Scenario" value={presetId} onChange={(e) => loadPreset(e.target.value)} disabled={booting}>

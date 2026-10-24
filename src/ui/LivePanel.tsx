@@ -21,10 +21,14 @@ export function LivePanel({ onLoad, onHindcast, loading }: { onLoad: (lat: numbe
   const find = async (bbox: [number, number, number, number], region: string) => {
     setBusy(true); setMsg(null); setClusters(null);
     try {
-      const r = await fetchHotspots(bbox, 1);
-      const c = clusterHotspots(r.hotspots).slice(0, 8);
+      // FIRMS counts "1 day" as the current UTC date, which is nearly empty early in the UTC morning;
+      // ask for two days and keep a rolling 24 h window.
+      const r = await fetchHotspots(bbox, 2);
+      const since = Date.now() - 24 * 3600 * 1000;
+      const recent = r.hotspots.filter((h) => Date.parse(h.acquired) >= since);
+      const c = clusterHotspots(recent).slice(0, 8);
       setClusters(c);
-      setMsg(c.length ? `${r.hotspots.length} fire detections in ${region} in the last 24 h. Pick one:` : `No fires detected in ${region} in the last 24 h.`);
+      setMsg(c.length ? `${recent.length} fire detections in ${region} in the last 24 h. Pick one:` : `No fires detected in ${region} in the last 24 h.`);
     } catch (e) {
       setMsg(e instanceof FirmsKeyMissing
         ? 'Fire search needs a NASA FIRMS key (FIRMS_MAP_KEY in .env). You can still enter a location below.'
