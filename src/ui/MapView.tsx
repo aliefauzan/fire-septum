@@ -4,7 +4,7 @@ import { slopeAspect } from '../sim/landscape';
 import type { TmatStation } from '../data/bmkg';
 import type { ProjectBoundary } from '../sim/reversal';
 import type { Action, EnsembleResult, Hotspot, RunResult, Scenario } from '../sim/types';
-import { drawMap, drawSavedLayer, type FireView } from './render';
+import { drawMap, drawSavedLayer, type FireView, type ForecastLayer } from './render';
 import type { ZoneStatus } from './status';
 
 export type Tool = 'inspect' | 'firebreak' | 'water' | 'crew' | 'inject' | 'wet' | 'ignite';
@@ -17,6 +17,7 @@ interface Props {
   t: number;
   view: FireView;
   sampleRun: RunResult | null;
+  forecast?: ForecastLayer | null;
   actions: Action[];
   ghost: Action[];
   hotspots?: Hotspot[];
@@ -110,7 +111,7 @@ export function MapView(p: Props) {
     const ctx = c.getContext('2d')!;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawMap(ctx, {
-      size, scn: p.scn, ens: p.ens, t: p.t, view: p.view, sampleRun: p.sampleRun,
+      size, scn: p.scn, ens: p.ens, t: p.t, view: p.view, sampleRun: p.sampleRun, forecast: p.forecast,
       actions: p.actions, ghost: p.ghost, hotspots: p.hotspots, satellite: p.satellite, showObserved: p.showObserved,
       zoneLabels: p.zoneLabels, hoverCell: p.interactive && p.tool !== 'inspect' ? hover : null, draft: drag,
     });

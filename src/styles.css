@@ -166,6 +166,8 @@ button, input, select { font: inherit; color: inherit; }
 .legend .sw { width: 12px; height: 12px; border-radius: 3px; }
 .legend .sw.burn { background: linear-gradient(90deg, rgba(150,52,24,0.45), #ff8424); }
 .legend .sw.scar { background: rgb(52, 38, 32); }
+.legend .sw.forecast { background: linear-gradient(90deg, rgba(150,70,230,0.3), rgb(240,100,230)); }
+.forecast-note { margin: 4px auto 0; max-width: 72ch; font-size: 12px; line-height: 1.45; color: var(--muted); text-align: center; }
 .legend .edge { width: 12px; height: 12px; border-radius: 2px; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.3); background: #8a8a8e; }
 .legend .ring { width: 12px; height: 12px; border-radius: 2px; border: 1.5px dashed #3aa0d8; }
 .map { margin: 0; min-width: 0; }

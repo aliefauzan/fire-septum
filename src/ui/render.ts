@@ -1,10 +1,13 @@
 import { FUEL_LIST } from '../sim/fuels';
 import { slopeAspect } from '../sim/landscape';
 import { actionDurationH, lineCells, weatherAt } from '../sim/model';
-import type { Action, EnsembleResult, Hotspot, RunResult, Scenario } from '../sim/types';
+import { Cell, type Action, type EnsembleResult, type Hotspot, type RunResult, type Scenario } from '../sim/types';
 import type { ZoneStatus } from './status';
 
-export type FireView = 'probability' | 'sample';
+export type FireView = 'probability' | 'sample' | 'forecast';
+
+/** The statistical forecaster's next-24 h chances, per 400 m block (src/sim/gbm.ts). */
+export interface ForecastLayer { probabilities: Float32Array; fireAtT0: Uint8Array; block: number }
 
 export interface DrawOptions {
   size: number; // CSS px of the square map
@@ -13,6 +16,8 @@ export interface DrawOptions {
   t: number;
   view: FireView;
   sampleRun: RunResult | null;
+  /** Shown instead of the simulation when view is 'forecast'. */
+  forecast?: ForecastLayer | null;
   actions: Action[];
   ghost: Action[];
   hotspots?: Hotspot[];
@@ -68,7 +73,9 @@ function fireLayer(o: DrawOptions): HTMLCanvasElement | null {
   const img = ctx.createImageData(l.w, l.h);
   const n = l.w * l.h;
   const put = (k: number, r: number, g: number, b: number, a: number) => img.data.set([r, g, b, a * 255], k * 4);
-  if (o.view === 'sample' && o.sampleRun) {
+  if (o.view === 'forecast') {
+    if (o.forecast) drawForecast(o, put);
+  } else if (o.view === 'sample' && o.sampleRun) {
     const r = o.sampleRun;
     for (let k = 0; k < n; k++) {
       const ig = r.ign[k], out = r.out[k];
@@ -106,6 +113,27 @@ function fireLayer(o: DrawOptions): HTMLCanvasElement | null {
   }
   ctx.putImageData(img, 0, 0);
   return fireCanvas;
+}
+
+/** Full colour at this chance: new fire is seen in about 2% of blocks a day, so 25% is very high. */
+export const FORECAST_FULL_P = 0.25;
+
+function drawForecast(o: DrawOptions, put: (k: number, r: number, g: number, b: number, a: number) => void) {
+  const l = o.scn.landscape, f = o.forecast!, B = f.block, nbx = Math.ceil(l.w / B);
+  // Already burned and burning at t0, as in the simulation views.
+  for (let k = 0; k < l.w * l.h; k++) if (o.scn.init.state[k] === Cell.Burned) put(k, 52, 38, 32, 0.85);
+  for (let b = 0; b < f.probabilities.length; b++) {
+    const bx = (b % nbx) * B, by = Math.floor(b / nbx) * B;
+    const p = f.probabilities[b], fire = f.fireAtT0[b] === 1;
+    if (!fire && p < 0.005) continue;
+    const q = Math.min(1, p / FORECAST_FULL_P);
+    for (let y = by; y < Math.min(by + B, l.h); y++) for (let x = bx; x < Math.min(bx + B, l.w); x++) {
+      const k = y * l.w + x;
+      // On fire at t0: orange. New-fire chance: violet ramp, distinct from the simulation's warm ramp.
+      if (fire) put(k, 255, 132, 36, 0.9);
+      else put(k, 150 + 90 * q, 70 + 30 * q, 230, 0.15 + 0.7 * q);
+    }
+  }
 }
 
 const savedCanvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;

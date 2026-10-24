@@ -7,7 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { weatherAt } from '../sim/model';
 import type { Action, EnsembleResult, Hotspot, RunResult, Scenario } from '../sim/types';
 import type { Tool } from './MapView';
-import { drawMap, glowLayer, type FireView } from './render';
+import { drawMap, glowLayer, type FireView, type ForecastLayer } from './render';
 import type { ZoneStatus } from './status';
 
 export interface CamSync {
@@ -23,6 +23,7 @@ interface Props {
   t: number;
   view: FireView;
   sampleRun: RunResult | null;
+  forecast?: ForecastLayer | null;
   actions: Action[];
   ghost: Action[];
   hotspots?: Hotspot[];
@@ -187,7 +188,7 @@ export function Map3D(p: Props) {
     const ctx = s.texCanvas.getContext('2d')!;
     // Draw at half resolution scaled ×2 so labels and lines keep their 2D proportions.
     const opts = {
-      size: TEX / 2, scn: p.scn, ens: p.ens, t: p.t, view: p.view, sampleRun: p.sampleRun,
+      size: TEX / 2, scn: p.scn, ens: p.ens, t: p.t, view: p.view, sampleRun: p.sampleRun, forecast: p.forecast,
       actions: p.actions, ghost: p.ghost, hotspots: p.hotspots, satellite: p.satellite, showObserved: p.showObserved,
       zoneLabels: p.zoneLabels, draft: drag, overlays: false,
     };

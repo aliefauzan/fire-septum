@@ -15,10 +15,10 @@
 // the end knots.
 import { DET1 } from './detmath';
 import { computeBoxFeatures, FEATURE_NAMES, NF, type FeatureName, type FwiFeatureValues } from './features';
-import { FORECAST_GRID, FORECAST_SCHEMA, FORECAST_WINDOW_H, type BoxForecast, type ForecastBox } from './forecast';
+import { FORECASTER_MODEL, FORECAST_GRID, FORECAST_SCHEMA, FORECAST_WINDOW_H, type BoxForecast, type ForecastBox } from './forecast';
 import type { Scenario } from './types';
 
-export const GBM_MODEL_ID = 'fire-septum-gbm';
+export const GBM_MODEL_ID = FORECASTER_MODEL;
 export const GBM_MODEL_PATH = 'data/forecaster/gbm-v1.json';
 export type Lead = 1 | 2 | 3;
 export const GBM_LEADS: readonly Lead[] = [1, 2, 3];
@@ -95,6 +95,13 @@ export function gbmPredictRow(model: GbmModel, lead: Lead, row: ArrayLike<number
   const raw = gbmRaw(lm, row);
   const p = logistic(raw);
   return { raw, p, calibrated: isotonic(lm.isotonic, p) };
+}
+
+/** Forecast start for a scenario: the hindcast's t0, else the newest detection (the last satellite pass, as t0 was in training), else when the data was fetched, else now. */
+export function gbmT0(s: Pick<Scenario, 'hindcast' | 'hotspots' | 'provenance'>): string {
+  if (s.hindcast?.t0) return s.hindcast.t0;
+  const newest = (s.hotspots ?? []).reduce<string>((m, h) => (h.acquired > m ? h.acquired : m), '');
+  return newest || s.provenance.fetchedAt || new Date().toISOString();
 }
 
 /** Column indices of the model's features in a FEATURE_NAMES row. */

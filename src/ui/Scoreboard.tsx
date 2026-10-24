@@ -2,7 +2,7 @@
 // terms against NASA FIRMS, next to two reference models. Works on the static deploy (the index is
 // bundled at build time) and live through /api/scoreboard when a server is there.
 import { useEffect, useMemo, useState } from 'react';
-import { REFERENCE_MODEL_INFO, REGISTER_MODEL, boxKey } from '../sim/forecast';
+import { FORECASTER_MODEL, REFERENCE_MODEL_INFO, REGISTER_MODEL, boxKey } from '../sim/forecast';
 import { canonical, fromB64 } from '../sim/receipt';
 import { boardRows, leaderboard, pending, skillOverTime, type BoardIndex, type BoardRow, type SkillPoint, type Standing } from '../sim/scoreboard';
 import './scoreboard.css';
@@ -27,7 +27,7 @@ function save(name: string, data: BlobPart, type: string) {
 const when = (t: string | number) => new Date(t).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
 const f2 = (x: number) => x.toFixed(2);
 const modelName = (id: string) => REFERENCE_MODEL_INFO[id]?.name ?? id;
-const SHORT: Record<string, string> = { [REGISTER_MODEL]: 'Fire Septum CA', distance: 'Distance', climatology: 'Climatology' };
+const SHORT: Record<string, string> = { [REGISTER_MODEL]: 'Fire Septum CA', [FORECASTER_MODEL]: 'Fire Septum forecaster', distance: 'Distance', climatology: 'Climatology' };
 const shortName = (id: string) => SHORT[id] ?? id;
 const isRef = (id: string) => id === 'distance' || id === 'climatology';
 

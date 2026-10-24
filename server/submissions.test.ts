@@ -11,7 +11,7 @@ import { makeSubmissionsHandler, submissionsCollection } from './submissions';
 
 const NOW = Date.parse('2026-10-24T10:30:00Z');
 const forecast = (over: Partial<Forecast> = {}): Forecast => ({
-  schema: FORECAST_SCHEMA, model: { id: 'fire-septum-gbm', name: 'GBM', version: '0.1' },
+  schema: FORECAST_SCHEMA, model: { id: 'example-gbm', name: 'GBM', version: '0.1' },
   issuedAt: '2026-10-24T10:00:00Z', windowH: 24, grid: FORECAST_GRID,
   box: { lat: -2.96, lon: 112.15 }, probabilities: new Array(BLOCKS).fill(0.05), ...over,
 });
@@ -47,8 +47,8 @@ describe('POST /api/submissions', () => {
     const sha = createHash('sha256').update(canonical(f)).digest('hex');
     expect(r.status).toBe(200);
     expect(r.json.sha256).toBe(sha);
-    expect(r.json.file).toBe(`data/submissions/2026-10-24/fire-septum-gbm_${sha.slice(0, 16)}.json`);
-    expect(readdirSync(join(t.root, 'data', 'submissions', '2026-10-24'))).toEqual([`fire-septum-gbm_${sha.slice(0, 16)}.json`]);
+    expect(r.json.file).toBe(`data/submissions/2026-10-24/example-gbm_${sha.slice(0, 16)}.json`);
+    expect(readdirSync(join(t.root, 'data', 'submissions', '2026-10-24'))).toEqual([`example-gbm_${sha.slice(0, 16)}.json`]);
     const again = await t.call('POST', { forecast: f });
     expect(again.status).toBe(409);
     expect(t.anchored()).toBe(1);
@@ -59,6 +59,7 @@ describe('POST /api/submissions', () => {
   it.each([
     ['an invalid forecast', { probabilities: [0.1] }, 'not a valid forecast'],
     ['a reserved model id', { model: { id: 'fire-septum-ca', name: 'x', version: '1' } }, 'reserved'],
+    ['the forecaster model id', { model: { id: 'fire-septum-gbm', name: 'x', version: '1' } }, 'reserved'],
     ['a forecast issued in the future', { issuedAt: '2026-10-24T10:31:00Z' }, 'future'],
     ['a late forecast', { issuedAt: '2026-10-24T09:00:00Z' }, 'late'],
     ['a box outside Indonesia', { box: { lat: 14.6, lon: 121 } }, 'outside Indonesia'],
@@ -82,7 +83,7 @@ describe('POST /api/submissions', () => {
     expect((await t.call('POST', { forecast: forecast() })).status).toBe(200);
     expect((await t.call('POST', { forecast: forecast() })).status).toBe(409);
     expect([...t.blob.data.keys()]).toHaveLength(1);
-    expect([...t.blob.data.keys()][0]).toMatch(/^submissions\/records\/2026-10-24\/fire-septum-gbm_[0-9a-f]{16}\.json$/);
+    expect([...t.blob.data.keys()][0]).toMatch(/^submissions\/records\/2026-10-24\/example-gbm_[0-9a-f]{16}\.json$/);
   });
 
   it('requires the bearer token when SUBMISSIONS_TOKEN is set', async () => {

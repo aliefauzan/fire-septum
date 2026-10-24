@@ -11,7 +11,7 @@
 //             re-run the sealed inputs (must reproduce the sealed output hash), fetch the FIRMS
 //             detections of (issuedAt, issuedAt + 24 h], score new fire only, and write the score
 //             once, exactly as POST /api/register/score would (src/data/register.ts computeScore)
-//   2. seal   new forecasts: the top 3 FIRMS clusters of the last 24 h per island (Kalimantan,
+//   2. seal   new forecasts (2b: the statistical forecaster on the same boxes, as a submission): the top 3 FIRMS clusters of the last 24 h per island (Kalimantan,
 //             Sumatra) by the app's fixed rule (clusterHotspots), one set per island per UTC day.
 //             Signed in-process with RECEIPT_ED25519_KEY and timestamped with OpenTimestamps;
 //             refuses to seal without a key or when no calendar answers, like the app
@@ -19,24 +19,30 @@
 //   4. proofs receipts, submissions and batch roots with their .ots files into proofs/
 //   5. attest the batches on Base with EAS, only when EAS_PRIVATE_KEY is set
 //
-// Options: --dry-run, --no-pull, --no-score, --no-seal, --no-batch, --no-attest,
+// Options: --dry-run, --no-pull, --no-score, --no-seal, --no-forecaster, --no-batch, --no-attest,
 //          --allow-cache-key (sign with the local .cache/ dev key when RECEIPT_ED25519_KEY is unset),
 //          --regions Kalimantan,Sumatra
 // Needs FIRMS_MAP_KEY (environment, .env.local or .env).
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { KALIMANTAN_BBOX, SUMATRA_BBOX, clusterHotspots } from '../src/data/firms';
 import { computeScore, sealForecast, type Runner, type Sealer } from '../src/data/register';
 import { computeSubmissionScore } from '../src/data/submissions';
+import { fetchFwiAt } from '../src/data/fwiLive';
+import { FORECAST_GRID, FORECAST_SCHEMA, FORECAST_WINDOW_H, validateForecast, type Forecast } from '../src/sim/forecast';
+import { GBM_MODEL_ID, GBM_MODEL_PATH, gbmForecast, gbmT0, parseGbmModel } from '../src/sim/gbm';
+import { SUBMISSION_KIND } from '../src/sim/submission';
+import type { RunInputs } from '../src/sim/receipt';
 import { runEnsemble } from '../src/sim/ensemble';
-import { canonical, type Signature } from '../src/sim/receipt';
+import { canonical, decode, type Signature } from '../src/sim/receipt';
 import { dueAt, type RegisterEntry } from '../src/sim/register';
 import { submissionDueAt, type ForecastSubmission } from '../src/sim/submission';
 import { anchor, cachedKeyPem, signReceiptHash } from '../server/receipt';
 import { entryFileName, registerCollection } from '../server/register';
 import { blobFromEnv, type BlobLike, type Collection } from '../server/store';
-import { submissionsCollection } from '../server/submissions';
+import { submissionFileName, submissionsCollection } from '../server/submissions';
 import { nodeEnv } from './lib/node-env';
 import { sealDay, sealedRecords } from './lib/seal';
 
@@ -155,7 +161,12 @@ async function seal(now: number): Promise<number> {
     const bbox = REGIONS[region];
     if (!bbox) { fail(`seal: unknown region ${region}`); continue; }
     const done = existing.filter((e) => e.issuedAt.slice(0, 10) === today && (e.region === region || e.rule.includes(` in ${region} `)));
-    if (done.length) { log(`seal: ${region} already has ${done.length} forecast(s) sealed today (UTC); skipping`); continue; }
+    if (done.length) {
+      log(`seal: ${region} already has ${done.length} forecast(s) sealed today (UTC); skipping`);
+      if (!flag('no-forecaster')) sealed += await sealForecaster(region, done, s, today);
+      continue;
+    }
+    const made: RegisterEntry[] = [];
     try {
       const { hotspots } = await env.firms(bbox, 1);
       const top = clusterHotspots(hotspots).slice(0, PER_REGION);
@@ -165,15 +176,59 @@ async function seal(now: number): Promise<number> {
         const tag = `${region} ${c.lat.toFixed(3)}, ${c.lon.toFixed(3)} (${c.count} detections, FRP ${c.frpSum.toFixed(0)} MW)`;
         try {
           const e = await sealForecast(c.lat, c.lon, rule, run, { env, sealer: s, region });
-          if (DRY) { log(`seal: ${tag}: would store receipt ${e.record.receiptSha256.slice(0, 16)} (dry run: not signed, anchored or written)`); continue; }
+          if (DRY) { log(`seal: ${tag}: would store receipt ${e.record.receiptSha256.slice(0, 16)} (dry run: not signed, anchored or written)`); made.push(e); continue; }
           const r = await register.add(entryFileName(e.issuedAt, e.record.receiptSha256), e);
-          if (r.status === 200) { sealed++; log(`seal: ${tag}: ${r.file}, timestamped via ${e.record.anchor!.calendar}`); }
+          if (r.status === 200) { sealed++; made.push(e); log(`seal: ${tag}: ${r.file}, timestamped via ${e.record.anchor!.calendar}`); }
           else fail(`seal ${tag}: ${r.error}`);
         } catch (err) { fail(`seal ${tag}: ${msg(err)}`); }
       }
+      if (made.length && !flag('no-forecaster')) sealed += await sealForecaster(region, made, s, today);
     } catch (err) { fail(`seal ${region}: ${msg(err)}`); }
   }
   return sealed;
+}
+
+/**
+ * 2b. The statistical forecaster on the same boxes as the register's forecasts, sealed as an
+ * open-format submission (model fire-septum-gbm) and scored next to them by step 1 tomorrow.
+ * The features come from each register entry's own sealed scenario, the fire weather from
+ * src/data/fwiLive.ts. issuedAt is the moment of sealing, so the scored window starts after it.
+ * One per island per UTC day; a later run retries one that failed.
+ */
+async function sealForecaster(region: string, entries: RegisterEntry[], s: Sealer, today: string): Promise<number> {
+  const subs = await submissions.list();
+  if (subs.some((x) => x.forecast.model.id === GBM_MODEL_ID && x.forecast.issuedAt.slice(0, 10) === today && x.forecast.metadata?.region === region)) {
+    log(`forecaster: ${region} already sealed today (UTC); skipping`);
+    return 0;
+  }
+  try {
+    const model = parseGbmModel(JSON.parse(readFileSync(join(ROOT, 'public', GBM_MODEL_PATH), 'utf8')));
+    const boxes: NonNullable<Forecast['boxes']> = [];
+    const weather: Record<string, unknown>[] = [];
+    for (const e of entries) {
+      const scn = decode<RunInputs>(e.record.inputs).scenario;
+      const t0 = gbmT0(scn);
+      const fwi = await fetchFwiAt(e.lat, e.lon, t0, env.getJson).catch((err) => { log(`forecaster: no fire weather for ${e.lat.toFixed(3)}, ${e.lon.toFixed(3)} (${msg(err)}); missing-value branches`); return null; });
+      const r = gbmForecast(scn, fwi?.values ?? null, { model, t0 });
+      boxes.push({ lat: e.lat, lon: e.lon, probabilities: Array.from(r.probabilities, (p) => Math.min(1, Math.max(0, p))) });
+      weather.push({ register: e.record.receiptSha256, t0, fwiDate: fwi?.date ?? null, dc: fwi ? Math.round(fwi.values.dc * 10) / 10 : null, source: fwi?.source ?? null });
+    }
+    const f: Forecast = {
+      schema: FORECAST_SCHEMA,
+      model: { id: GBM_MODEL_ID, name: model.model.name, version: model.model.version, url: 'https://github.com/aliefauzan/fire-septum/blob/main/docs/forecaster.md' },
+      issuedAt: new Date().toISOString(), windowH: FORECAST_WINDOW_H, grid: FORECAST_GRID, boxes,
+      metadata: { region, lead: 1, calibrated: 'isotonic (validation 2023 Kalimantan)', modelCreatedAt: model.createdAt, boxesFrom: 'the forecast register entries sealed for the same fires', weather },
+    };
+    const problems = validateForecast(f);
+    if (problems.length) throw new Error(`not a valid forecast: ${problems.join('; ')}`);
+    const sha256 = createHash('sha256').update(canonical(f)).digest('hex');
+    if (DRY) { log(`forecaster: ${region}: would seal ${boxes.length} box(es), ${sha256.slice(0, 16)} (dry run)`); return 0; }
+    const anchor = await s.anchor(sha256);
+    const r = await submissions.add(submissionFileName(f, sha256), { v: 1, kind: SUBMISSION_KIND, receivedAt: new Date().toISOString(), sha256, forecast: f, anchor });
+    if (r.status !== 200) { fail(`forecaster ${region}: ${r.error}`); return 0; }
+    log(`forecaster: ${region}: ${r.file}, ${boxes.length} box(es), timestamped via ${anchor.calendar}`);
+    return 1;
+  } catch (err) { fail(`forecaster ${region}: ${msg(err)}`); return 0; }
 }
 
 /** 4. proofs/: receipts (export-proofs.mjs) and submissions, each with its .ots file. */

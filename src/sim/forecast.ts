@@ -33,7 +33,9 @@ export const FIRE_RADIUS_CELLS = 1.9;
 /** Model ids the scorer computes itself; outside submissions cannot use them. */
 export const REFERENCE_MODELS = ['distance', 'climatology'] as const;
 export const REGISTER_MODEL = 'fire-septum-ca';
-export const RESERVED_MODEL_IDS: readonly string[] = [REGISTER_MODEL, ...REFERENCE_MODELS];
+/** The statistical forecaster (src/sim/gbm.ts), sealed daily as a submission by scripts/register-daily.ts. */
+export const FORECASTER_MODEL = 'fire-septum-gbm';
+export const RESERVED_MODEL_IDS: readonly string[] = [REGISTER_MODEL, FORECASTER_MODEL, ...REFERENCE_MODELS];
 export const CLIMATOLOGY_RATE = 114 / 836;
 export const DISTANCE_EFOLD_KM = 1;
 /** Rough bounds of Indonesia (lat, lon), for accepting submissions. */

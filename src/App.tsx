@@ -27,7 +27,8 @@ import { RecordPanel } from './ui/Record';
 import { RegisterPanel } from './ui/Register';
 import { SourcesCard, useTmatStations } from './ui/Sources';
 import { ResourcesPanel, type LogiStatus } from './ui/Resources';
-import type { FireView } from './ui/render';
+import { FORECAST_FULL_P, type FireView } from './ui/render';
+import { useForecaster } from './ui/forecaster';
 import { fmtHa, isProtected, zoneProbAt, zoneStatus } from './ui/status';
 import { Timeline } from './ui/Timeline';
 
@@ -387,6 +388,7 @@ export default function App() {
     });
 
   const boundaries = useProjectBoundaries(eff);
+  const fc = useForecaster(eff, view === 'forecast');
   const stations = useTmatStations(eff);
   const sampleIdx = base ? medianRunIndex(base) : 0;
   const noUseful = !!rec && !rec.strategy && !rec.draft && !rec.recommendations.some((r) => r.saved.mean >= 1 && r.evidence !== 'speculative');
@@ -394,7 +396,7 @@ export default function App() {
   const mapA: React.ComponentProps<typeof MapView> = {
     title: 'No action',
     subtitle: '',
-    scn: eff, ens: base, t, view, sampleRun: base?.runs[sampleIdx] ?? null,
+    scn: eff, ens: base, t, view, sampleRun: base?.runs[sampleIdx] ?? null, forecast: fc.layer,
     actions: [], ghost: [], hotspots: eff.hotspots, satellite,
     zoneLabels: zoneLabels(base), tool: tool === 'ignite' ? 'ignite' : 'inspect', interactive: tool === 'ignite',
     onPlace, busy: !base, accent: 'base', showObserved, boundaries, stations,
@@ -402,7 +404,7 @@ export default function App() {
   const mapB: React.ComponentProps<typeof MapView> = {
     title: hasPlan ? 'With your plan' : '',
     subtitle: '',
-    scn: eff, ens: plan, t, view, sampleRun: plan?.runs[sampleIdx] ?? null,
+    scn: eff, ens: plan, t, view, sampleRun: plan?.runs[sampleIdx] ?? null, forecast: fc.layer,
     actions, ghost, hotspots: eff.hotspots, satellite,
     zoneLabels: zoneLabels(plan, hasPlan ? base : undefined), tool, interactive: true,
     onPlace, busy: planBusy || !plan, accent: 'plan', showObserved,
@@ -500,7 +502,7 @@ export default function App() {
                   {() => (
                     <div className="menu-pad">
                       <span className="menu-label">Fire</span>
-                      <Segmented full label="Fire display" value={view} onChange={setView} options={[{ value: 'probability', label: 'Chance' }, { value: 'sample', label: 'One example' }]} />
+                      <Segmented full label="Fire display" value={view} onChange={setView} options={[{ value: 'probability', label: 'Chance' }, { value: 'sample', label: 'One example' }, { value: 'forecast', label: 'Tomorrow' }]} />
                       <span className="menu-label">Map</span>
                       <Segmented full label="Map style" value={dim} onChange={setDim} options={[{ value: '2d', label: '2D' }, { value: '3d', label: '3D' }]} />
                     </div>
@@ -550,12 +552,26 @@ export default function App() {
             </div>
             <Timeline scn={eff} t={t} setT={setT} playing={playing} setPlaying={setPlaying} actions={actions} baseZones={base?.zoneStats ?? null} planZones={hasPlan ? plan?.zoneStats ?? null : null} />
             <ul className="legend" aria-label="Map key">
-              <li><i className="sw burn" />{view === 'probability' ? `Chance of burning by +${t} h` : `Burning by +${t} h`}</li>
+              {view === 'forecast'
+                ? <li><i className="sw forecast" />Chance of new fire seen in the next 24 h (statistical forecaster; full colour at {Math.round(FORECAST_FULL_P * 100)}% or more)</li>
+                : <li><i className="sw burn" />{view === 'probability' ? `Chance of burning by +${t} h` : `Burning by +${t} h`}</li>}
               <li><i className="sw scar" />Already burned</li>
               {hasPlan && <li><i className="sw saved" />Saved by the plan</li>}
               <li><i className="edge" />Seen by satellite, last 24 h</li>
               {showObserved && <li><i className="ring" />Seen in the next 24 h</li>}
             </ul>
+            {view === 'forecast' && (
+              <p className="forecast-note" role="status">
+                {fc.status === 'loading' && 'Running the forecaster…'}
+                {fc.status === 'error' && `Forecaster unavailable: ${fc.error}`}
+                {fc.status === 'ready' && <>
+                  From {fc.t0?.slice(0, 16).replace('T', ' ')} UTC. Highest block {((fc.maxP ?? 0) * 100).toFixed(1)}%; new fire is seen in about 2% of blocks a day.{' '}
+                  {fc.fwi ? `Fire weather ${fc.fwi.date}: Drought Code ${Math.round(fc.fwi.values.dc)}, ${fc.fwi.values.daysSinceRain} days since rain (${fc.fwi.source}).` : fc.fwiNote}{' '}
+                  {fc.synthetic && 'This is an example scenario: the model was trained on real Indonesian fires, so read it as an illustration. '}
+                  It does not know your plan; the simulation views do. <a href="https://github.com/aliefauzan/fire-septum/blob/main/docs/forecaster.md" target="_blank" rel="noreferrer">How it was tested</a>
+                </>}
+              </p>
+            )}
           </section>
 
           <ZoneTable scn={eff} base={base} plan={plan} hasPlan={hasPlan} />

@@ -20,7 +20,7 @@ const schemaValid = ajv.compile(schema);
 
 const good = (): Forecast => ({
   schema: FORECAST_SCHEMA,
-  model: { id: 'fire-septum-gbm', name: 'Gradient boosting', version: '0.1.0', url: 'https://example.org/model' },
+  model: { id: 'example-gbm', name: 'Gradient boosting', version: '0.1.0', url: 'https://example.org/model' },
   issuedAt: '2026-10-24T10:00:00Z', windowH: 24, grid: FORECAST_GRID,
   box: { lat: -2.9641, lon: 112.1507 },
   probabilities: new Array(BLOCKS).fill(0.1),
