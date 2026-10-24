@@ -1,0 +1,14 @@
+[project]
+name = "fireseptum-osm"
+version = "0.1.0"
+description = "Fire Septum: OSM barrier and drainage snapshot for Kalimantan and Sumatra"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "osmium>=4.0",
+  "shapely>=2.0",
+  "numpy>=1.26",
+  "pillow>=10",
+]
+
+[tool.uv]
+package = false
