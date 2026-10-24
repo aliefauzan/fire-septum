@@ -99,7 +99,9 @@ export async function outputsDigest(base: EnsembleResult, plan: EnsembleResult):
  */
 export const RECEIPT_KIND = { 1: 'sekatapi.run-receipt', 2: 'fireseptum.run-receipt' } as const;
 export const SIGNATURE_SCHEME = { 1: 'sekatapi-receipt-v1', 2: 'fireseptum-receipt-v2' } as const;
-export type SignatureScheme = (typeof SIGNATURE_SCHEME)[keyof typeof SIGNATURE_SCHEME];
+/** Server signatures over decision records (src/sim/decision.ts) use their own prefix, so a receipt signature can never pass as one. */
+export const DECISION_SIGNATURE_SCHEME = 'fireseptum-decision-v1';
+export type SignatureScheme = (typeof SIGNATURE_SCHEME)[keyof typeof SIGNATURE_SCHEME] | typeof DECISION_SIGNATURE_SCHEME;
 export const RECEIPT_VERSION = 2;
 
 export const isRunRecord = (r: unknown): r is RunRecord => {
@@ -149,12 +151,58 @@ export interface Anchor {
   otsB64: string;
 }
 
+/** People who co-sign a record, by role. */
+export const COSIGN_ROLES = ['forecaster', 'commander', 'bpbd'] as const;
+export type CosignRole = (typeof COSIGN_ROLES)[number];
+export const COSIGN_ROLE_LABEL: Record<CosignRole, string> = {
+  forecaster: 'Forecaster (analyst)',
+  commander: 'Incident commander (Daops Manggala Agni)',
+  bpbd: 'BPBD',
+};
+export const COSIGN_SCHEME = 'fireseptum-cosign-v1';
+
+/**
+ * A person's Ed25519 signature over a record hash, made in their own browser with their own key.
+ * It attests "I saw and accept this record at this time". It does not say the numbers are right:
+ * the re-run checks those. Like `signature`, it sits outside the hashed receipt, so it can be
+ * added later without changing the record.
+ */
+export interface Cosignature {
+  role: CosignRole;
+  /** Display name the signer gave their key. Self-declared, not verified by anyone. */
+  name: string;
+  alg: 'Ed25519';
+  /** Raw 32-byte public key, base64. */
+  publicKey: string;
+  /** First 16 hex digits of SHA-256(public key). */
+  keyId: string;
+  signedAt: string;
+  scheme: typeof COSIGN_SCHEME;
+  /** Signature over cosignMessage(recordSha256, role, signedAt), base64. */
+  sig: string;
+}
+
+export const cosignMessage = (recordSha256: string, role: CosignRole, signedAt: string) => `${COSIGN_SCHEME}:${recordSha256}:${role}:${signedAt}`;
+
+/** Verify a co-signature: the key id belongs to the public key and the signature holds for this record hash and role. */
+export async function verifyCosignature(recordSha256: string, c: Cosignature): Promise<boolean> {
+  try {
+    if (c.alg !== 'Ed25519' || c.scheme !== COSIGN_SCHEME || !COSIGN_ROLES.includes(c.role)) return false;
+    const pub = fromB64(c.publicKey);
+    if ((await sha256Hex(pub)).slice(0, 16) !== c.keyId) return false;
+    const key = await crypto.subtle.importKey('raw', pub as BufferSource, { name: 'Ed25519' }, false, ['verify']);
+    return await crypto.subtle.verify('Ed25519', key, fromB64(c.sig) as BufferSource, new TextEncoder().encode(cosignMessage(recordSha256, c.role, c.signedAt)) as BufferSource);
+  } catch { return false; }
+}
+
 /** A shareable record: the receipt, its proofs, and the inputs needed to re-run it. */
 export interface RunRecord {
   receipt: Receipt;
   receiptSha256: string;
   signature?: Signature;
   anchor?: Anchor;
+  /** Co-signatures by role (forecaster, commander, BPBD). Not part of the receipt hash. */
+  cosignatures?: Cosignature[];
   inputs: unknown; // encode(RunInputs)
 }
 
@@ -210,15 +258,20 @@ export interface CheckResult {
   /** Null until the re-run finishes. */
   outputsHash: boolean | null;
   signature: boolean | null;
+  /** One entry per co-signature, in record order. */
+  cosignatures: { role: CosignRole; name: string; keyId: string; ok: boolean }[];
 }
 
-/** Static checks that need no re-run: the receipt and inputs hash to what the record claims, and the signature holds. */
+export const checkCosignatures = (hash: string, cs: Cosignature[] | undefined) =>
+  Promise.all((cs ?? []).map(async (c) => ({ role: c.role, name: c.name, keyId: c.keyId, ok: await verifyCosignature(hash, c) })));
+
+/** Static checks that need no re-run: the receipt and inputs hash to what the record claims, and the signature and co-signatures hold. */
 export async function checkRecord(r: RunRecord): Promise<CheckResult> {
   const receiptHash = (await sha256Hex(canonical(r.receipt))) === r.receiptSha256;
   const inputsHash = (await sha256Hex(canonical(r.inputs))) === r.receipt.inputsSha256;
   let signature: boolean | null = null;
   if (r.signature) signature = await verifySignature(r.receiptSha256, r.signature).catch(() => false);
-  return { receiptHash, inputsHash, outputsHash: null, signature };
+  return { receiptHash, inputsHash, outputsHash: null, signature, cosignatures: await checkCosignatures(r.receiptSha256, r.cosignatures) };
 }
 
 /** Short engine label from the user agent (Chromium, Firefox, Safari, Node). */

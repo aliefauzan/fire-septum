@@ -5,11 +5,13 @@
 //   /api/firms, /api/osm, /api/osm-resources   live data (needs FIRMS_MAP_KEY for hotspots)
 //   /api/receipt/key|sign|anchor               Ed25519 signing (RECEIPT_ED25519_KEY) and OpenTimestamps
 //   /api/register[/score]                      forecast register (read-only when hosted)
+//   /api/decisions[/cosign]                    sealed decision records (read-only when hosted)
 //   /api/brief                                 LLM situation brief (LLM_BASE_URL, LLM_API_KEY, LLM_MODEL)
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { briefHandler } from '../server/brief';
 import { firmsHandler, osmHandler } from '../server/firmsProxy';
 import { receiptHandler } from '../server/receipt';
+import { decisionsHandler } from '../server/decisions';
 import { registerHandler } from '../server/register';
 
 type Handler = (req: IncomingMessage, res: ServerResponse, next: () => void) => void | Promise<void>;
@@ -19,6 +21,7 @@ const chain: Handler[] = [
   osmHandler(),
   receiptHandler(() => process.env.RECEIPT_ED25519_KEY),
   registerHandler,
+  decisionsHandler,
   briefHandler(() => ({ baseUrl: process.env.LLM_BASE_URL, apiKey: process.env.LLM_API_KEY, model: process.env.LLM_MODEL })),
 ];
 
