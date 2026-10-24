@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sipongiEnabled, sipongiHotspots, sipongiLabel } from '../data/bmkg';
 import { FirmsKeyMissing, KALIMANTAN_BBOX, SUMATRA_BBOX, clusterHotspots, fetchHotspots, type Cluster } from '../data/firms';
 
 const PLACES = [
@@ -15,6 +16,8 @@ export function LivePanel({ onLoad, onHindcast, loading }: { onLoad: (lat: numbe
   const [lat, setLat] = useState('-2.25');
   const [lon, setLon] = useState('114');
   const [clusters, setClusters] = useState<Cluster[] | null>(null);
+  // SiPongi village / district / area labels per cluster, only when the operator enabled SiPongi.
+  const [labels, setLabels] = useState<(string | null)[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -27,7 +30,8 @@ export function LivePanel({ onLoad, onHindcast, loading }: { onLoad: (lat: numbe
       const since = Date.now() - 24 * 3600 * 1000;
       const recent = r.hotspots.filter((h) => Date.parse(h.acquired) >= since);
       const c = clusterHotspots(recent).slice(0, 8);
-      setClusters(c);
+      setClusters(c); setLabels([]);
+      sipongiEnabled().then((on) => (on ? sipongiHotspots() : null)).then((hs) => { if (hs) setLabels(c.map((x) => sipongiLabel(x.lat, x.lon, hs))); }).catch(() => { /* labels are optional */ });
       setMsg(c.length ? `${recent.length} fire detections in ${region} in the last 24 h. Pick one:` : `No fires detected in ${region} in the last 24 h.`);
     } catch (e) {
       setMsg(e instanceof FirmsKeyMissing
@@ -48,12 +52,13 @@ export function LivePanel({ onLoad, onHindcast, loading }: { onLoad: (lat: numbe
         {msg && <p className="muted small">{msg}</p>}
         {clusters && clusters.length > 0 && (
           <ul className="list">
-            {clusters.map((c) => (
+            {clusters.map((c, i) => (
               <li key={`${c.lat},${c.lon}`} className="row-item">
                 <button className="row-head" disabled={loading} onClick={() => { setLat(c.lat.toFixed(4)); setLon(c.lon.toFixed(4)); onLoad(c.lat, c.lon); }}>
                   <span className="row-text">
                     <span className="row-title">{c.lat.toFixed(3)}, {c.lon.toFixed(3)}</span>
                     <span className="row-sub">{c.count} detections · last seen {c.latest.slice(11, 16)} UTC</span>
+                    {labels[i] && <span className="row-sub">SiPongi: {labels[i]}</span>}
                   </span>
                   <span className="chev right" aria-hidden />
                 </button>

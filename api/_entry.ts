@@ -6,9 +6,14 @@
 //   /api/receipt/key|sign|anchor               Ed25519 signing (RECEIPT_ED25519_KEY) and OpenTimestamps
 //   /api/register[/score]                      forecast register (read-only when hosted)
 //   /api/decisions[/cosign]                    sealed decision records (read-only when hosted)
+//   /api/bmkg, /api/bmkg-fdrs                  BMKG village forecast and fire-danger maps (keyless)
+//   /api/sipongi/*                             SiPongi adapter, 403 unless SIPONGI_PERMISSION=granted
+//   /api/evidence                              carbon-project reversal evidence (read-only when hosted)
 //   /api/brief                                 LLM situation brief (LLM_BASE_URL, LLM_API_KEY, LLM_MODEL)
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { bmkgHandler } from '../server/bmkg';
 import { briefHandler } from '../server/brief';
+import { evidenceHandler } from '../server/evidence';
 import { firmsHandler, osmHandler } from '../server/firmsProxy';
 import { receiptHandler } from '../server/receipt';
 import { decisionsHandler } from '../server/decisions';
@@ -22,6 +27,8 @@ const chain: Handler[] = [
   receiptHandler(() => process.env.RECEIPT_ED25519_KEY),
   registerHandler,
   decisionsHandler,
+  evidenceHandler,
+  bmkgHandler(() => process.env.SIPONGI_PERMISSION),
   briefHandler(() => ({ baseUrl: process.env.LLM_BASE_URL, apiKey: process.env.LLM_API_KEY, model: process.env.LLM_MODEL })),
 ];
 

@@ -3,8 +3,10 @@ import react from '@vitejs/plugin-react';
 import { setDefaultAutoSelectFamilyAttemptTimeout } from 'node:net';
 import { defineConfig, loadEnv } from 'vite';
 import { configDefaults } from 'vitest/config';
+import { bmkgProxy } from './server/bmkg.ts';
 import { briefProxy } from './server/brief.ts';
 import { decisionsStore } from './server/decisions.ts';
+import { evidenceStore } from './server/evidence.ts';
 import { firmsProxy } from './server/firmsProxy.ts';
 import { receiptProxy } from './server/receipt.ts';
 import { registerStore } from './server/register.ts';
@@ -24,6 +26,8 @@ export default defineConfig(({ mode }) => {
       receiptProxy(() => get('RECEIPT_ED25519_KEY')),
       registerStore(),
       decisionsStore(),
+      evidenceStore(),
+      bmkgProxy(() => get('SIPONGI_PERMISSION')),
     ],
     worker: { format: 'es' },
     // Agent worktrees under .claude/ hold other branches' copies of the tests.
