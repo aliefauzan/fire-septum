@@ -1,16 +1,20 @@
-name: Forecast register (daily)
+name: Forecast register
 
 # Scores the forecasts whose 24 h window is in FIRMS, seals today's forecasts (top 3 FIRMS clusters
 # per island), seals yesterday's Merkle batch, attests it on Base when EAS_PRIVATE_KEY is set, and
 # commits the new records back to main (scripts/register-daily.ts).
+#
+# Run by hand (Actions -> Forecast register -> Run workflow). The daily schedule is switched off
+# until the repository secrets FIRMS_MAP_KEY and RECEIPT_ED25519_KEY are set; without them every
+# run would fail. To switch it on, add back under `on:`
+#   schedule:
+#     - cron: '0 10 * * *'
 #
 # 10:00 UTC = 17:00 WIB / 18:00 WITA. The afternoon VIIRS passes (S-NPP, NOAA-20, NOAA-21, about
 # 13:30 local solar time) cross Kalimantan around 05:30-06:30 UTC and Sumatra around 06:00-07:00 UTC;
 # FIRMS near-real-time data follows within about 3 h, so the day's detections are in by ~10:00 UTC.
 
 on:
-  schedule:
-    - cron: '0 10 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -70,7 +74,7 @@ jobs:
             echo 'Nothing new to commit.'
             exit 0
           fi
-          git commit -m "Forecast register: daily run $(date -u +%Y-%m-%d)"
+          git commit -m "Forecast register: run $(date -u +%Y-%m-%d)"
           for i in 1 2 3; do
             git pull --rebase origin main && git push origin HEAD:main && exit 0
             sleep 10

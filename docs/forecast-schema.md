@@ -46,13 +46,13 @@ A detection at latitude φ and longitude λ falls in cell `x = (λ − west) / (
 3. **OpenTimestamps.** The server submits the hash to the public calendars right away. If no calendar answers, nothing is stored. The Bitcoin block that confirms it, usually within a few hours, proves that the forecast existed then.
 4. **Daily Merkle batch.** The hash also goes into that UTC day's batch (`data/batches/<day>.json`, see the README). The batch root is timestamped and can be attested with EAS on Base.
 
-The record is stored write-once as `data/submissions/<issue day>/<model id>_<first 16 hex digits of the hash>.json`. On the hosted site it goes to Vercel Blob, and the daily job copies it into the repository.
+The record is stored write-once as `data/submissions/<issue day>/<model id>_<first 16 hex digits of the hash>.json`. On the hosted site it goes to Vercel Blob, and the register job (`scripts/register-daily.ts`) copies it into the repository.
 
 **Late forecasts are refused.** `issuedAt` must not be in the future, and it must be at most 1 h before the server receives the forecast. Otherwise anyone could "forecast" what FIRMS already shows. Every box must be in Indonesia (lat −11.5 to 6.5, lon 94.5 to 141.5).
 
 ## Scoring
 
-The scoring runs after the window, once the window plus 6 h of FIRMS latency has passed. `scripts/register-daily.ts` does it every day at 10:00 UTC. It uses exactly the register's rules (`scoreBlocks` in `src/sim/hindcast.ts`):
+The scoring runs after the window, once the window plus 6 h of FIRMS latency has passed. `scripts/register-daily.ts` does it whenever it runs (by hand for now; on a daily schedule once the hosted instance has its secrets). It uses exactly the register's rules (`scoreBlocks` in `src/sim/hindcast.ts`):
 
 - **Observed.** A block is observed when a VIIRS detection (S-NPP, NOAA-20 or NOAA-21, near real time) acquired in the window falls in it.
 - **New fire only.** Blocks on fire at t0 are left out, because any forecast "predicts" fire that is already there.
@@ -107,7 +107,7 @@ curl -X POST https://fire-septum.vercel.app/api/submissions \
 
 The answer carries the hash, the stored file name and the `.ots` proof. The CLI saves `<file>.canonical.json` and `<file>.canonical.json.ots`; once Bitcoin has confirmed the timestamp, check it with `ots upgrade` and `ots verify`. If the instance sets `SUBMISSIONS_TOKEN`, send `Authorization: Bearer <token>`.
 
-**Which boxes?** Any box in Indonesia. To compare with Fire Septum's own forecast on the same fires, forecast the register's boxes. Each day, after the afternoon pass, the daily job seals the top 3 FIRMS clusters per island (Kalimantan, Sumatra), ranked by detections + FRP/50 over the last 24 h. `clusterHotspots` in `src/data/firms.ts` picks them, and anyone can compute the same boxes from FIRMS.
+**Which boxes?** Any box in Indonesia. To compare with Fire Septum's own forecast on the same fires, forecast the register's boxes. Each time the register job runs (best after the afternoon pass), it seals the top 3 FIRMS clusters per island (Kalimantan, Sumatra), ranked by detections + FRP/50 over the last 24 h. `clusterHotspots` in `src/data/firms.ts` picks them, and anyone can compute the same boxes from FIRMS.
 
 ## Caveats
 

@@ -224,13 +224,13 @@ export function Scoreboard() {
 
             <section aria-labelledby="sb-due">
               <h2 id="sb-due">Sealed, not yet scored</h2>
-              {view.due.length === 0 ? <p className="muted small">Nothing waiting. New forecasts are sealed every day after the afternoon satellite pass.</p> : (
+              {view.due.length === 0 ? <p className="muted small">Nothing waiting. New forecasts are sealed each time the register job runs.</p> : (
                 <ol className="sb-list">
                   {view.due.map((p) => (
                     <li key={p.record}>
                       <div className="sb-li-head">
                         <span className="sb-place">{modelName(p.model)}</span>
-                        <span className="muted small">sealed {when(p.issuedAt)} · {Date.now() >= p.dueAt ? 'due now, scored on the next daily run' : `scores after ${when(p.dueAt)}`}</span>
+                        <span className="muted small">sealed {when(p.issuedAt)} · {Date.now() >= p.dueAt ? 'due now, scored on the next register run' : `scores after ${when(p.dueAt)}`}</span>
                       </div>
                       <div className="sb-li-body small">
                         <span>{p.boxes.map((b) => `${b.lat.toFixed(3)}, ${b.lon.toFixed(3)}`).join(' · ')}</span>

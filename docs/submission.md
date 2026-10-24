@@ -1,6 +1,6 @@
 # Devpost submission text (draft)
 
-Paste section by section into the Devpost form. Every number between `<!-- gen -->` markers is filled from the data files by `npx tsx scripts/gen-docs.ts`; CI fails if one is out of date. Re-run it after the daily register job, just before submitting.
+Paste section by section into the Devpost form. Every number between `<!-- gen -->` markers is filled from the data files by `npx tsx scripts/gen-docs.ts`; CI fails if one is out of date. Re-run it after the register job, just before submitting.
 
 ## Track
 
@@ -15,7 +15,7 @@ In 2015, Indonesia's peat fires emitted more CO₂ per day than the entire US ec
 - **Forecast where.** A gradient-boosted model trained on the 2015 and 2019 fire seasons gives the probability of new hotspots tomorrow in every 400 m block. Its inputs are the NASA FIRMS archive, ERA5 fire weather (the Canadian Drought Code), peat, land cover, canals and fire history. It is calibrated with isotonic regression and tested on fires it never saw.
 - **Simulate what if.** A 40-run cellular-automaton ensemble simulates how a real fire spreads over 24–48 h, with and without firefighting actions (control lines, helicopter drops, hand crews, peat injection). Canals and roads from a dated OpenStreetMap snapshot stop fire, and canals dry the peat around them. Actions are ranked by area saved, using only the resources the commander says exist.
 - **Seal before the outcome.** Every input and output is hashed (SHA-256) and signed (Ed25519), and the hash is timestamped on Bitcoin through OpenTimestamps. Each day's records go into one Merkle root, which can also be attested on Base with the Ethereum Attestation Service. A forecaster, an incident commander and BPBD can co-sign a record. Decisions are sealed too. No token.
-- **Score in public, every day.** A GitHub Actions job seals forecasts for the most active fires by a fixed rule. It scores each one after 24 h against what the VIIRS satellites detected, and commits the result. Anyone can submit a sealed forecast in an open format and appear on the same scoreboard.
+- **Score in public.** One command, also ready as a GitHub Actions job, seals forecasts for the most active fires by a fixed rule. It scores each one after 24 h against what the VIIRS satellites detected, and commits the result. Anyone can submit a sealed forecast in an open format and appear on the same scoreboard.
 - **Count the carbon honestly.** Peat burn depth comes from each cell's fire history (Konecny et al. 2016). Every emission number is a Monte Carlo range. The satellite (FRP) estimate is cross-checked against GFED, and burned area is measured from Sentinel-2 and Sentinel-1 afterwards.
 - **Watch carbon projects.** It checks fire in and around Indonesian REDD+ peat project boundaries and seals the satellite evidence.
 - **Brief the commander.** A one-page PDF brief, with BMKG's own forecast and fire-danger maps shown next to the model's weather.
@@ -66,7 +66,7 @@ Next 24 h, each cell: Brier skill against train climatology [95% CI, bootstrap o
 Source: `docs/hindcast-rerun-2026-10-24-barriers.json` (τ = 6 h, canal and road barriers on). Brier skill below 0 means the raw ensemble probabilities are not calibrated.
 <!-- /gen:hindcast -->
 
-**Pre-registered forecasts, scored by the daily job:**
+**Pre-registered forecasts, sealed before the outcome and scored after it:**
 
 <!-- gen:register -->
 6 forecasts sealed in the register, 6 scored; 0 open submissions.
@@ -91,7 +91,7 @@ Source: `docs/hindcast-rerun-2026-10-24-barriers.json` (τ = 6 h, canal and road
 - **Researchers and agencies:** a public, pre-registered scoreboard where any model can be compared prospectively.
 - **Auditors, carbon-project verifiers and buffer pools:** proof of what was forecast, decided and observed, and when. Concession holders can be held strictly liable for fires on their land (UU 32/2009 Pasal 88, as amended by UU 6/2023).
 
-It runs in a browser. It uses free, global open data; FIRMS needs only a free key. The register runs itself on GitHub Actions, and every record is a plain JSON file. Adding a region is a bounding box.
+It runs in a browser. It uses free, global open data; FIRMS needs only a free key. The register runs with one command, ready to schedule on GitHub Actions, and every record is a plain JSON file. Adding a region is a bounding box.
 
 ## Challenges and limits (honest)
 
