@@ -324,6 +324,7 @@ async function readJson(req) {
   return JSON.parse(body || "{}");
 }
 var HEX64 = /^[0-9a-f]{64}$/;
+var SCHEMES = ["fireseptum-receipt-v2", "sekatapi-receipt-v1", "fireseptum-decision-v1"];
 function receiptHandler(getPem) {
   let key = null;
   const getKey = () => key ??= loadKey(getPem());
@@ -346,7 +347,7 @@ function receiptHandler(getPem) {
       if (!HEX64.test(hash)) return send(400, { error: "receiptSha256 must be 64 lowercase hex digits" });
       if (path === "/api/receipt/sign") {
         const scheme = String(body.scheme ?? "fireseptum-receipt-v2");
-        if (scheme !== "fireseptum-receipt-v2" && scheme !== "sekatapi-receipt-v1") return send(400, { error: "unknown signature scheme" });
+        if (!SCHEMES.includes(scheme)) return send(400, { error: "unknown signature scheme" });
         const signedAt = (/* @__PURE__ */ new Date()).toISOString();
         const sig = sign(null, Buffer.from(`${scheme}:${hash}:${signedAt}`), getKey()).toString("base64");
         return send(200, { alg: "Ed25519", scheme, publicKey, keyId, signedAt, sig });
@@ -363,12 +364,14 @@ function receiptHandler(getPem) {
   };
 }
 
-// server/register.ts
-import { createHash as createHash2 } from "node:crypto";
+// server/decisions.ts
+import { createHash as createHash2, createPublicKey as createPublicKey2, verify } from "node:crypto";
 import { mkdirSync as mkdirSync3, readFileSync as readFileSync3, readdirSync, writeFileSync as writeFileSync3 } from "node:fs";
 import { join as join3 } from "node:path";
-var DIR = join3(process.cwd(), "data", "register");
+var DIR = join3(process.cwd(), "data", "decisions");
 var HEX642 = /^[0-9a-f]{64}$/;
+var ROLES = ["forecaster", "commander", "bpbd"];
+var READ_ONLY = !!process.env.VERCEL;
 function canonical(v) {
   if (Array.isArray(v)) return `[${v.map(canonical).join(",")}]`;
   if (v && typeof v === "object") {
@@ -377,9 +380,96 @@ function canonical(v) {
   }
   return JSON.stringify(v);
 }
-var fileFor = (hash) => readdirSync(DIR).find((f) => f.endsWith(`_${hash.slice(0, 16)}.json`));
-var READ_ONLY = !!process.env.VERCEL;
+var sha256 = (b) => createHash2("sha256").update(b).digest("hex");
+var list = () => {
+  try {
+    return readdirSync(DIR).filter((f) => f.endsWith(".json")).sort();
+  } catch {
+    return [];
+  }
+};
+var fileFor = (hash) => list().find((f) => f.endsWith(`_${hash.slice(0, 16)}.json`));
+function cosignatureValid(hash, c) {
+  try {
+    if (c.alg !== "Ed25519" || c.scheme !== "fireseptum-cosign-v1" || !ROLES.includes(String(c.role)) || !c.signedAt || !c.name) return false;
+    const pub = Buffer.from(String(c.publicKey), "base64");
+    if (pub.length !== 32 || sha256(pub).slice(0, 16) !== c.keyId) return false;
+    const key = createPublicKey2({ key: { kty: "OKP", crv: "Ed25519", x: pub.toString("base64url") }, format: "jwk" });
+    return verify(null, Buffer.from(`fireseptum-cosign-v1:${hash}:${c.role}:${c.signedAt}`), key, Buffer.from(String(c.sig), "base64"));
+  } catch {
+    return false;
+  }
+}
 async function readJson2(req) {
+  const pre = req.body;
+  if (pre !== void 0) return typeof pre === "string" ? JSON.parse(pre || "{}") : pre ?? {};
+  let body = "";
+  for await (const chunk of req) {
+    body += chunk;
+    if (body.length > 2e5) throw new Error("body too large");
+  }
+  return JSON.parse(body || "{}");
+}
+function decisionsHandler(req, res, next) {
+  const path = (req.url ?? "").split("?")[0];
+  if (path !== "/api/decisions" && path !== "/api/decisions/cosign") return next();
+  res.setHeader("content-type", "application/json");
+  const send = (status, body) => {
+    res.statusCode = status;
+    res.end(JSON.stringify(body));
+  };
+  (async () => {
+    if (req.method === "GET" && path === "/api/decisions") {
+      return send(200, { records: list().map((f2) => JSON.parse(readFileSync3(join3(DIR, f2), "utf8"))) });
+    }
+    if (req.method !== "POST") return send(405, { error: "method not allowed" });
+    if (READ_ONLY) return send(405, { error: "The hosted decision log is read-only. Run Fire Septum locally to store a decision; records are published with the code. You can still download the sealed decision." });
+    mkdirSync3(DIR, { recursive: true });
+    const body = await readJson2(req);
+    if (path === "/api/decisions") {
+      const r = body.record;
+      const hash2 = String(r?.decisionSha256 ?? "");
+      const at = r?.decision?.decidedAt ?? "";
+      if (r?.decision?.kind !== "fireseptum.decision" || !HEX642.test(hash2) || Number.isNaN(Date.parse(at))) return send(400, { error: "not a decision record" });
+      if (sha256(canonical(r.decision)) !== hash2) return send(400, { error: "decision does not match its hash" });
+      if ((r.cosignatures ?? []).some((c2) => !cosignatureValid(hash2, c2))) return send(400, { error: "a co-signature does not verify" });
+      if (fileFor(hash2)) return send(409, { error: "already stored" });
+      const name = `${new Date(at).toISOString().slice(0, 13).replace(/[-:T]/g, "")}_${hash2.slice(0, 16)}.json`;
+      writeFileSync3(join3(DIR, name), JSON.stringify(r, null, 1));
+      return send(200, { ok: true, file: `data/decisions/${name}` });
+    }
+    const hash = String(body.decisionSha256 ?? "");
+    const f = HEX642.test(hash) ? fileFor(hash) : void 0;
+    if (!f) return send(404, { error: "unknown decision" });
+    const c = body.cosignature;
+    if (!cosignatureValid(hash, c)) return send(400, { error: "co-signature does not verify" });
+    const rec = JSON.parse(readFileSync3(join3(DIR, f), "utf8"));
+    if (rec.decisionSha256 !== hash) return send(409, { error: "stored file does not match" });
+    const cur = rec.cosignatures ?? [];
+    if (cur.some((x) => x.keyId === c.keyId && x.role === c.role)) return send(200, { ok: true, record: rec });
+    rec.cosignatures = [...cur, c];
+    writeFileSync3(join3(DIR, f), JSON.stringify(rec, null, 1));
+    return send(200, { ok: true, record: rec });
+  })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
+}
+
+// server/register.ts
+import { createHash as createHash3 } from "node:crypto";
+import { mkdirSync as mkdirSync4, readFileSync as readFileSync4, readdirSync as readdirSync2, writeFileSync as writeFileSync4 } from "node:fs";
+import { join as join4 } from "node:path";
+var DIR2 = join4(process.cwd(), "data", "register");
+var HEX643 = /^[0-9a-f]{64}$/;
+function canonical2(v) {
+  if (Array.isArray(v)) return `[${v.map(canonical2).join(",")}]`;
+  if (v && typeof v === "object") {
+    const o = v;
+    return `{${Object.keys(o).filter((k) => o[k] !== void 0).sort().map((k) => `${JSON.stringify(k)}:${canonical2(o[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(v);
+}
+var fileFor2 = (hash) => readdirSync2(DIR2).find((f) => f.endsWith(`_${hash.slice(0, 16)}.json`));
+var READ_ONLY2 = !!process.env.VERCEL;
+async function readJson3(req) {
   const pre = req.body;
   if (pre !== void 0) return typeof pre === "string" ? JSON.parse(pre || "{}") : pre ?? {};
   let body = "";
@@ -398,31 +488,31 @@ function registerHandler(req, res, next) {
     res.end(JSON.stringify(body));
   };
   (async () => {
-    if (!READ_ONLY) mkdirSync3(DIR, { recursive: true });
+    if (!READ_ONLY2) mkdirSync4(DIR2, { recursive: true });
     if (req.method === "GET" && path === "/api/register") {
-      const entries = readdirSync(DIR).filter((f2) => f2.endsWith(".json")).sort().map((f2) => JSON.parse(readFileSync3(join3(DIR, f2), "utf8")));
+      const entries = readdirSync2(DIR2).filter((f2) => f2.endsWith(".json")).sort().map((f2) => JSON.parse(readFileSync4(join4(DIR2, f2), "utf8")));
       return send(200, { entries });
     }
     if (req.method !== "POST") return send(405, { error: "method not allowed" });
-    if (READ_ONLY) return send(405, { error: "The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code." });
-    const body = await readJson2(req);
+    if (READ_ONLY2) return send(405, { error: "The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code." });
+    const body = await readJson3(req);
     if (path === "/api/register") {
       const e = body.entry;
       const hash2 = String(e?.record?.receiptSha256 ?? "");
-      if (e?.kind !== "fireseptum.preregistered-forecast" && e?.kind !== "sekatapi.preregistered-forecast" || !HEX642.test(hash2) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: "not a register entry" });
-      if (createHash2("sha256").update(canonical(e.record.receipt)).digest("hex") !== hash2) return send(400, { error: "receipt does not match its hash" });
-      if (fileFor(hash2)) return send(409, { error: "already registered" });
+      if (e?.kind !== "fireseptum.preregistered-forecast" && e?.kind !== "sekatapi.preregistered-forecast" || !HEX643.test(hash2) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: "not a register entry" });
+      if (createHash3("sha256").update(canonical2(e.record.receipt)).digest("hex") !== hash2) return send(400, { error: "receipt does not match its hash" });
+      if (fileFor2(hash2)) return send(409, { error: "already registered" });
       const name = `${e.issuedAt.slice(0, 13).replace(/[-:T]/g, "")}_${hash2.slice(0, 16)}.json`;
-      writeFileSync3(join3(DIR, name), JSON.stringify(e, null, 1));
+      writeFileSync4(join4(DIR2, name), JSON.stringify(e, null, 1));
       return send(200, { ok: true, file: `data/register/${name}` });
     }
     const hash = String(body.receiptSha256 ?? "");
-    const f = HEX642.test(hash) ? fileFor(hash) : void 0;
+    const f = HEX643.test(hash) ? fileFor2(hash) : void 0;
     if (!f) return send(404, { error: "unknown forecast" });
-    const entry = JSON.parse(readFileSync3(join3(DIR, f), "utf8"));
+    const entry = JSON.parse(readFileSync4(join4(DIR2, f), "utf8"));
     if (entry.score) return send(409, { error: "already scored", score: entry.score });
     entry.score = body.score;
-    writeFileSync3(join3(DIR, f), JSON.stringify(entry, null, 1));
+    writeFileSync4(join4(DIR2, f), JSON.stringify(entry, null, 1));
     return send(200, { ok: true });
   })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
 }
@@ -433,6 +523,7 @@ var chain = [
   osmHandler(),
   receiptHandler(() => process.env.RECEIPT_ED25519_KEY),
   registerHandler,
+  decisionsHandler,
   briefHandler(() => ({ baseUrl: process.env.LLM_BASE_URL, apiKey: process.env.LLM_API_KEY, model: process.env.LLM_MODEL }))
 ];
 function handler(req, res) {

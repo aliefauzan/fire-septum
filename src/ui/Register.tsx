@@ -3,6 +3,7 @@ import { KALIMANTAN_BBOX, SUMATRA_BBOX, clusterHotspots, fetchHotspots } from '.
 import { issueForecast, listRegister, scoreEntry, type Runner } from '../data/register';
 import { canonical, decode, fromB64, type RunInputs } from '../sim/receipt';
 import { dueAt, summarize, type RegisterEntry } from '../sim/register';
+import { BatchStatus } from './Trust';
 
 const PER_REGION = 3;
 
@@ -68,6 +69,7 @@ export function RegisterPanel({ run, onOpen }: { run: Runner; onOpen: (r: RunInp
         <p className="muted small">
           Each forecast is sealed, signed and timestamped on Bitcoin before the satellites see what happens next.
           After 24 h it is scored against NASA FIRMS. Every forecast stays on the board, good or bad: a hindcast can be tuned after the fact, this cannot.
+          Each day's records also go into one Merkle batch whose root is timestamped on Bitcoin and attested on Base; the proof for each forecast is checked here.
         </p>
         {s && (
           <dl className="kv">
@@ -100,6 +102,7 @@ export function RegisterPanel({ run, onOpen }: { run: Runner; onOpen: (r: RunInp
                       {!e.score && <> · scores after {when(dueAt(e))}</>}
                       {e.score && !e.score.reproduced && <span className="tag">re-run differs</span>}
                     </span>
+                    <BatchStatus compact hash={e.record.receiptSha256} sealedAt={e.issuedAt} />
                   </span>
                   <span className={`saved ${r && r.observed ? '' : 'nil'}`}>
                     {!r ? 'pending' : r.observed === 0 ? 'no new fire' : `CSI ${r.csi.toFixed(2)} / ${r.distance.csi.toFixed(2)}`}

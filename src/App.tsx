@@ -619,7 +619,7 @@ export default function App() {
             </div>
             <div hidden={tab !== 'record'}>
               <button className="btn wide register-btn" onClick={() => setShowRegister(true)}>Open forecast register</button>
-              <RecordPanel client={client} scn={eff} actions={actions} params={params} base={base} plan={plan} busy={planBusy} onOpen={openRecord} />
+              <RecordPanel client={client} scn={eff} actions={actions} params={params} base={base} plan={plan} busy={planBusy} recommendations={rec?.recommendations ?? []} inventory={inventory} onOpen={openRecord} />
             </div>
             <div hidden={tab !== 'brief'}>
               <BriefPanel scn={eff} base={base} plan={plan} rec={rec} recLoading={recLoading} actions={actions} params={params} inventory={inventory} logistics={logistics} onApplyPlan={applyBriefPlan} />

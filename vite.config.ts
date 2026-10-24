@@ -4,6 +4,7 @@ import { setDefaultAutoSelectFamilyAttemptTimeout } from 'node:net';
 import { defineConfig, loadEnv } from 'vite';
 import { configDefaults } from 'vitest/config';
 import { briefProxy } from './server/brief.ts';
+import { decisionsStore } from './server/decisions.ts';
 import { firmsProxy } from './server/firmsProxy.ts';
 import { receiptProxy } from './server/receipt.ts';
 import { registerStore } from './server/register.ts';
@@ -22,6 +23,7 @@ export default defineConfig(({ mode }) => {
       briefProxy(() => ({ baseUrl: get('LLM_BASE_URL'), apiKey: get('LLM_API_KEY'), model: get('LLM_MODEL') })),
       receiptProxy(() => get('RECEIPT_ED25519_KEY')),
       registerStore(),
+      decisionsStore(),
     ],
     worker: { format: 'es' },
     // Agent worktrees under .claude/ hold other branches' copies of the tests.

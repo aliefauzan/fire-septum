@@ -1,0 +1,50 @@
+{
+ "v": 1,
+ "kind": "fireseptum.daily-batch",
+ "day": "2026-10-20",
+ "sealedAt": "2026-10-24T11:10:14.382Z",
+ "leaves": [
+  "278f58dc6960b281635af59a5bec0a79cbd68a5b5b1d99619905905cac95723c",
+  "445e7ddd729233c1fb883ee6e96e20bf115e17ef8d9f632b39d7d9fc9b0564fa",
+  "5ff72728fceda1cac2aa18795962b03f3db12350773c5982c5f8fd1694b41e6e",
+  "8b3757efb8aa7c971acf9e689fa3bd27694bcbecadb01319a122684af352246c",
+  "8f48c87dffb92febb91dde7fda9ed692039fedcc177ca3afae9c7c0eead84737",
+  "fb2db4de00fe90bcf3affefb75016e23a27a9ec934440a644df32b02f6c17ec2"
+ ],
+ "root": "2e1266b76753313bd4d1e8dd6a67c3e61bed8d298ad2aac74cd569de916943c8",
+ "proofs": {
+  "278f58dc6960b281635af59a5bec0a79cbd68a5b5b1d99619905905cac95723c": [
+   "0c9fe637b8b9b58d4cfeb44b55cb6ad9738b5c28555f4e33e6f5fb23d83743dc",
+   "973f5eb228e5b566840b426664182c6e70f700e10e1cab8f15a832ceedb65442",
+   "5d50bad0b2f98cf2e328b0169d681202b2a0b9c69650b213fe500cc6653b2f05"
+  ],
+  "445e7ddd729233c1fb883ee6e96e20bf115e17ef8d9f632b39d7d9fc9b0564fa": [
+   "fda86519e83b15b31ca59df2da23c55045673257796571bc517e4deb2a84e621",
+   "973f5eb228e5b566840b426664182c6e70f700e10e1cab8f15a832ceedb65442",
+   "5d50bad0b2f98cf2e328b0169d681202b2a0b9c69650b213fe500cc6653b2f05"
+  ],
+  "5ff72728fceda1cac2aa18795962b03f3db12350773c5982c5f8fd1694b41e6e": [
+   "04444946824845bd2ce8e2698121bc7473cfef40e9c6461cb3815d91ec035a0a",
+   "b41278e9ca91368c32a5bdf7cbc828d97aed591c64f74e36485a13da629509a5",
+   "5d50bad0b2f98cf2e328b0169d681202b2a0b9c69650b213fe500cc6653b2f05"
+  ],
+  "8b3757efb8aa7c971acf9e689fa3bd27694bcbecadb01319a122684af352246c": [
+   "3bdfd85ad4123197aae72d852bb81dce84c5deb768ad17e85fa1640ed2eb5d42",
+   "b41278e9ca91368c32a5bdf7cbc828d97aed591c64f74e36485a13da629509a5",
+   "5d50bad0b2f98cf2e328b0169d681202b2a0b9c69650b213fe500cc6653b2f05"
+  ],
+  "8f48c87dffb92febb91dde7fda9ed692039fedcc177ca3afae9c7c0eead84737": [
+   "ede00bd66b37aeeca1f0ab948bb74297f6f8e4307732aad26385727cfefde39b",
+   "65ce743bcbab305245d56f44cd10a9a07c5f5f3bac5edeb356fee95d402d8eac"
+  ],
+  "fb2db4de00fe90bcf3affefb75016e23a27a9ec934440a644df32b02f6c17ec2": [
+   "de9921932f4833d0518c124dfaca2af8d9b645e13ca3dfb93ac4fa05005f3d76",
+   "65ce743bcbab305245d56f44cd10a9a07c5f5f3bac5edeb356fee95d402d8eac"
+  ]
+ },
+ "ots": {
+  "calendar": "https://a.pool.eternitywall.com",
+  "submittedAt": "2026-10-24T11:10:15.599Z",
+  "otsB64": "AE9wZW5UaW1lc3RhbXBzAABQcm9vZgC/ieLohOiSlAEILhJmt2dTMTvU0ejdamfD5hvtjSmK0qrHTNVp3pFpQ8jwEPghah6xGSjf1jzchLpOWSEI8SDARk+GboPXaiiDyOIyOifS0zD/sakQRXJkPkNwJyb9owjxILFc9h/d0V733w44X2hNi7Oq7YbaqNeiGwXH194kXD3DCPEEatySF/AIAkY0vawdS1QAg9/jDS75DI4pKGh0dHBzOi8vZmlubmV5LmNhbGVuZGFyLmV0ZXJuaXR5d2FsbC5jb20="
+ }
+}

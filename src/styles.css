@@ -471,7 +471,9 @@ details.more > p { margin-top: 6px; }
 @keyframes ring { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.6); opacity: 0; } }
 .sealed-badge b { display: block; font-size: 13px; }
 .sealed-badge span { font-size: 12px; color: var(--muted); }
-.checks .check { opacity: 0; animation: fade 300ms ease-out forwards; }
+/* Explicit end state: `fade` has only a `from` frame, which would end at this rule's opacity 0. */
+.checks .check { opacity: 0; animation: check-in 300ms ease-out forwards; }
+@keyframes check-in { from { opacity: 0; } to { opacity: 1; } }
 .checks .check:nth-child(2) { animation-delay: 120ms; }
 .checks .check:nth-child(3) { animation-delay: 240ms; }
 .checks .check:nth-child(4) { animation-delay: 360ms; }
@@ -480,3 +482,19 @@ details.more > p { margin-top: 6px; }
   .seal-step, .checks .check { opacity: 1; animation: none; }
   .hash .caret { display: none; }
 }
+
+/* ---------- Trust: daily batches, co-signatures, decisions ---------- */
+.sub-head { font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+.batch { margin: 10px 0 4px; }
+.batch .btn-row, .cosign .btn-row { margin-top: 8px; }
+.cosign-form { display: grid; gap: 8px; margin-top: 10px; }
+.cosign-form .select { max-width: none; width: 100%; }
+.cosign-new { display: grid; gap: 8px; }
+.decision-form { display: grid; gap: 8px; margin: 8px 0; }
+.decision-form .select { max-width: none; width: 100%; }
+.decision-form textarea.num { height: auto; min-height: 64px; padding: 8px 10px; font-size: 13px; font-weight: 400; resize: vertical; font-family: inherit; }
+.decision-form .num { font-size: 13px; }
+.alts { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 4px; font-size: 12px; }
+.alts li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; }
+.alts .adopted { font-weight: 600; }
+.decision-checks { margin: 10px 0 12px; }
