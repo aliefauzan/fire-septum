@@ -92,20 +92,17 @@ export function blockDistanceKm(g: BlockGrid, fireAtT0: ArrayLike<number>): Floa
 }
 
 /**
- * The scoring core: per-block probabilities of new fire against the detections of the window.
- * Every forecast, the cellular automaton's and any submitted model's, is scored by this one
- * function (src/sim/forecast.ts scoreForecast). `observed` are detections in the window in
- * cell coordinates (cell centres at integers).
+ * Blocks with new observed fire: a detection in a block not on fire at t0 and within `reachKm` of
+ * it (1), and the count of new-fire blocks beyond the reach (fresh ignitions, not scored). The
+ * label rule of scoreBlocks, also used to label the forecaster's training data (scripts/ml/extract.ts).
  */
-export function scoreBlocks(
-  g: BlockGrid, p: ArrayLike<number>, fireAtT0: ArrayLike<number>, observed: Pick<Hotspot, 'x' | 'y'>[],
-  opts: { reachKm?: number } = {},
-): HindcastScore {
-  const B = g.block;
+export function observedBlocks(
+  g: BlockGrid, fireAtT0: ArrayLike<number>, observed: Pick<Hotspot, 'x' | 'y'>[],
+  opts: { reachKm?: number; dist?: Float32Array } = {},
+): { obs: Uint8Array; newFires: number } {
   const reachKm = opts.reachKm ?? 3;
   const { nb, blockOf } = blocksOf(g);
-  const dist = blockDistanceKm(g, fireAtT0);
-
+  const dist = opts.dist ?? blockDistanceKm(g, fireAtT0);
   const obs = new Uint8Array(nb);
   let newFires = 0;
   const seen = new Set<number>();
@@ -118,6 +115,24 @@ export function scoreBlocks(
     if (dist[b] > reachKm) newFires++;
     else obs[b] = 1;
   }
+  return { obs, newFires };
+}
+
+/**
+ * The scoring core: per-block probabilities of new fire against the detections of the window.
+ * Every forecast, the cellular automaton's and any submitted model's, is scored by this one
+ * function (src/sim/forecast.ts scoreForecast). `observed` are detections in the window in
+ * cell coordinates (cell centres at integers).
+ */
+export function scoreBlocks(
+  g: BlockGrid, p: ArrayLike<number>, fireAtT0: ArrayLike<number>, observed: Pick<Hotspot, 'x' | 'y'>[],
+  opts: { reachKm?: number } = {},
+): HindcastScore {
+  const B = g.block;
+  const reachKm = opts.reachKm ?? 3;
+  const { nb } = blocksOf(g);
+  const dist = blockDistanceKm(g, fireAtT0);
+  const { obs, newFires } = observedBlocks(g, fireAtT0, observed, { reachKm, dist });
 
   const cand: number[] = [];
   for (let b = 0; b < nb; b++) if (!fireAtT0[b] && dist[b] <= reachKm) cand.push(b);

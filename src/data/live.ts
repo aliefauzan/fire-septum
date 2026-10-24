@@ -25,7 +25,7 @@ import { browserEnv, type DataEnv } from './env';
 import { FIRMS_SOURCES, FirmsKeyMissing, type RawHotspot } from './firms';
 import { sampleFireHistory } from './fireHistorySample';
 import { fetchLandCover, fuelFromCover, onPeatSoil } from './landcover';
-import { fetchWeather, fetchWeatherAt } from './openmeteo';
+import { fetchWeather, fetchWeatherAt, type LiveWeather } from './openmeteo';
 import { fetchOsmFuel } from './osm';
 import { fetchPeatMask } from './peat';
 import { fetchElevationGrid } from './terrain';
@@ -46,6 +46,11 @@ export interface LiveOptions {
   drainage?: boolean;
   /** Rates for the partial fuel-break strengths (default DEFAULT_RATES). */
   rates?: Rates;
+  /**
+   * Weather supplied by the caller instead of an Open-Meteo request (batch runs that read cached
+   * ERA5, scripts/ml/). `note` replaces the provenance text.
+   */
+  weather?: LiveWeather & { note?: string };
 }
 
 /** Barriers for one box, ready to lay over the fuel map. */
@@ -122,7 +127,7 @@ export async function buildLiveScenario(o: LiveOptions, env: DataEnv = browserEn
   // Fire history counts only years before the scenario's own, so a fire never counts itself.
   const fireYear = new Date(past ? Date.parse(past.t0) : Date.now()).getUTCFullYear();
   const [weatherR, firesR, elevR, peatR, coverR, barrierR, historyR] = await Promise.allSettled([
-    past ? fetchWeatherAt(o.lat, o.lon, past.t0, horizonH, env.getJson) : fetchWeather(o.lat, o.lon, horizonH, env.getJson),
+    o.weather ? Promise.resolve(o.weather) : past ? fetchWeatherAt(o.lat, o.lon, past.t0, horizonH, env.getJson) : fetchWeather(o.lat, o.lon, horizonH, env.getJson),
     past ? Promise.resolve({ hotspots: past.known, sources: FIRMS_SOURCES, fetchedAt: '' }) : env.firms([geo.west, geo.south, geo.east, geo.north], 2),
     fetchElevationGrid(geo, w, h, 13, env.fetchTile),
     fetchPeatMask(geo, w, h, env.fetchTile),
@@ -277,7 +282,9 @@ export async function buildLiveScenario(o: LiveOptions, env: DataEnv = browserEn
   const fmtPass = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
   const provenance: DataProvenance = {
     kind: 'mixed',
-    weather: past
+    weather: o.weather
+      ? (o.weather.note ?? `Supplied by the caller (${o.weather.url})`)
+      : past
       ? `Open-Meteo historical forecast archive (real), from ${when}`
       : `Open-Meteo hourly forecast (real), fetched ${new Date(weather.fetchedAt).toLocaleString()}`,
     hotspots: hotspotNote,
