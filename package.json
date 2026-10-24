@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "build:api": "esbuild api/_entry.ts --bundle --platform=node --format=esm --target=node20 --outfile=api/index.js --log-level=warning"
+    "build:api": "esbuild api/_entry.ts --bundle --platform=node --format=esm --target=node20 --outfile=api/index.js --log-level=warning",
+    "seal-day": "tsx scripts/seal-day.ts",
+    "attest": "node scripts/attest.mjs",
+    "wallet:testnet": "node scripts/new-testnet-wallet.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",
@@ -24,7 +27,9 @@
     "@vitejs/plugin-react": "^6.1.2",
     "esbuild": "^0.28.2",
     "playwright": "^1.56.1",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
+    "viem": "^2.57.11",
     "vite": "^8.3.4",
     "vitest": "^5.0.5"
   }

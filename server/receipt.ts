@@ -1,7 +1,8 @@
 // Vite dev/preview middleware for run receipts.
 //   GET  /api/receipt/key                   → this instance's Ed25519 public key
 //   POST /api/receipt/sign   {receiptSha256, scheme?} → signature over "<scheme>:<hash>:<signedAt>",
-//                                             scheme 'fireseptum-receipt-v2' (default) or 'sekatapi-receipt-v1'
+//                                             scheme 'fireseptum-receipt-v2' (default), 'sekatapi-receipt-v1',
+//                                             or 'fireseptum-decision-v1' for decision records
 //   POST /api/receipt/anchor {receiptSha256} → OpenTimestamps proof (.ots, base64) for that hash
 // The server only ever sees a 64-hex-digit hash, never the scenario. A signature says
 // "this Fire Septum instance saw this receipt at signedAt"; whether the numbers are right
@@ -37,7 +38,8 @@ const CALENDARS = ['https://a.pool.opentimestamps.org', 'https://b.pool.opentime
 // .ots file header: magic bytes, version 1, then the SHA-256 file-hash op (0x08).
 const OTS_MAGIC = Buffer.from('004f70656e54696d657374616d7073000050726f6f6600bf89e2e884e89294', 'hex');
 
-async function anchor(hex: string): Promise<{ calendar: string; ots: Buffer } | null> {
+/** Submit a SHA-256 digest (hex) to the OpenTimestamps calendars; returns a complete pending .ots proof. */
+export async function anchor(hex: string): Promise<{ calendar: string; ots: Buffer } | null> {
   const digest = Buffer.from(hex, 'hex');
   for (const cal of CALENDARS) {
     try {
@@ -65,6 +67,7 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
 }
 
 const HEX64 = /^[0-9a-f]{64}$/;
+const SCHEMES = ['fireseptum-receipt-v2', 'sekatapi-receipt-v1', 'fireseptum-decision-v1'];
 
 export function receiptHandler(getPem: () => string | undefined) {
   let key: KeyObject | null = null;
@@ -86,7 +89,7 @@ export function receiptHandler(getPem: () => string | undefined) {
       if (path === '/api/receipt/sign') {
         // Version 1 records were made under the first name (SekatApi) and keep their prefix.
         const scheme = String(body.scheme ?? 'fireseptum-receipt-v2');
-        if (scheme !== 'fireseptum-receipt-v2' && scheme !== 'sekatapi-receipt-v1') return send(400, { error: 'unknown signature scheme' });
+        if (!SCHEMES.includes(scheme)) return send(400, { error: 'unknown signature scheme' });
         const signedAt = new Date().toISOString();
         const sig = sign(null, Buffer.from(`${scheme}:${hash}:${signedAt}`), getKey()).toString('base64');
         return send(200, { alg: 'Ed25519', scheme, publicKey, keyId, signedAt, sig });
