@@ -104,6 +104,31 @@ export const SOURCES = {
     full: 'Forster et al. 2021, IPCC AR6 WGI ch. 7, Table 7.15: GWP-100 of non-fossil methane = 27.0 (fossil 29.8).',
     url: 'https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-7/',
   },
+  gfwPeat: {
+    short: 'GFW global peatlands (Gumbricht et al. 2017)',
+    full: 'Global Forest Watch, "Global peatland extent" (gfw_peatlands v20230315), served as keyless map tiles. In the tropics: T. Gumbricht et al., "An expert system model for mapping tropical wetlands and peatlands reveals South America as the largest contributor," Global Change Biology 23(9):3581–3599, 2017 (CIFOR Tropical and Subtropical Wetlands Distribution v2, 232 m). A soil-type map, not a peat-depth or water-table map.',
+    url: 'https://data-api.globalforestwatch.org/dataset/gfw_peatlands',
+  },
+  worldcover: {
+    short: 'ESA WorldCover 2021',
+    full: 'D. Zanaga et al., ESA WorldCover 10 m 2021 v200, 2022 (doi:10.5281/zenodo.7254221), CC BY 4.0. Read through the Microsoft Planetary Computer tile API. Oil palm and acacia plantations are classed as tree cover.',
+    url: 'https://esa-worldcover.org/',
+  },
+  gfas: {
+    short: 'Kaiser et al. 2012 (GFAS)',
+    full: 'J. W. Kaiser et al., "Biomass burning emissions estimated with a global fire assimilation system based on observed fire radiative power," Biogeosciences 9:527–554, 2012. Table 2, conversion factors from fire radiative energy to dry matter, kg/MJ: peat 5.87, tropical forest 0.96, savanna 0.78, agriculture 0.29 (Wooster et al. 2005 universal factor: 0.368). The paper notes that for peat the bulk of combustion is underground, out of the satellite\u2019s view.',
+    url: 'https://doi.org/10.5194/bg-9-527-2012',
+  },
+  ipccFire2006: {
+    short: 'IPCC 2006 Vol. 4, Table 2.5',
+    full: 'IPCC 2006 Guidelines for National Greenhouse Gas Inventories, Vol. 4 (AFOLU), ch. 2, Eq. 2.27 and Table 2.5 (after Andreae and Merlet 2001), g per kg dry matter burnt: tropical forest CO2 1580 ± 90, CH4 6.8 ± 2.0; savanna and grassland CO2 1613 ± 95, CH4 2.3 ± 0.9; agricultural residues CO2 1515 ± 177, CH4 2.7.',
+    url: 'https://www.ipcc-nggip.iges.or.jp/public/2006gl/pdf/4_Volume4/V4_02_Ch2_Generic.pdf',
+  },
+  konecny: {
+    short: 'Konecny et al. 2016',
+    full: 'K. Konecny et al., "Variable carbon losses from recurrent fires in drained tropical peatlands," Global Change Biology 22(4):1469–1480, 2016. Airborne LiDAR before and after fire on drained peat in Central Kalimantan: about 206, 115, 69 and 23 t dry peat/ha consumed by the first, second, third and later fires on the same ground (58% to 7% of the IPCC Tier 1 default), and deeper burns and more repeat fires closer to drainage canals.',
+    url: 'https://doi.org/10.1111/gcb.13186',
+  },
   osm: {
     short: 'OpenStreetMap',
     full: 'OpenStreetMap contributors (ODbL), queried through the Overpass API. Mapped features only; a missing helipad or fire station may simply be unmapped.',
@@ -254,7 +279,7 @@ export const RATE_INFO: Record<keyof Rates, RateInfo> = {
   seedChanceMedium: { label: 'Seeding works (medium cloud potential)', unit: 'share of runs', source: 'bmkgClouds', status: 'assumption', note: 'Placeholder. With low cloud potential the model gives seeding no effect (BMKG: OMC fails when clouds do not form).' },
   dryIceLagH: { label: 'Dry ice: hours until haze opens', unit: 'h', source: 'bnpbDryIce', status: 'secondary', note: 'Visibility improved the same day in Sumsel (Oct 2026).' },
   dryIceClearH: { label: 'Dry ice: hours haze stays open per sortie', unit: 'h', source: 'bnpbDryIce', status: 'assumption', note: 'How long the effect lasted was not reported. BMKG said its effectiveness is not yet established.' },
-  peatBurntTdmHa: { label: 'Peat burnt per hectare of fire', unit: 't dry matter/ha', source: 'ipccWetlands', status: 'verified', note: 'Table 2.6, tropical wildfire on drained peat: 353 (95% CI 170–536). The range mostly reflects burn depth. Counted once per burned peat cell, for the whole fire event, not only the 48 h shown.' },
+  peatBurntTdmHa: { label: 'Peat burnt per hectare of fire', unit: 't dry matter/ha', source: 'ipccWetlands', status: 'verified', note: 'Table 2.6, tropical wildfire on drained peat: 353 (95% CI 170–536), from 1997–2006 El Niño burns of 0.3–0.5 m. Konecny et al. 2016 measured 206, 115, 69 and 23 t/ha for the first, second, third and later fires on the same ground, so on land that has burned before the default is high. The range mostly reflects burn depth. Counted once per burned peat cell, for the whole fire event, not only the 48 h shown.' },
   peatCo2cGkg: { label: 'Peat fire CO2-C emission factor', unit: 'g C/kg', source: 'ipccWetlands', status: 'verified', note: 'Table 2.7, tropical organic soil. Multiplied by 44/12 to give CO2 (1,701 g/kg).' },
   peatCh4Gkg: { label: 'Peat fire CH4 emission factor', unit: 'g/kg', source: 'ipccWetlands', status: 'verified', note: 'Table 2.7, tropical organic soil. Based on one study (Christian et al. 2003).' },
   ch4Gwp100: { label: 'Methane warming potential (100 yr)', unit: '× CO2', source: 'ar6Gwp', status: 'secondary', note: 'Non-fossil methane, AR6 Table 7.15. Value seen quoted (GHG Management Institute; Muñoz 2024, ERL 19:121002), not read in the table itself.' },

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { emissions, fmtTonnes } from '../sim/carbon';
+import { observedEmissions, scenarioNow } from '../sim/frp';
 import type { SimClient } from '../sim/client';
 import {
   buildReceipt, canonical, checkRecord, decode, encode, engineLabel, fromB64, outputsDigest,
@@ -89,7 +90,8 @@ export function RecordPanel(p: {
       const inputs: RunInputs = { scenario: p.scn, actions: p.actions, params: p.params, seeds: p.base.seeds };
       const em = emissions(p.scn.landscape, p.base, p.actions.length ? p.plan : null, p.params.rates, p.scn.horizonH);
       const started = performance.now();
-      const { receipt, receiptSha256 } = await buildReceipt(inputs, p.base, p.plan, em, engineLabel());
+      const obs = observedEmissions(p.scn.landscape, p.scn.hotspots ?? [], scenarioNow(p.scn), p.params.rates);
+      const { receipt, receiptSha256 } = await buildReceipt(inputs, p.base, p.plan, em, engineLabel(), obs);
       const r: RunRecord = { receipt, receiptSha256, inputs: encode(inputs) };
       try { r.signature = await post('/api/receipt/sign', { receiptSha256 }); }
       catch (e) { setMsg(`Not signed: ${e instanceof Error ? e.message : e}`); }
@@ -129,7 +131,7 @@ export function RecordPanel(p: {
   const openFile = async (f: File) => {
     try {
       const r = JSON.parse(await f.text()) as RunRecord;
-      if (r.receipt?.kind !== 'sekatapi.run-receipt') throw new Error('Not a SekatApi record.');
+      if (r.receipt?.kind !== 'sekatapi.run-receipt') throw new Error('Not a Fire Septum record.');
       setRec(r);
       await check(r);
     } catch (e) {
@@ -168,7 +170,7 @@ export function RecordPanel(p: {
             <dt>Record</dt><dd><Hash value={rec.receiptSha256} /></dd>
             <dt>Inputs</dt><dd><code title={rec.receipt.inputsSha256}>{short(rec.receipt.inputsSha256)}</code></dd>
             <dt>Outputs</dt><dd><code title={rec.receipt.outputsSha256}>{short(rec.receipt.outputsSha256)}</code> · {rec.receipt.runs} runs</dd>
-            <dt>Result</dt><dd>{res.burnedHa.plan} ha burned{rec.receipt.actions ? `, ${res.savedHa.mean} ha saved` : ''}{res.tco2e.avoided !== null ? `, ${fmtTonnes(res.tco2e.avoided)} t CO₂e less (model estimate)` : `, ${fmtTonnes(res.tco2e.base)} t CO₂e (model estimate)`}</dd>
+            <dt>Result</dt><dd>{res.burnedHa.plan} ha burned{rec.receipt.actions ? `, ${res.savedHa.mean} ha saved` : ''}{res.tco2e.avoided !== null ? `, ${fmtTonnes(res.tco2e.avoided)} t CO₂e less (model estimate)` : `, ${fmtTonnes(res.tco2e.base)} t CO₂e (model estimate)`}{res.observed ? `; satellites had seen ≈ ${fmtTonnes(res.observed.tco2e)} t CO₂e in the ${res.observed.windowH} h before` : ''}</dd>
             <dt>Signed</dt><dd>{rec.signature ? <>{new Date(rec.signature.signedAt).toLocaleString()} · key <code>{rec.signature.keyId}</code></> : 'No'}</dd>
             <dt>Bitcoin</dt><dd>{rec.anchor ? <>Submitted {new Date(rec.anchor.submittedAt).toLocaleString()}. Confirmed in a block within a few hours.</> : 'Not timestamped'}</dd>
           </dl>

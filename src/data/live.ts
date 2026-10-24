@@ -1,22 +1,27 @@
 // Builds a Scenario from real data around a point:
-//   weather  — Open-Meteo hourly forecast (real)
-//   hotspots — NASA FIRMS VIIRS detections (real, needs FIRMS_MAP_KEY on the server)
-//   terrain  — AWS Terrain Tiles (real)
-//   fuel     — SYNTHETIC unless the user edits zones (no land-cover layer yet)
-import { FUEL_INDEX } from '../sim/fuels';
+//   weather    — Open-Meteo hourly forecast (real)
+//   hotspots   — NASA FIRMS VIIRS detections (real, needs FIRMS_MAP_KEY on the server)
+//   terrain    — AWS Terrain Tiles (real)
+//   peat soil  — Global Forest Watch global peatland layer (real)
+//   land cover — ESA WorldCover 2021 (real), with OpenStreetMap water, roads and land use on top
+//   fuel       — SYNTHETIC zone defaults only where those layers fail or have no data
+import { FUEL_INDEX, FUEL_LIST } from '../sim/fuels';
 import { buildZoneIndex, burnDisc, emptyState, gridZones, igniteDisc } from '../sim/landscape';
 import { DEFAULT_PARAMS } from '../sim/model';
 import { fbm } from '../sim/rng';
 import { CELL_M, GRID } from '../sim/scenarios';
-import type { FuelId, Hotspot, Landscape, Scenario, Zone } from '../sim/types';
+import type { DataProvenance, FuelId, Hotspot, Landscape, Scenario, Zone } from '../sim/types';
 import { FirmsKeyMissing, fetchHotspots, type RawHotspot } from './firms';
+import { fetchLandCover, fuelFromCover, onPeatSoil } from './landcover';
 import { fetchWeather, fetchWeatherAt } from './openmeteo';
 import { fetchOsmFuel } from './osm';
+import { fetchPeatMask } from './peat';
 import { fetchElevationGrid } from './terrain';
 
 export interface LiveOptions {
   lat: number;
   lon: number;
+  /** Zone defaults used only where the peat and land-cover layers have nothing. */
   zoneFuels?: FuelId[];
   horizonH?: number;
   /** Hand-placed ignitions (cell coords) when FIRMS is unavailable or empty. */
@@ -36,6 +41,8 @@ export interface LiveBuild {
   warnings: string[];
 }
 
+const pct = (x: number) => `${Math.round(x * 100)}%`;
+
 export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
   const horizonH = o.horizonH ?? 48;
   const geo = bboxAround(o.lat, o.lon);
@@ -43,11 +50,13 @@ export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
   const w = GRID, h = GRID;
 
   const past = o.past;
-  const [weatherR, firesR, elevR, osmR] = await Promise.allSettled([
+  const [weatherR, firesR, elevR, osmR, peatR, coverR] = await Promise.allSettled([
     past ? fetchWeatherAt(o.lat, o.lon, past.t0, horizonH) : fetchWeather(o.lat, o.lon, horizonH),
     past ? Promise.resolve({ hotspots: past.known, sources: ['VIIRS_SNPP_NRT', 'VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT'], fetchedAt: '' }) : fetchHotspots([geo.west, geo.south, geo.east, geo.north], 2),
     fetchElevationGrid(geo, w, h),
     fetchOsmFuel(geo, w, h),
+    fetchPeatMask(geo, w, h),
+    fetchLandCover(geo, w, h),
   ]);
   if (weatherR.status === 'rejected') throw new Error(`Weather unavailable: ${weatherR.reason}`);
   const weather = weatherR.value;
@@ -75,29 +84,54 @@ export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
 
   // 3×3 zones (A–I, row-major from the north-west): a real cluster usually spans the
   // centre, which leaves unburned outer zones for the recommender to protect.
-  const fuels = o.zoneFuels ?? ['peat', 'shrub', 'peat', 'shrub', 'peat', 'shrub', 'peat', 'shrub', 'peat'];
-  const zones: Zone[] = gridZones(w, h, 3, 3, fuels).map((z) => ({ ...z, name: `Zone ${z.id}` }));
+  const zoneFuels = o.zoneFuels ?? ['peat', 'shrub', 'peat', 'shrub', 'peat', 'shrub', 'peat', 'shrub', 'peat'];
+  const zones: Zone[] = gridZones(w, h, 3, 3, zoneFuels).map((z) => ({ ...z, name: `Zone ${z.id}` }));
   const fuel = new Uint8Array(w * h);
   const zoneOf = buildZoneIndex(w, h, zones);
   const seed = Math.round(o.lat * 1000) ^ Math.round(o.lon * 1000);
+  const peat = peatR.status === 'fulfilled' ? peatR.value : null;
+  const cover = coverR.status === 'fulfilled' && coverR.value.known > 0 ? coverR.value : null;
+  let synthetic = 0;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const k = y * w + x;
-    let id: FuelId = zones[zoneOf[k]].fuel;
-    if ((id === 'shrub' || id === 'peat') && fbm(x / 9, y / 9, seed) > 0.68) id = 'grass';
+    const onPeat = peat ? peat.peat[k] === 1 : false;
+    let id: FuelId | null = cover ? fuelFromCover(cover.cls[k], onPeat) : null;
+    if (!id) {
+      // Zone default with a little texture, bent to the peat mask when there is one.
+      id = zones[zoneOf[k]].fuel;
+      if ((id === 'shrub' || id === 'peat') && fbm(x / 9, y / 9, seed) > 0.68) id = 'grass';
+      if (peat) id = onPeatSoil(id, onPeat);
+      synthetic++;
+    }
     fuel[k] = FUEL_INDEX[id];
   }
-  // Real barriers and land use from OpenStreetMap where mapped.
-  let fuelNote = 'SYNTHETIC fuel map (zone types editable)';
+  const notes: string[] = [];
+  if (peat) notes.push(`Peat soil: Global Forest Watch peatland map (real), ${pct(peat.share)} of cells`);
+  else { notes.push('Peat soil: SYNTHETIC (peat map unavailable)'); warnings.push('The peat map could not be loaded, so the emission numbers are illustrative only.'); }
+  if (cover) notes.push(`Land cover: ESA WorldCover 2021 (real), ${pct(cover.known)} of cells${synthetic ? `; ${pct(synthetic / (w * h))} SYNTHETIC` : ''}`);
+  else { notes.push('Land cover: SYNTHETIC zone types'); warnings.push(coverR.status === 'rejected' ? 'Land cover tiles could not be loaded: vegetation types are synthetic.' : 'No land-cover data here: vegetation types are synthetic.'); }
+
+  // Real barriers and land use from OpenStreetMap where mapped, made to agree with the peat mask.
   if (osmR.status === 'fulfilled' && osmR.value.features > 0) {
     let mapped = 0;
-    osmR.value.fuel.forEach((f, k) => { if (f) { fuel[k] = FUEL_INDEX[f]; mapped++; } });
-    fuelNote = `OpenStreetMap water/roads/land use on ${Math.round((mapped / (w * h)) * 100)}% of cells (${osmR.value.features} features); rest SYNTHETIC`;
+    osmR.value.fuel.forEach((f, k) => { if (f) { fuel[k] = FUEL_INDEX[peat ? onPeatSoil(f, peat.peat[k] === 1) : f]; mapped++; } });
+    notes.push(`OpenStreetMap water/roads/land use on ${pct(mapped / (w * h))} of cells (${osmR.value.features} features)`);
   } else {
-    warnings.push(osmR.status === 'rejected' ? 'OpenStreetMap (Overpass) unavailable: rivers and roads are not in the fuel map.' : 'No OpenStreetMap water/land-use features here: fuel map is fully synthetic.');
+    warnings.push(osmR.status === 'rejected' ? 'OpenStreetMap (Overpass) unavailable: rivers and roads are not in the fuel map.' : 'No OpenStreetMap water/land-use features here.');
   }
   // Sea level cells from the DEM are water too.
   if (elevR.status === 'fulfilled') {
     for (let k = 0; k < w * h; k++) if (elev[k] <= 0.5) fuel[k] = FUEL_INDEX.water;
+  }
+  // Each zone is described by its most common burnable fuel (the recommender reads zone.fuel).
+  for (const z of zones) {
+    const count = new Map<FuelId, number>();
+    for (let y = z.y0; y < z.y1; y++) for (let x = z.x0; x < z.x1; x++) {
+      const f = FUEL_LIST[fuel[y * w + x]];
+      if (f.burnable) count.set(f.id, (count.get(f.id) ?? 0) + 1);
+    }
+    const top = [...count.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (top) z.fuel = top[0];
   }
 
   const l: Landscape = { w, h, cellM: CELL_M, fuel, elev, zoneOf, zones, geo };
@@ -124,6 +158,16 @@ export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
   const when = past ? `${past.t0.slice(0, 16).replace('T', ' ')} UTC` : '';
   const lastPass = raw.map((r) => r.acquired).sort().at(-1);
   const fmtPass = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
+  const provenance: DataProvenance = {
+    kind: 'mixed',
+    weather: past
+      ? `Open-Meteo historical forecast archive (real), from ${when}`
+      : `Open-Meteo hourly forecast (real), fetched ${new Date(weather.fetchedAt).toLocaleString()}`,
+    hotspots: hotspotNote,
+    fuel: `${notes.join('. ')}. Terrain: ${terrainNote}`,
+    peatMap: peat ? 'real' : 'synthetic',
+    fetchedAt: weather.fetchedAt,
+  };
   return {
     warnings,
     scenario: {
@@ -132,17 +176,9 @@ export async function buildLiveScenario(o: LiveOptions): Promise<LiveBuild> {
       description: past
         ? `Forecast made as if it were ${when}, using only data available then. The rings are what satellites detected in the next ${past.windowH} h.`
         : lastPass
-          ? `Latest satellite pass ${fmtPass(lastPass)}. Live weather and terrain, 6.4 × 6.4 km.`
-          : `No satellite detections in the last 48 h. Live weather and terrain, 6.4 × 6.4 km.`,
-      provenance: {
-        kind: 'mixed',
-        weather: past
-          ? `Open-Meteo historical forecast archive (real), from ${when}`
-          : `Open-Meteo hourly forecast (real), fetched ${new Date(weather.fetchedAt).toLocaleString()}`,
-        hotspots: hotspotNote,
-        fuel: `${fuelNote}. Terrain: ${terrainNote}`,
-        fetchedAt: weather.fetchedAt,
-      },
+          ? `Latest satellite pass ${fmtPass(lastPass)}. Live weather, terrain, peat and land cover, 6.4 × 6.4 km.`
+          : `No satellite detections in the last 48 h. Live weather, terrain, peat and land cover, 6.4 × 6.4 km.`,
+      provenance,
       landscape: l,
       weather: weather.hours,
       init,

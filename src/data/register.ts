@@ -1,5 +1,6 @@
 // Issue and score pre-registered forecasts (see src/sim/register.ts).
 import { emissions } from '../sim/carbon';
+import { observedEmissions, scenarioNow } from '../sim/frp';
 import { scoreHindcast } from '../sim/hindcast';
 import { DEFAULT_PARAMS } from '../sim/model';
 import { buildReceipt, checkRecord, decode, encode, engineLabel, outputsDigest, type RunInputs, type RunRecord } from '../sim/receipt';
@@ -40,7 +41,8 @@ export async function issueForecast(lat: number, lon: number, rule: string, run:
   const base = await run(scenario, params);
   const inputs: RunInputs = { scenario, actions: [], params, seeds: base.seeds };
   const em = emissions(scenario.landscape, base, null, params.rates, scenario.horizonH);
-  const { receipt, receiptSha256 } = await buildReceipt(inputs, base, base, em, engineLabel());
+  const obs = observedEmissions(scenario.landscape, scenario.hotspots, scenarioNow(scenario), params.rates);
+  const { receipt, receiptSha256 } = await buildReceipt(inputs, base, base, em, engineLabel(), obs);
   const record: RunRecord = { receipt, receiptSha256, inputs: encode(inputs) };
   record.signature = await post('/api/receipt/sign', { receiptSha256 });
   // A forecast without a timestamp proves nothing about when it was made, so this must succeed.

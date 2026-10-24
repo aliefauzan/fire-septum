@@ -8,6 +8,7 @@
 // unchanged, at that time. No wallet, token or smart contract is involved.
 import { pairedSaving } from './ensemble';
 import type { Emissions } from './carbon';
+import type { ObservedEmissions } from './frp';
 import type { Action, EnsembleResult, Scenario, SimParams } from './types';
 
 type Typed = Uint8Array | Uint16Array | Float32Array;
@@ -105,6 +106,8 @@ export interface Receipt {
     burnedHa: { base: number; plan: number };
     savedHa: { mean: number; p10: number; p90: number; pBetter: number };
     tco2e: { base: number; plan: number | null; avoided: number | null; avoidedP10: number | null; avoidedP90: number | null; perHa: number };
+    /** Emissions the satellites had already seen when the record was made (FRP method), if there were detections. */
+    observed?: { tco2e: number; freMJ: number; detections: number; passes: number; windowH: number; method: string };
   };
   /** Browser engine that produced the outputs; floating-point maths may differ between engines. */
   engine: string;
@@ -142,7 +145,7 @@ export const signedMessage = (receiptSha256: string, signedAt: string) => `sekat
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
 
-export async function buildReceipt(inputs: RunInputs, base: EnsembleResult, plan: EnsembleResult, em: Emissions, engine: string): Promise<{ receipt: Receipt; receiptSha256: string }> {
+export async function buildReceipt(inputs: RunInputs, base: EnsembleResult, plan: EnsembleResult, em: Emissions, engine: string, obs?: ObservedEmissions | null): Promise<{ receipt: Receipt; receiptSha256: string }> {
   const s = pairedSaving(base, plan);
   const hasPlan = inputs.actions.length > 0;
   const receipt: Receipt = {
@@ -166,6 +169,7 @@ export async function buildReceipt(inputs: RunInputs, base: EnsembleResult, plan
         avoidedP90: hasPlan && em.avoided ? round(em.avoided.p90, 0) : null,
         perHa: round(em.perHa, 1),
       },
+      ...(obs ? { observed: { tco2e: round(obs.tco2e, 0), freMJ: round(obs.freMJ, 0), detections: obs.detections, passes: obs.passes, windowH: obs.windowH, method: 'VIIRS FRP held to next pass (max 12 h) × GFAS β × IPCC EF' } } : {}),
     },
     engine,
   };

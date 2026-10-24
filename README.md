@@ -150,11 +150,15 @@ Assumptions include helicopter speed with a bucket, dip/drop time, bucket size, 
 | Weather (hourly wind, RH, temperature, rain, 72 h rain history) | [Open-Meteo](https://open-meteo.com) | Real, no key |
 | Active fires | [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov) VIIRS S-NPP, NOAA-20 and NOAA-21 NRT, last 48 h | Real, needs a free `FIRMS_MAP_KEY` |
 | Elevation | [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Terrarium) | Real |
+| Peat soil | [Global Forest Watch global peatlands](https://data-api.globalforestwatch.org/dataset/gfw_peatlands) (tropics: Gumbricht et al. 2017, CIFOR, 232 m), keyless PNG tiles | Real |
+| Land cover | [ESA WorldCover 2021](https://esa-worldcover.org/) 10 m, through the Microsoft Planetary Computer tile API, keyless | Real |
 | Rivers, canals, roads, settlements, land use | OpenStreetMap via Overpass | Real where mapped. Overpass is often at capacity, so results are cached |
-| Fuel type where OSM has nothing | Synthetic per zone | **Synthetic** |
+| Fuel type where the layers above fail | Synthetic per zone | **Synthetic**, and the UI says so |
 | Basemap | Esri World Imagery | Real imagery, display only |
 
-Live scenarios use a 3 × 3 zone grid (A–I), because a real fire cluster usually spans the centre and the outer zones are what can still be protected.
+Live scenarios use a 3 × 3 zone grid (A–I), because a real fire cluster usually spans the centre and the outer zones are what can still be protected. Each zone is named after its most common fuel.
+
+**How the fuel map is made** (`src/data/live.ts`, `src/data/landcover.ts`): every cell takes its WorldCover class and its peat-mask bit. On peat soil, tree cover is *peat swamp forest* and every other burnable cover is *degraded peat shrub* (cropland included: on Kalimantan peat it is mostly dryland plots and fallow that burn), so the emission count follows the soil. Off peat, tree cover is *plantation* (oil palm and acacia read as trees in WorldCover), cropland and herbaceous wetland are *wet farmland*, the rest is *grass*. OpenStreetMap water, roads, settlements and land use go on top, bent to the peat mask the same way. Sea-level DEM cells are water.
 
 *Find active fires* scans all of Kalimantan or Sumatra in FIRMS, groups detections into roughly 6 km clusters, and loads the area around the cluster you pick. Detections from the last 24 h are placed as burning, each as a disc the size of a 375 m VIIRS pixel. Older detections are placed as burned scar.
 
@@ -162,7 +166,8 @@ Live scenarios use a 3 × 3 zone grid (A–I), because a real fire cluster usual
 
 - **Barely calibrated against Indonesian fire records.** Only τ was fitted, on 6 Kalimantan events (see Validation). The fuel parameters are heuristics. The Alexandridis constants were fitted to a Mediterranean island.
 - **Peat is simplified.** Real peat fires burn underground for weeks and come back to the surface. Here peat is a long-burning cell, and the model has no depth or water-table term.
-- **The fuel and peat map is synthetic** outside OSM-mapped features, including in every hindcast and register event so far. This is the biggest limit on the emission numbers. Candidate sources checked but not yet integrated: the Ministry of Agriculture 1:50,000 peat map (2019, redistributed by Trase under CC BY 4.0) and the IIASA harmonized peatland dataset v0.1 (Zenodo, doi:10.5281/zenodo.6998052). Neither is served as browser-ready tiles, so it needs a preprocessing step.
+- **The peat map says where peat is, not how deep it burns.** The Global Forest Watch layer is a soil-type map at 232 m. Burn depth still uses the IPCC default (see [Emissions](#emissions-peat-carbon) and [docs/burn-depth.md](docs/burn-depth.md)). Register entries and the recorded event sealed before the peat layer existed keep their synthetic fuel maps, because the seal covers the inputs as they were; the UI labels those tonnes illustrative.
+- **WorldCover cannot tell a plantation from a forest**, and OpenStreetMap canals are patchy, so the fuel types are real at the class level and heuristic below it.
 - **FIRMS geolocation is coarse.** VIIRS pixels are about 375 m and satellites pass a few times a day. Ignition positions are not jittered between runs yet; the research notes recommend doing that.
 - **Suppression effects use published rates where they exist and labelled placeholders where they don't.** The recommender's ranking is meaningful *relative to these rates*. The flame-length estimate uses the model's uncalibrated spread rate, so treat it as a class rather than a measurement.
 - **Validated only roughly.** On 12 hindcast fires the model is only slightly better than a distance-only forecast (CSI 0.22 vs 0.17), and on held-out Sumatra the margin rests on 24 observed squares from about 3 distinct fires. The probabilities are not calibrated. See [Validation](#validation-hindcasts-against-nasa-firms). The [forecast register](#pre-registered-forecasts-the-forecast-register) exists to settle this prospectively.
@@ -186,10 +191,19 @@ How the numbers are reported:
 - **The count is per fire event.** The 353 t/ha is the whole burn, not only the 48 h shown. This matches the event-based Tier 1 method, but it assumes each burned peat cell burns to a typical depth.
 - **Every emission number is labelled as a model estimate.** It is "if the forecast is right", not a measurement and not a carbon credit. When the peat map is synthetic, the UI says the number is illustrative only. A simulated difference between two plans is not an avoided emission anyone could claim.
 - **Two kinds of uncertainty are shown separately.** The 10–90% range comes from the 40 fire-spread runs. The IPCC 95% interval of peat burnt (×0.48 to ×1.52) mostly reflects burn depth.
+- **Burn depth is the open problem.** The 353 t/ha comes from first-time El Niño fires of 0.3–0.5 m. Konecny et al. 2016 measured about 206, 115, 69 and 23 t/ha for the first, second, third and later fires on the same ground in Central Kalimantan, so on land that has burned before the default is 2–5× high. [docs/burn-depth.md](docs/burn-depth.md) sets out what a per-cell depth would need (fire history from the FIRMS archive first).
 - **Avoided emissions are paired.** Each run with the plan is compared with the same run without it (common random numbers).
 - **The factors are editable** under *Resources → Rates and limits*, like every other rate.
 
-In live mode the peat map is still synthetic outside OpenStreetMap features. The emissions are therefore only as good as the fuel map. The GFW / KLHK peat map is the next step.
+In live mode the peat soil comes from the Global Forest Watch peatland map and the vegetation from ESA WorldCover, so the "illustrative" label is gone there; the synthetic exercises keep it.
+
+### Already released, by satellite (FRP method)
+
+Next to the forecast, the outcome card shows what the satellites have already seen burn in the last 48 h (`src/sim/frp.ts`). This is an estimate from observations, independent of the spread model and of the burn-depth default:
+
+`FRE (MJ) = Σ over passes of FRP (MW) × hold (s)`, each VIIRS pass (one satellite, 10-minute bin) held until the next pass and for at most 12 h; `dry matter = FRE × β`, with the GFAS conversion factors by cover (Kaiser et al. 2012, Table 2: peat 5.87, tropical forest 0.96, savanna 0.78, agriculture 0.29 kg/MJ); `CO₂e = dry matter × EF`, peat with the Wetlands Supplement factors above and other covers with IPCC 2006 Vol. 4, Table 2.5 (tropical forest CO₂ 1580, CH₄ 6.8; savanna 1613, 2.3; agricultural residues 1515, 2.7 g/kg). A detection centred on a road or canal cell is counted as the fuel around it, since a VIIRS pixel is 375 m across.
+
+Caveats: smouldering peat radiates little to the sky, so GFAS fits a large peat factor to burned-area inventories and the per-fire error is wide; passes without detections (cloud, haze) are invisible, so the number is a floor on peat. It is stored in the run record as `results.observed` with its method string.
 
 ## Trust: signed, reproducible run records
 

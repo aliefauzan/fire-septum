@@ -1,6 +1,6 @@
 import type { Rates } from './doctrine';
 
-// Core data types for the SekatApi wildfire decision-support simulator.
+// Core data types for the Fire Septum wildfire decision-support simulator.
 // Grid convention: cell index k = y * w + x, x grows east, y grows south.
 
 export type FuelId = 'grass' | 'shrub' | 'peat' | 'plantation' | 'agri' | 'water' | 'settlement';
@@ -202,6 +202,8 @@ export interface DataProvenance {
   weather: string;
   hotspots: string;
   fuel: string;
+  /** Whether the peat soil map behind the emission numbers is real. Unset in older records: read `fuel`. */
+  peatMap?: 'real' | 'synthetic';
   fetchedAt?: string;
 }
 
