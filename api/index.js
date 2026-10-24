@@ -683,7 +683,7 @@ function decisionsHandler(req, res, next) {
 }
 
 // server/register.ts
-import { createHash as createHash4 } from "node:crypto";
+import { createHash as createHash4, timingSafeEqual } from "node:crypto";
 import { join as join7 } from "node:path";
 
 // server/store.ts
@@ -867,7 +867,13 @@ function checkEntry(e) {
   if (createHash4("sha256").update(canonical3(e.record.receipt)).digest("hex") !== hash) return "receipt does not match its hash";
   return null;
 }
-function makeRegisterHandler(getStore) {
+function hasBearer(req, token) {
+  if (!token) return false;
+  const got = Buffer.from(String(req.headers.authorization ?? ""));
+  const want = Buffer.from(`Bearer ${token}`);
+  return got.length === want.length && timingSafeEqual(got, want);
+}
+function makeRegisterHandler(getStore, getToken = () => process.env.REGISTER_TOKEN) {
   let store = null;
   return (req, res, next) => {
     const path = (req.url ?? "").split("?")[0];
@@ -882,6 +888,10 @@ function makeRegisterHandler(getStore) {
       if (req.method === "GET" && path === "/api/register") return send(200, { entries: await store.list() });
       if (req.method !== "POST") return send(405, { error: "method not allowed" });
       if (store.mode === "read-only") return send(405, { error: READ_ONLY_ERROR });
+      if (store.mode !== "fs") {
+        if (path === "/api/register/score") return send(405, { error: "Scores are computed and published by the daily register job, not accepted over HTTP." });
+        if (!hasBearer(req, getToken())) return send(401, { error: "Hosted register writes need the operator token." });
+      }
       const body = await readJson4(req);
       if (path === "/api/register") {
         const e = body.entry;

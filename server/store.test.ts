@@ -82,3 +82,23 @@ describe('write-once store: Vercel Blob (in-memory fake)', () => {
     expect((await c.addScore(H('d'), { csi: 2 })).status).toBe(409);
   });
 });
+
+describe('hosted register writes need the operator token', () => {
+  const call = async (path: string, auth?: string) => {
+    const { makeRegisterHandler, registerCollection } = await import('./register');
+    const dir = mkdtempSync(join(tmpdir(), 'reg-auth-'));
+    const handler = makeRegisterHandler(() => registerCollection({ root: dir, readOnly: true, blob: memoryBlob() }), () => 'secret');
+    const req = Object.assign([] as unknown as import('node:http').IncomingMessage, { url: path, method: 'POST', headers: auth ? { authorization: auth } : {}, body: { entry: {}, receiptSha256: 'a'.repeat(64), score: {} } });
+    const out: { status?: number; body?: string } = {};
+    await new Promise<void>((done) => {
+      const res = { statusCode: 0, setHeader() {}, end(b: string) { out.status = res.statusCode; out.body = b; done(); } };
+      handler(req, res as unknown as import('node:http').ServerResponse, () => done());
+    });
+    rmSync(dir, { recursive: true, force: true });
+    return out;
+  };
+  it('refuses a new entry without the token', async () => expect((await call('/api/register')).status).toBe(401));
+  it('refuses a wrong token', async () => expect((await call('/api/register', 'Bearer nope')).status).toBe(401));
+  it('passes the auth check with the token (then validates the entry)', async () => expect((await call('/api/register', 'Bearer secret')).status).toBe(400));
+  it('never accepts scores over HTTP when hosted', async () => expect((await call('/api/register/score', 'Bearer secret')).status).toBe(405));
+});

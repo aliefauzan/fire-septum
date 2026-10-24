@@ -4,9 +4,12 @@
 //   POST /api/register/score  {receiptSha256, score} → attach the score once
 // Hosted (read-only filesystem) the register is the bundled files, plus Vercel Blob when
 // BLOB_READ_WRITE_TOKEN is set; the write-once rules are the same (server/store.ts).
+// Write-once means a forged entry or score could never be removed, so hosted writes need the
+// operator's REGISTER_TOKEN ("Authorization: Bearer <token>"), and scores are never accepted
+// over HTTP when hosted: scripts/register-daily.ts computes them itself and commits them.
 // Entries are plain JSON files, so the register can be published with the code and
 // anyone can re-check it: the receipt hash, the signature, the .ots proof and the re-run.
-import { createHash } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join } from 'node:path';
 import type { Plugin } from 'vite';
@@ -61,7 +64,15 @@ export function checkEntry(e: StoredEntry | undefined): string | null {
   return null;
 }
 
-export function makeRegisterHandler(getStore: () => Collection<StoredEntry>) {
+/** True when the request carries "Bearer <token>" for a configured, non-empty token. */
+export function hasBearer(req: IncomingMessage, token: string | undefined): boolean {
+  if (!token) return false;
+  const got = Buffer.from(String(req.headers.authorization ?? ''));
+  const want = Buffer.from(`Bearer ${token}`);
+  return got.length === want.length && timingSafeEqual(got, want);
+}
+
+export function makeRegisterHandler(getStore: () => Collection<StoredEntry>, getToken: () => string | undefined = () => process.env.REGISTER_TOKEN) {
   let store: Collection<StoredEntry> | null = null;
   return (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     const path = (req.url ?? '').split('?')[0];
@@ -73,6 +84,10 @@ export function makeRegisterHandler(getStore: () => Collection<StoredEntry>) {
       if (req.method === 'GET' && path === '/api/register') return send(200, { entries: await store.list() });
       if (req.method !== 'POST') return send(405, { error: 'method not allowed' });
       if (store.mode === 'read-only') return send(405, { error: READ_ONLY_ERROR });
+      if (store.mode !== 'fs') {
+        if (path === '/api/register/score') return send(405, { error: 'Scores are computed and published by the daily register job, not accepted over HTTP.' });
+        if (!hasBearer(req, getToken())) return send(401, { error: 'Hosted register writes need the operator token.' });
+      }
       const body = await readJson(req);
       if (path === '/api/register') {
         const e = body.entry as StoredEntry | undefined;
