@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { KALIMANTAN_BBOX, SUMATRA_BBOX, clusterHotspots, fetchHotspots } from '../data/firms';
-import { issueForecast, listRegister, scoreEntry, type Runner } from '../data/register';
+import { issueForecast, scoreEntry, type Runner } from '../data/register';
+import { listRegister } from '../data/registerList';
 import { canonical, decode, fromB64, type RunInputs } from '../sim/receipt';
 import { dueAt, summarize, type RegisterEntry } from '../sim/register';
 import { BatchStatus } from './Trust';
@@ -70,6 +71,7 @@ export function RegisterPanel({ run, onOpen }: { run: Runner; onOpen: (r: RunInp
           Each forecast is sealed, signed and timestamped on Bitcoin before the satellites see what happens next.
           After 24 h it is scored against NASA FIRMS. Every forecast stays on the board, good or bad: a hindcast can be tuned after the fact, this cannot.
           Each day's records also go into one Merkle batch whose root is timestamped on Bitcoin and attested on Base; the proof for each forecast is checked here.
+          {' '}<a href="#/scoreboard">Open the scoreboard</a> to compare it with the reference models and other submitted models.
         </p>
         {s && (
           <dl className="kv">

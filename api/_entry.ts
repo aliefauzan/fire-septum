@@ -4,7 +4,9 @@
 // handlers the Vite dev server uses (server/), so hosted and local behave alike.
 //   /api/firms, /api/osm, /api/osm-resources   live data (needs FIRMS_MAP_KEY for hotspots)
 //   /api/receipt/key|sign|anchor               Ed25519 signing (RECEIPT_ED25519_KEY) and OpenTimestamps
-//   /api/register[/score]                      forecast register (read-only when hosted)
+//   /api/register[/score]                      forecast register (read-only when hosted, unless BLOB_READ_WRITE_TOKEN is set)
+//   /api/submissions                           open forecast submissions (schema/forecast-v1.json; needs Blob when hosted)
+//   /api/scoreboard                            compact index of register + submissions for the scoreboard page
 //   /api/decisions[/cosign]                    sealed decision records (read-only when hosted)
 //   /api/bmkg, /api/bmkg-fdrs                  BMKG village forecast and fire-danger maps (keyless)
 //   /api/sipongi/*                             SiPongi adapter, 403 unless SIPONGI_PERMISSION=granted
@@ -18,6 +20,8 @@ import { firmsHandler, osmHandler } from '../server/firmsProxy';
 import { receiptHandler } from '../server/receipt';
 import { decisionsHandler } from '../server/decisions';
 import { registerHandler } from '../server/register';
+import { scoreboardHandler } from '../server/scoreboard';
+import { submissionsHandler } from '../server/submissions';
 
 type Handler = (req: IncomingMessage, res: ServerResponse, next: () => void) => void | Promise<void>;
 
@@ -26,6 +30,8 @@ const chain: Handler[] = [
   osmHandler(),
   receiptHandler(() => process.env.RECEIPT_ED25519_KEY),
   registerHandler,
+  submissionsHandler,
+  scoreboardHandler,
   decisionsHandler,
   evidenceHandler,
   bmkgHandler(() => process.env.SIPONGI_PERMISSION),

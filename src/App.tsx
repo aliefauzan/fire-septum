@@ -438,6 +438,7 @@ export default function App() {
             <option value="__pick">Choose another fire…</option>
           </select>
         </div>
+        <a className="chip" href="#/scoreboard" style={{ textDecoration: 'none' }}>Scoreboard</a>
         {!booting && <details className="popover">
           <summary className={`chip ${presetId === 'live' ? 'live' : ''}`}>{dataChip}{warnings.length > 0 && <span className="chip-count" aria-label={`${warnings.length} data notes`}>{warnings.length}</span>}</summary>
           <div className="popover-body">

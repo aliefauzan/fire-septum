@@ -37,45 +37,35 @@ export interface HindcastScore {
   reachKm: number;
 }
 
-export function scoreHindcast(
-  l: Landscape, init: FireState, e: EnsembleResult, observed: Pick<Hotspot, 'x' | 'y'>[], at: number,
-  opts: { block?: number; reachKm?: number } = {},
-): HindcastScore {
-  const B = opts.block ?? 4;
-  const reachKm = opts.reachKm ?? 3;
-  const bw = Math.ceil(l.w / B), bh = Math.ceil(l.h / B), nb = bw * bh;
-  const blockOf = (x: number, y: number) => Math.floor(y / B) * bw + Math.floor(x / B);
+/** Block grid of a cell grid: blocks of `block` × `block` cells, row-major from the north-west corner. */
+export interface BlockGrid {
+  /** Cell grid size and cell edge (m). */
+  w: number;
+  h: number;
+  cellM: number;
+  /** Block edge in cells. */
+  block: number;
+}
 
+const blocksOf = (g: BlockGrid) => {
+  const bw = Math.ceil(g.w / g.block), bh = Math.ceil(g.h / g.block);
+  return { bw, bh, nb: bw * bh, blockOf: (x: number, y: number) => Math.floor(y / g.block) * bw + Math.floor(x / g.block) };
+};
+
+/** Blocks with any cell burning, burned or extinguished at t0 (1) — the "fire at t0" mask. */
+export function blockFireMask(l: Landscape, init: FireState, block = 4): Uint8Array {
+  const { nb, blockOf } = blocksOf({ w: l.w, h: l.h, cellM: l.cellM, block });
   const fireAtT0 = new Uint8Array(nb);
   for (let k = 0; k < init.state.length; k++) {
     const s = init.state[k];
     if (s === Cell.Burning || s === Cell.Burned || s === Cell.Extinguished) fireAtT0[blockOf(k % l.w, Math.floor(k / l.w))] = 1;
   }
+  return fireAtT0;
+}
 
-  // Distance (km) from each block to the nearest block on fire at t0.
-  const blockKm = (B * l.cellM) / 1000;
-  const dist = new Float32Array(nb).fill(Infinity);
-  const fireBlocks: number[] = [];
-  for (let b = 0; b < nb; b++) if (fireAtT0[b]) fireBlocks.push(b);
-  for (let b = 0; b < nb; b++) {
-    const bx = b % bw, by = Math.floor(b / bw);
-    for (const f of fireBlocks) dist[b] = Math.min(dist[b], Math.hypot(bx - (f % bw), by - Math.floor(f / bw)) * blockKm);
-  }
-
-  const obs = new Uint8Array(nb);
-  let newFires = 0;
-  const seen = new Set<number>();
-  for (const h of observed) {
-    const x = Math.round(h.x), y = Math.round(h.y);
-    if (x < 0 || y < 0 || x >= l.w || y >= l.h) continue;
-    const b = blockOf(x, y);
-    if (fireAtT0[b] || seen.has(b)) continue;
-    seen.add(b);
-    if (dist[b] > reachKm) newFires++;
-    else obs[b] = 1;
-  }
-
-  // Share of runs in which each block gets new fire by `at`.
+/** Share of runs in which each block gets new fire by `at` (hours). */
+export function ensembleBlockProbabilities(l: Landscape, e: EnsembleResult, at: number, block = 4): Float32Array {
+  const { nb, blockOf } = blocksOf({ w: l.w, h: l.h, cellM: l.cellM, block });
   const p = new Float32Array(nb);
   const hit = new Uint8Array(nb);
   for (const r of e.runs) {
@@ -84,6 +74,50 @@ export function scoreHindcast(
     for (let b = 0; b < nb; b++) p[b] += hit[b];
   }
   for (let b = 0; b < nb; b++) p[b] /= Math.max(1, e.runs.length);
+  return p;
+}
+
+/** Distance (km) from each block centre to the nearest block on fire at t0 (Infinity when there is none). */
+export function blockDistanceKm(g: BlockGrid, fireAtT0: ArrayLike<number>): Float32Array {
+  const { bw, nb } = blocksOf(g);
+  const blockKm = (g.block * g.cellM) / 1000;
+  const dist = new Float32Array(nb).fill(Infinity);
+  const fireBlocks: number[] = [];
+  for (let b = 0; b < nb; b++) if (fireAtT0[b]) fireBlocks.push(b);
+  for (let b = 0; b < nb; b++) {
+    const bx = b % bw, by = Math.floor(b / bw);
+    for (const f of fireBlocks) dist[b] = Math.min(dist[b], Math.hypot(bx - (f % bw), by - Math.floor(f / bw)) * blockKm);
+  }
+  return dist;
+}
+
+/**
+ * The scoring core: per-block probabilities of new fire against the detections of the window.
+ * Every forecast, the cellular automaton's and any submitted model's, is scored by this one
+ * function (src/sim/forecast.ts scoreForecast). `observed` are detections in the window in
+ * cell coordinates (cell centres at integers).
+ */
+export function scoreBlocks(
+  g: BlockGrid, p: ArrayLike<number>, fireAtT0: ArrayLike<number>, observed: Pick<Hotspot, 'x' | 'y'>[],
+  opts: { reachKm?: number } = {},
+): HindcastScore {
+  const B = g.block;
+  const reachKm = opts.reachKm ?? 3;
+  const { nb, blockOf } = blocksOf(g);
+  const dist = blockDistanceKm(g, fireAtT0);
+
+  const obs = new Uint8Array(nb);
+  let newFires = 0;
+  const seen = new Set<number>();
+  for (const h of observed) {
+    const x = Math.round(h.x), y = Math.round(h.y);
+    if (x < 0 || y < 0 || x >= g.w || y >= g.h) continue;
+    const b = blockOf(x, y);
+    if (fireAtT0[b] || seen.has(b)) continue;
+    seen.add(b);
+    if (dist[b] > reachKm) newFires++;
+    else obs[b] = 1;
+  }
 
   const cand: number[] = [];
   for (let b = 0; b < nb; b++) if (!fireAtT0[b] && dist[b] <= reachKm) cand.push(b);
@@ -117,6 +151,15 @@ export function scoreHindcast(
     distance: { csi: d.csi, pod: d.pod, far: d.far },
     newFires, reachKm,
   };
+}
+
+/** Score an ensemble forecast made at t0 (the cellular automaton) against the detections of (t0, t0 + at]. */
+export function scoreHindcast(
+  l: Landscape, init: FireState, e: EnsembleResult, observed: Pick<Hotspot, 'x' | 'y'>[], at: number,
+  opts: { block?: number; reachKm?: number } = {},
+): HindcastScore {
+  const B = opts.block ?? 4;
+  return scoreBlocks({ w: l.w, h: l.h, cellM: l.cellM, block: B }, ensembleBlockProbabilities(l, e, at, B), blockFireMask(l, init, B), observed, { reachKm: opts.reachKm });
 }
 
 const ratio = (a: number, b: number) => (b > 0 ? a / b : 0);

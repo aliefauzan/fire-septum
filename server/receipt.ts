@@ -33,6 +33,23 @@ function loadKey(pem: string | undefined): KeyObject {
 /** Raw 32-byte Ed25519 public key (the last 32 bytes of its SPKI DER encoding). */
 const rawPublic = (k: KeyObject) => (createPublicKey(k).export({ type: 'spki', format: 'der' }) as Buffer).subarray(-32);
 
+/**
+ * Sign a receipt hash in-process (scripts/register-daily.ts): the same message and the same
+ * answer as POST /api/receipt/sign. Takes an explicit PKCS#8 PEM and never generates a key.
+ */
+export function signReceiptHash(pem: string, receiptSha256: string, scheme = 'fireseptum-receipt-v2') {
+  if (!HEX64.test(receiptSha256)) throw new Error('receiptSha256 must be 64 lowercase hex digits');
+  if (!SCHEMES.includes(scheme)) throw new Error('unknown signature scheme');
+  const key = createPrivateKey(pem.replace(/\\n/g, '\n'));
+  const pub = rawPublic(key);
+  const signedAt = new Date().toISOString();
+  const sig = sign(null, Buffer.from(`${scheme}:${receiptSha256}:${signedAt}`), key).toString('base64');
+  return { alg: 'Ed25519' as const, scheme, publicKey: pub.toString('base64'), keyId: createHash('sha256').update(pub).digest('hex').slice(0, 16), signedAt, sig };
+}
+
+/** The local development key in .cache/ (PEM), if one was generated. */
+export const cachedKeyPem = (): string | undefined => (existsSync(KEY_FILE) ? readFileSync(KEY_FILE, 'utf8') : undefined);
+
 // OpenTimestamps public calendars, tried in order.
 const CALENDARS = ['https://a.pool.opentimestamps.org', 'https://b.pool.opentimestamps.org', 'https://a.pool.eternitywall.com'];
 // .ots file header: magic bytes, version 1, then the SHA-256 file-hash op (0x08).

@@ -2054,5 +2054,725 @@
    "submittedAt": "2026-10-20T16:38:28.410Z",
    "otsB64": "AE9wZW5UaW1lc3RhbXBzAABQcm9vZgC/ieLohOiSlAEIj0jIff+5L+u5Hd5/2p7WkgOf7cwXfKOvrpx8DurYRzfwCDAqWNZCetltCPEgTFrNnVqqA+cAYz/IjITp5bflo9fE2Ve+LCYVTKwHcesI8CCjBSEZNmbjdMy+72RIz6tdmzWHD6EbEnC5tS18gZVDHAjwEIShGg/V7FbMJAwbsS6VPdQI8SCQwNIMf2OINIAXazl0ViSeuqEs8xzPVlkerBRMnLLvFQjwIO+DBaeG8KcpZd1Md+UbisdCiafppwT1pHN3n78Jls4oCPEgXLP6ZUSq0Ih9/07V54OgYgUgH4CyNNy5OBLg7cmO2oYI8QRq15kE8AhT+xus2lfxLACD3+MNLvkMji4taHR0cHM6Ly9hbGljZS5idGMuY2FsZW5kYXIub3BlbnRpbWVzdGFtcHMub3Jn"
   }
+ },
+ "score": {
+  "scoredAt": "2026-10-24T11:45:49.373Z",
+  "reproduced": true,
+  "detections": 77,
+  "result": {
+   "block": 4,
+   "candidates": 174,
+   "observed": 7,
+   "predicted": 41,
+   "hits": 6,
+   "misses": 1,
+   "falseAlarms": 35,
+   "pod": 0.8571428571428571,
+   "far": 0.8536585365853658,
+   "csi": 0.14285714285714285,
+   "brier": 0.15597342041567314,
+   "brierSkill": -3.039564821646638,
+   "distance": {
+    "csi": 0.14285714285714285,
+    "pod": 0.8571428571428571,
+    "far": 0.8536585365853658
+   },
+   "newFires": 0,
+   "reachKm": 3
+  },
+  "benchmark": {
+   "fireAtT0": "0000000000000000000000000000000000000000000000000000000000000000000000010000000000000011111000000000000111110100000001111111111000000011111111110000011111111111000001111111111100000111111111110000011011111011000000001111100000000000001100000000000000000000",
+   "observed": [
+    {
+     "lat": -3.85079,
+     "lon": 115.07249,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 0.62,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.8457,
+     "lon": 115.07323,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 0.88,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84526,
+     "lon": 115.07027,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 0.88,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84452,
+     "lon": 115.10064,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 1.26,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.8419,
+     "lon": 115.08279,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 1.48,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84147,
+     "lon": 115.07983,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 2,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84017,
+     "lon": 115.07105,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 0.88,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83974,
+     "lon": 115.06808,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 1.61,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83899,
+     "lon": 115.09841,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 1.13,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83681,
+     "lon": 115.08355,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 1.88,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83637,
+     "lon": 115.08061,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 2.55,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83595,
+     "lon": 115.07769,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 2.55,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83508,
+     "lon": 115.07182,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 2.21,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83389,
+     "lon": 115.09918,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 1.13,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.82268,
+     "lon": 115.08038,
+     "acquired": "2026-10-20T18:28:00Z",
+     "frp": 0.63,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84643,
+     "lon": 115.09962,
+     "acquired": "2026-10-21T05:25:00Z",
+     "frp": 8,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.836,
+     "lon": 115.0643,
+     "acquired": "2026-10-21T05:25:00Z",
+     "frp": 4.08,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83107,
+     "lon": 115.09747,
+     "acquired": "2026-10-21T05:25:00Z",
+     "frp": 12.1,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83062,
+     "lon": 115.1005,
+     "acquired": "2026-10-21T05:25:00Z",
+     "frp": 34.85,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.82306,
+     "lon": 115.08096,
+     "acquired": "2026-10-21T05:25:00Z",
+     "frp": 3.8,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.82262,
+     "lon": 115.08399,
+     "acquired": "2026-10-21T05:25:00Z",
+     "frp": 3.8,
+     "satellite": "N",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84464,
+     "lon": 115.07161,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 1.1,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84395,
+     "lon": 115.06754,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 1.1,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84372,
+     "lon": 115.101,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 2.19,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84027,
+     "lon": 115.08083,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 2.09,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83958,
+     "lon": 115.07674,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 2.09,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83818,
+     "lon": 115.06853,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 1.83,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83728,
+     "lon": 115.09801,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 2.21,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83451,
+     "lon": 115.08182,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 2.09,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.8338,
+     "lon": 115.07773,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 2.09,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.8331,
+     "lon": 115.07363,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 1.83,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83241,
+     "lon": 115.06958,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 1.83,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83152,
+     "lon": 115.09904,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 1.56,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83102,
+     "lon": 115.06149,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 2.45,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.82227,
+     "lon": 115.07977,
+     "acquired": "2026-10-20T17:07:00Z",
+     "frp": 1.26,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.85168,
+     "lon": 115.07399,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 13.61,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.85113,
+     "lon": 115.07765,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 6.75,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.85057,
+     "lon": 115.08132,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 6.75,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.84882,
+     "lon": 115.06981,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 11.5,
+     "satellite": "N20",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84782,
+     "lon": 115.09964,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 24.27,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.84101,
+     "lon": 115.09865,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 4.94,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.8342,
+     "lon": 115.09762,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 48.68,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.83024,
+     "lon": 115.10078,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 44.08,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.82618,
+     "lon": 115.08142,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 6.58,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.82277,
+     "lon": 115.08092,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 6.58,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.82223,
+     "lon": 115.08458,
+     "acquired": "2026-10-21T05:46:00Z",
+     "frp": 6.58,
+     "satellite": "N20",
+     "confidence": "l"
+    },
+    {
+     "lat": -3.84875,
+     "lon": 115.07594,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.81,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84816,
+     "lon": 115.07212,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.81,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84534,
+     "lon": 115.10004,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 2.32,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84469,
+     "lon": 115.07265,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.81,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.8441,
+     "lon": 115.06881,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 2.43,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84298,
+     "lon": 115.08467,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 3.45,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84186,
+     "lon": 115.10057,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 2.32,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84063,
+     "lon": 115.06934,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 2.09,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83892,
+     "lon": 115.08137,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 3.45,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83839,
+     "lon": 115.1011,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.59,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83833,
+     "lon": 115.07753,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 3.06,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83716,
+     "lon": 115.06989,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 2.09,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83545,
+     "lon": 115.0819,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 3.66,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83486,
+     "lon": 115.07806,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.59,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83432,
+     "lon": 115.09777,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.59,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83428,
+     "lon": 115.07423,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.59,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83252,
+     "lon": 115.06274,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.68,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83081,
+     "lon": 115.07477,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.59,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83022,
+     "lon": 115.07095,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 2.33,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.82445,
+     "lon": 115.07967,
+     "acquired": "2026-10-20T17:52:00Z",
+     "frp": 1.98,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.85387,
+     "lon": 115.07086,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 5.19,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.85109,
+     "lon": 115.07344,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 12.83,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84667,
+     "lon": 115.10023,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 6.34,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.8425,
+     "lon": 115.101,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 17.41,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.84067,
+     "lon": 115.09915,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 6.34,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.8365,
+     "lon": 115.09995,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 17.41,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83466,
+     "lon": 115.0981,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 33.03,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83126,
+     "lon": 115.09447,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 22.66,
+     "satellite": "N21",
+     "confidence": "n"
+    },
+    {
+     "lat": -3.83049,
+     "lon": 115.09892,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 21.98,
+     "satellite": "N21",
+     "confidence": "h"
+    },
+    {
+     "lat": -3.82865,
+     "lon": 115.09709,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 33.03,
+     "satellite": "N21",
+     "confidence": "h"
+    },
+    {
+     "lat": -3.82486,
+     "lon": 115.08265,
+     "acquired": "2026-10-21T06:29:00Z",
+     "frp": 4.48,
+     "satellite": "N21",
+     "confidence": "n"
+    }
+   ],
+   "sources": [
+    "VIIRS_SNPP_NRT",
+    "VIIRS_NOAA20_NRT",
+    "VIIRS_NOAA21_NRT"
+   ],
+   "models": {
+    "fire-septum-ca": {
+     "block": 4,
+     "candidates": 174,
+     "observed": 7,
+     "predicted": 41,
+     "hits": 6,
+     "misses": 1,
+     "falseAlarms": 35,
+     "pod": 0.8571428571428571,
+     "far": 0.8536585365853658,
+     "csi": 0.14285714285714285,
+     "brier": 0.15597342041567314,
+     "brierSkill": -3.039564821646638,
+     "distance": {
+      "csi": 0.14285714285714285,
+      "pod": 0.8571428571428571,
+      "far": 0.8536585365853658
+     },
+     "newFires": 0,
+     "reachKm": 3,
+     "detections": 77
+    },
+    "distance": {
+     "block": 4,
+     "candidates": 174,
+     "observed": 7,
+     "predicted": 46,
+     "hits": 7,
+     "misses": 0,
+     "falseAlarms": 39,
+     "pod": 1,
+     "far": 0.8478260869565217,
+     "csi": 0.15217391304347827,
+     "brier": 0.1525282485220583,
+     "brierSkill": -2.9503381114232994,
+     "distance": {
+      "csi": 0.15217391304347827,
+      "pod": 1,
+      "far": 0.8478260869565217
+     },
+     "newFires": 0,
+     "reachKm": 3,
+     "detections": 77
+    },
+    "climatology": {
+     "block": 4,
+     "candidates": 174,
+     "observed": 7,
+     "predicted": 0,
+     "hits": 0,
+     "misses": 7,
+     "falseAlarms": 0,
+     "pod": 0,
+     "far": 0,
+     "csi": 0,
+     "brier": 0.047853139545929485,
+     "brierSkill": -0.23935128562237895,
+     "distance": {
+      "csi": 0,
+      "pod": 0,
+      "far": 1
+     },
+     "newFires": 0,
+     "reachKm": 3,
+     "detections": 77
+    }
+   }
+  }
  }
 }

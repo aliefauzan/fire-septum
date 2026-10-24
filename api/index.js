@@ -684,10 +684,153 @@ function decisionsHandler(req, res, next) {
 
 // server/register.ts
 import { createHash as createHash4 } from "node:crypto";
-import { mkdirSync as mkdirSync5, readFileSync as readFileSync6, readdirSync as readdirSync3, writeFileSync as writeFileSync5 } from "node:fs";
-import { join as join6 } from "node:path";
-var DIR3 = join6(process.cwd(), "data", "register");
+import { join as join7 } from "node:path";
+
+// server/store.ts
+import { existsSync as existsSync5, mkdirSync as mkdirSync5, readFileSync as readFileSync6, readdirSync as readdirSync3, statSync, writeFileSync as writeFileSync5 } from "node:fs";
+import { dirname as dirname2, join as join6 } from "node:path";
+function vercelBlob(token, access = "public") {
+  const sdk = () => import("@vercel/blob");
+  const exists = async (pathname) => {
+    const { head, BlobNotFoundError } = await sdk();
+    try {
+      await head(pathname, { token });
+      return true;
+    } catch (e) {
+      if (e instanceof BlobNotFoundError) return false;
+      throw e;
+    }
+  };
+  return {
+    async list(prefix) {
+      const { list: list3 } = await sdk();
+      const out = [];
+      let cursor;
+      do {
+        const r = await list3({ prefix, cursor, token, limit: 1e3 });
+        out.push(...r.blobs.map((b) => b.pathname));
+        cursor = r.hasMore ? r.cursor : void 0;
+      } while (cursor);
+      return out.sort();
+    },
+    async read(pathname) {
+      const { get } = await sdk();
+      const r = await get(pathname, { access, token });
+      if (!r || r.statusCode !== 200) return null;
+      return new Response(r.stream).text();
+    },
+    exists,
+    async create(pathname, body) {
+      if (await exists(pathname)) return false;
+      const { put } = await sdk();
+      try {
+        await put(pathname, body, { access, token, addRandomSuffix: false, allowOverwrite: false, contentType: "application/json" });
+        return true;
+      } catch (e) {
+        if (/already exists/i.test(e instanceof Error ? e.message : String(e))) return false;
+        throw e;
+      }
+    }
+  };
+}
+function blobFromEnv(env = process.env) {
+  const token = env.BLOB_READ_WRITE_TOKEN;
+  return token ? vercelBlob(token, env.BLOB_ACCESS === "private" ? "private" : "public") : null;
+}
+var h16 = (hash) => hash.slice(0, 16);
+function walk(dir, recursive, base = "") {
+  if (!existsSync5(dir)) return [];
+  const out = [];
+  for (const f of readdirSync3(dir).sort()) {
+    const rel = base ? `${base}/${f}` : f;
+    if (f.endsWith(".json")) out.push(rel);
+    else if (recursive && statSync(join6(dir, f)).isDirectory()) out.push(...walk(join6(dir, f), recursive, rel));
+  }
+  return out;
+}
+function collection(o) {
+  const mode = !o.readOnly ? "fs" : o.blob ? "blob" : "read-only";
+  const blob = mode === "blob" ? o.blob : null;
+  const recPrefix = `${o.prefix}/records/`, scorePrefix = `${o.prefix}/scores/`;
+  const readFile = (rel) => JSON.parse(readFileSync6(join6(o.dir, rel), "utf8"));
+  const fileFor2 = (hash) => walk(o.dir, !!o.recursive).find((f) => f.endsWith(`_${h16(hash)}.json`));
+  const blobFor = async (hash) => blob ? (await blob.list(recPrefix)).find((p) => p.endsWith(`_${h16(hash)}.json`)) : void 0;
+  const blobScore = async (hash) => {
+    const s = blob ? await blob.read(`${scorePrefix}${h16(hash)}.json`) : null;
+    return s ? JSON.parse(s) : void 0;
+  };
+  const withBlobScore = async (rec) => {
+    if (rec.score || !blob) return rec;
+    const score = await blobScore(o.hashOf(rec));
+    return score ? { ...rec, score } : rec;
+  };
+  return {
+    mode,
+    async list() {
+      const files = walk(o.dir, !!o.recursive).map(readFile);
+      if (!blob) return files;
+      const seen = new Set(files.map((r) => h16(o.hashOf(r))));
+      const paths = await blob.list(recPrefix);
+      const scores = new Set(await blob.list(scorePrefix));
+      const out = [];
+      for (const r of files) out.push(scores.has(`${scorePrefix}${h16(o.hashOf(r))}.json`) ? await withBlobScore(r) : r);
+      for (const p of paths) {
+        const body = await blob.read(p);
+        if (!body) continue;
+        const r = JSON.parse(body);
+        if (seen.has(h16(o.hashOf(r)))) continue;
+        seen.add(h16(o.hashOf(r)));
+        out.push(scores.has(`${scorePrefix}${h16(o.hashOf(r))}.json`) ? await withBlobScore(r) : r);
+      }
+      return out;
+    },
+    async find(hash) {
+      const f = fileFor2(hash);
+      if (f) return withBlobScore(readFile(f));
+      const p = await blobFor(hash);
+      const body = p ? await blob.read(p) : null;
+      return body ? withBlobScore(JSON.parse(body)) : null;
+    },
+    async add(name, rec) {
+      if (mode === "read-only") return { status: 405, error: o.readOnlyError ?? "This store is read-only here." };
+      const hash = o.hashOf(rec);
+      if (!name.endsWith(`_${h16(hash)}.json`)) throw new Error(`file name ${name} does not carry the record hash`);
+      if (fileFor2(hash) || await blobFor(hash)) return { status: 409, error: "already registered" };
+      if (blob) {
+        if (!await blob.create(`${recPrefix}${name}`, JSON.stringify(rec, null, 1))) return { status: 409, error: "already registered" };
+        return { status: 200, file: `blob:${recPrefix}${name}` };
+      }
+      const file = join6(o.dir, name);
+      mkdirSync5(dirname2(file), { recursive: true });
+      try {
+        writeFileSync5(file, JSON.stringify(rec, null, 1), { flag: "wx" });
+      } catch (e) {
+        if (e.code === "EEXIST") return { status: 409, error: "already registered" };
+        throw e;
+      }
+      return { status: 200, file: `${o.rel}/${name}` };
+    },
+    async addScore(hash, score) {
+      if (mode === "read-only") return { status: 405, error: o.readOnlyError ?? "This store is read-only here." };
+      const rec = await this.find(hash);
+      if (!rec) return { status: 404, error: "unknown forecast" };
+      if (rec.score) return { status: 409, error: "already scored", score: rec.score };
+      if (blob) {
+        if (!await blob.create(`${scorePrefix}${h16(hash)}.json`, JSON.stringify(score, null, 1))) {
+          return { status: 409, error: "already scored", score: await blobScore(hash) };
+        }
+        return { status: 200 };
+      }
+      const f = fileFor2(hash);
+      writeFileSync5(join6(o.dir, f), JSON.stringify({ ...rec, score }, null, 1));
+      return { status: 200 };
+    }
+  };
+}
+
+// server/register.ts
 var HEX644 = /^[0-9a-f]{64}$/;
+var READ_ONLY_ERROR = "The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code.";
 function canonical3(v) {
   if (Array.isArray(v)) return `[${v.map(canonical3).join(",")}]`;
   if (v && typeof v === "object") {
@@ -696,54 +839,292 @@ function canonical3(v) {
   }
   return JSON.stringify(v);
 }
-var fileFor2 = (hash) => readdirSync3(DIR3).find((f) => f.endsWith(`_${hash.slice(0, 16)}.json`));
-var READ_ONLY3 = !!process.env.VERCEL;
-async function readJson4(req) {
+var entryFileName = (issuedAt, hash) => `${issuedAt.slice(0, 13).replace(/[-:T]/g, "")}_${hash.slice(0, 16)}.json`;
+function registerCollection(o = {}) {
+  return collection({
+    dir: join7(o.root ?? process.cwd(), "data", "register"),
+    rel: "data/register",
+    prefix: "register",
+    hashOf: (e) => String(e.record?.receiptSha256 ?? ""),
+    readOnly: o.readOnly ?? !!process.env.VERCEL,
+    blob: o.blob === void 0 ? blobFromEnv() : o.blob,
+    readOnlyError: READ_ONLY_ERROR
+  });
+}
+async function readJson4(req, limit = 4e6) {
   const pre = req.body;
   if (pre !== void 0) return typeof pre === "string" ? JSON.parse(pre || "{}") : pre ?? {};
   let body = "";
   for await (const chunk of req) {
     body += chunk;
-    if (body.length > 4e6) throw new Error("body too large");
+    if (body.length > limit) throw new Error("body too large");
   }
   return JSON.parse(body || "{}");
 }
-function registerHandler(req, res, next) {
-  const path = (req.url ?? "").split("?")[0];
-  if (path !== "/api/register" && path !== "/api/register/score") return next();
-  res.setHeader("content-type", "application/json");
-  const send = (status, body) => {
-    res.statusCode = status;
-    res.end(JSON.stringify(body));
+function checkEntry(e) {
+  const hash = String(e?.record?.receiptSha256 ?? "");
+  if (e?.kind !== "fireseptum.preregistered-forecast" && e?.kind !== "sekatapi.preregistered-forecast" || !HEX644.test(hash) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return "not a register entry";
+  if (createHash4("sha256").update(canonical3(e.record.receipt)).digest("hex") !== hash) return "receipt does not match its hash";
+  return null;
+}
+function makeRegisterHandler(getStore) {
+  let store = null;
+  return (req, res, next) => {
+    const path = (req.url ?? "").split("?")[0];
+    if (path !== "/api/register" && path !== "/api/register/score") return next();
+    res.setHeader("content-type", "application/json");
+    const send = (status, body) => {
+      res.statusCode = status;
+      res.end(JSON.stringify(body));
+    };
+    (async () => {
+      store ??= getStore();
+      if (req.method === "GET" && path === "/api/register") return send(200, { entries: await store.list() });
+      if (req.method !== "POST") return send(405, { error: "method not allowed" });
+      if (store.mode === "read-only") return send(405, { error: READ_ONLY_ERROR });
+      const body = await readJson4(req);
+      if (path === "/api/register") {
+        const e = body.entry;
+        const bad = checkEntry(e);
+        if (bad) return send(400, { error: bad });
+        const hash2 = e.record.receiptSha256;
+        const r2 = await store.add(entryFileName(e.issuedAt, hash2), e);
+        return r2.status === 200 ? send(200, { ok: true, file: r2.file }) : send(r2.status, { error: r2.error });
+      }
+      const hash = String(body.receiptSha256 ?? "");
+      if (!HEX644.test(hash)) return send(404, { error: "unknown forecast" });
+      const r = await store.addScore(hash, body.score);
+      return r.status === 200 ? send(200, { ok: true }) : send(r.status, "score" in r ? { error: r.error, score: r.score } : { error: r.error });
+    })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
   };
-  (async () => {
-    if (!READ_ONLY3) mkdirSync5(DIR3, { recursive: true });
-    if (req.method === "GET" && path === "/api/register") {
-      const entries = readdirSync3(DIR3).filter((f2) => f2.endsWith(".json")).sort().map((f2) => JSON.parse(readFileSync6(join6(DIR3, f2), "utf8")));
-      return send(200, { entries });
+}
+var registerHandler = makeRegisterHandler(() => registerCollection());
+
+// src/sim/detmath.ts
+var NATIVE = Math;
+var dv = new DataView(new ArrayBuffer(8));
+
+// src/sim/fuels.ts
+var FUEL_LIST = [
+  { id: "grass", label: "Fern / alang-alang grass", pveg: 0.4, pden: 0, burnHours: 1, burnable: true, color: "#c9b46a" },
+  { id: "shrub", label: "Degraded peat shrub", pveg: 0.3, pden: 0.3, burnHours: 4, burnable: true, color: "#8f9a4e" },
+  { id: "peat", label: "Peat swamp forest", pveg: 0, pden: 0.3, burnHours: 12, burnable: true, color: "#4f6b3a" },
+  { id: "plantation", label: "Plantation (oil palm / acacia)", pveg: -0.1, pden: 0, burnHours: 3, burnable: true, color: "#6f8f45" },
+  // Wet or flooded fields barely carry fire; only dry stubble and field edges do.
+  { id: "agri", label: "Wet farmland / rice field", pveg: -0.7, pden: -0.7, burnHours: 1, burnable: true, color: "#a8b98a" },
+  { id: "water", label: "River / canal", pveg: 0, pden: 0, burnHours: 0, burnable: false, color: "#4d7ea8" },
+  { id: "settlement", label: "Village / road", pveg: 0, pden: 0, burnHours: 0, burnable: false, color: "#9a8f86" }
+];
+var FUEL_INDEX = Object.fromEntries(
+  FUEL_LIST.map((f, i) => [f.id, i])
+);
+
+// src/sim/model.ts
+var OFFSETS = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+var neighFor = (m) => OFFSETS.map(([dx, dy]) => ({ dx, dy, dist: m.hypot(dx, dy), bearing: m.atan2(dx, -dy) }));
+var NEIGH = neighFor(NATIVE);
+
+// src/sim/forecast.ts
+var FORECAST_SCHEMA = "fireseptum.forecast.v1";
+var FORECAST_GRID = "blocks400m";
+var FORECAST_WINDOW_H = 24;
+var BLOCKS = 256;
+var REFERENCE_MODELS = ["distance", "climatology"];
+var REGISTER_MODEL = "fire-septum-ca";
+var RESERVED_MODEL_IDS = [REGISTER_MODEL, ...REFERENCE_MODELS];
+var CLIMATOLOGY_RATE = 114 / 836;
+var INDONESIA = { south: -11.5, north: 6.5, west: 94.5, east: 141.5 };
+var MAX_SUBMISSION_LAG_H = 1;
+var MODEL_ID = /^[a-z0-9][a-z0-9._-]{1,62}$/;
+var ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?(Z|[+-]\d{2}:\d{2})$/;
+var MAX_BOXES = 50;
+var isObj = (v) => !!v && typeof v === "object" && !Array.isArray(v);
+var str = (v, max) => typeof v === "string" && v.length >= 1 && v.length <= max;
+function checkProbabilities(p, at, err) {
+  if (!Array.isArray(p) || p.length !== BLOCKS) {
+    err.push(`${at} must be an array of ${BLOCKS} numbers`);
+    return;
+  }
+  const bad = p.findIndex((x) => typeof x !== "number" || !Number.isFinite(x) || x < 0 || x > 1);
+  if (bad >= 0) err.push(`${at}[${bad}] must be a number in [0, 1]`);
+}
+function checkBox(b, at, err) {
+  if (!isObj(b)) {
+    err.push(`${at} must be an object {lat, lon}`);
+    return;
+  }
+  if (typeof b.lat !== "number" || !(b.lat >= -90 && b.lat <= 90)) err.push(`${at}.lat must be a number in [-90, 90]`);
+  if (typeof b.lon !== "number" || !(b.lon >= -180 && b.lon <= 180)) err.push(`${at}.lon must be a number in [-180, 180]`);
+}
+function validateForecast(f) {
+  const err = [];
+  if (!isObj(f)) return ["a forecast must be a JSON object"];
+  const allowed = /* @__PURE__ */ new Set(["schema", "model", "issuedAt", "windowH", "grid", "box", "probabilities", "boxes", "metadata", "$schema"]);
+  for (const k of Object.keys(f)) if (!allowed.has(k)) err.push(`unknown field "${k}"`);
+  if (f.schema !== FORECAST_SCHEMA) err.push(`schema must be "${FORECAST_SCHEMA}"`);
+  if (!isObj(f.model)) err.push("model must be an object {id, name, version, url?}");
+  else {
+    const m = f.model;
+    for (const k of Object.keys(m)) if (!["id", "name", "version", "url"].includes(k)) err.push(`unknown field "model.${k}"`);
+    if (typeof m.id !== "string" || !MODEL_ID.test(m.id)) err.push("model.id must match ^[a-z0-9][a-z0-9._-]{1,62}$");
+    if (!str(m.name, 120)) err.push("model.name must be a string of 1\u2013120 characters");
+    if (!str(m.version, 64)) err.push("model.version must be a string of 1\u201364 characters");
+    if (m.url !== void 0 && !(typeof m.url === "string" && /^https?:\/\/\S+$/.test(m.url) && m.url.length <= 500)) err.push("model.url must be an http(s) URL");
+  }
+  if (typeof f.issuedAt !== "string" || !ISO.test(f.issuedAt) || Number.isNaN(Date.parse(f.issuedAt))) err.push("issuedAt must be an ISO 8601 date-time with a time zone");
+  if (f.windowH !== FORECAST_WINDOW_H) err.push(`windowH must be ${FORECAST_WINDOW_H}`);
+  if (f.grid !== FORECAST_GRID) err.push(`grid must be "${FORECAST_GRID}"`);
+  const single = f.box !== void 0 || f.probabilities !== void 0;
+  if (single && f.boxes !== void 0) err.push("give either box + probabilities or boxes, not both");
+  else if (single) {
+    checkBox(f.box, "box", err);
+    checkProbabilities(f.probabilities, "probabilities", err);
+  } else if (f.boxes !== void 0) {
+    if (!Array.isArray(f.boxes) || f.boxes.length < 1 || f.boxes.length > MAX_BOXES) err.push(`boxes must be an array of 1\u2013${MAX_BOXES} boxes`);
+    else f.boxes.forEach((b, i) => {
+      checkBox(b, `boxes[${i}]`, err);
+      if (isObj(b)) {
+        for (const k of Object.keys(b)) if (!["lat", "lon", "probabilities"].includes(k)) err.push(`unknown field "boxes[${i}].${k}"`);
+        checkProbabilities(b.probabilities, `boxes[${i}].probabilities`, err);
+      }
+    });
+  } else err.push("box + probabilities (or boxes) is required");
+  if (f.metadata !== void 0 && !isObj(f.metadata)) err.push("metadata must be an object");
+  return err;
+}
+function splitForecast(f) {
+  const { boxes, box, probabilities, ...rest } = f;
+  if (boxes) return boxes.map((b) => ({ ...rest, box: { lat: b.lat, lon: b.lon }, probabilities: b.probabilities }));
+  return [{ ...rest, box, probabilities }];
+}
+var inIndonesia = (b) => b.lat >= INDONESIA.south && b.lat <= INDONESIA.north && b.lon >= INDONESIA.west && b.lon <= INDONESIA.east;
+var REFERENCE_MODEL_INFO = {
+  [REGISTER_MODEL]: { id: REGISTER_MODEL, name: "Fire Septum cellular automaton (40-run ensemble)", version: "register", url: "https://github.com/aliefauzan/fire-septum", note: "Share of the 40 sealed runs that ignite the block within 24 h." },
+  distance: { id: "distance", name: "Distance to fire (reference)", version: "1", note: "p = exp(\u2212d / 1 km), d = distance to the nearest block on fire at t0." },
+  climatology: { id: "climatology", name: "Climatology (reference)", version: "1", note: "p = 114/836 \u2248 0.136 in every block: the new-fire rate of the 12 hindcast events, 8\u201318 Oct 2026." }
+};
+
+// src/sim/submission.ts
+var SUBMISSION_KIND = "fireseptum.forecast-submission";
+
+// src/sim/scoreboard.ts
+function boardIndex(entries, submissions, generatedAt = (/* @__PURE__ */ new Date()).toISOString()) {
+  return {
+    generatedAt,
+    register: [...entries].sort((a, b) => a.issuedAt.localeCompare(b.issuedAt)).map((e) => ({
+      hash: e.record.receiptSha256,
+      issuedAt: e.issuedAt,
+      lat: e.lat,
+      lon: e.lon,
+      windowH: e.windowH,
+      rule: e.rule,
+      ...e.region ? { region: e.region } : {},
+      receipt: e.record.receipt,
+      ...e.record.anchor ? { otsB64: e.record.anchor.otsB64, calendar: e.record.anchor.calendar } : {},
+      ...e.score ? { score: { scoredAt: e.score.scoredAt, reproduced: e.score.reproduced, detections: e.score.detections, result: e.score.result, ...e.score.benchmark ? { models: e.score.benchmark.models } : {} } } : {}
+    })),
+    submissions: [...submissions].sort((a, b) => a.receivedAt.localeCompare(b.receivedAt)).map((s) => ({
+      sha256: s.sha256,
+      receivedAt: s.receivedAt,
+      forecast: s.forecast,
+      ...s.anchor ? { otsB64: s.anchor.otsB64, calendar: s.anchor.calendar } : {},
+      ...s.score ? { score: { scoredAt: s.score.scoredAt, boxes: s.score.boxes.map((b) => ({ box: b.box, models: b.models })) } } : {}
+    }))
+  };
+}
+
+// server/submissions.ts
+import { createHash as createHash5 } from "node:crypto";
+import { join as join8 } from "node:path";
+var CLOSED = "Submissions are closed on this deployment (read-only, no Blob store configured). Submit to an instance with BLOB_READ_WRITE_TOKEN set, or run Fire Septum locally.";
+function submissionsCollection(o = {}) {
+  return collection({
+    dir: join8(o.root ?? process.cwd(), "data", "submissions"),
+    rel: "data/submissions",
+    prefix: "submissions",
+    recursive: true,
+    hashOf: (s) => s.sha256,
+    readOnly: o.readOnly ?? !!process.env.VERCEL,
+    blob: o.blob === void 0 ? blobFromEnv() : o.blob,
+    readOnlyError: CLOSED
+  });
+}
+var submissionFileName = (f, sha2562) => `${new Date(f.issuedAt).toISOString().slice(0, 10)}/${f.model.id}_${sha2562.slice(0, 16)}.json`;
+function checkSubmission(f, now) {
+  const err = [];
+  if (RESERVED_MODEL_IDS.includes(f.model.id)) err.push(`model.id "${f.model.id}" is reserved for the scorer's own forecasts`);
+  const t = Date.parse(f.issuedAt);
+  if (t > now) err.push("issuedAt is in the future");
+  else if (now - t > MAX_SUBMISSION_LAG_H * 36e5) err.push(`issuedAt is more than ${MAX_SUBMISSION_LAG_H} h before the server received the forecast; late forecasts are not accepted`);
+  splitForecast(f).forEach((b, i) => {
+    if (!inIndonesia(b.box)) err.push(`box ${i} (${b.box.lat}, ${b.box.lon}) is outside Indonesia`);
+  });
+  return err;
+}
+function makeSubmissionsHandler(d) {
+  let store = null;
+  const anchor2 = d.anchor ?? anchor;
+  const now = d.now ?? Date.now;
+  return (req, res, next) => {
+    const path = (req.url ?? "").split("?")[0];
+    if (path !== "/api/submissions") return next();
+    res.setHeader("content-type", "application/json");
+    const send = (status, body) => {
+      res.statusCode = status;
+      res.end(JSON.stringify(body));
+    };
+    (async () => {
+      store ??= d.getStore();
+      if (req.method === "GET") return send(200, { submissions: await store.list() });
+      if (req.method !== "POST") return send(405, { error: "method not allowed" });
+      const token = d.token?.();
+      if (token && req.headers.authorization !== `Bearer ${token}`) return send(401, { error: "this instance needs Authorization: Bearer <SUBMISSIONS_TOKEN>" });
+      if (store.mode === "read-only") return send(405, { error: CLOSED });
+      const body = await readJson4(req, 1e6);
+      const f = body.forecast ?? body;
+      const problems = validateForecast(f);
+      if (problems.length) return send(400, { error: "not a valid forecast (schema/forecast-v1.json)", problems });
+      const more = checkSubmission(f, now());
+      if (more.length) return send(400, { error: "forecast refused", problems: more });
+      const sha2562 = createHash5("sha256").update(canonical3(f)).digest("hex");
+      if (await store.find(sha2562)) return send(409, { error: "already submitted", sha256: sha2562 });
+      const a = await anchor2(sha2562);
+      if (!a) return send(502, { error: "no OpenTimestamps calendar answered; nothing stored, try again" });
+      const rec = {
+        v: 1,
+        kind: SUBMISSION_KIND,
+        receivedAt: new Date(now()).toISOString(),
+        sha256: sha2562,
+        forecast: f,
+        anchor: { calendar: a.calendar, submittedAt: new Date(now()).toISOString(), otsB64: a.ots.toString("base64") }
+      };
+      const r = await store.add(submissionFileName(f, sha2562), rec);
+      return r.status === 200 ? send(200, { ok: true, sha256: sha2562, file: r.file, anchor: rec.anchor }) : send(r.status, { error: r.error, sha256: sha2562 });
+    })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
+  };
+}
+var submissionsHandler = makeSubmissionsHandler({ getStore: () => submissionsCollection(), token: () => process.env.SUBMISSIONS_TOKEN });
+
+// server/scoreboard.ts
+async function liveIndex(o = {}) {
+  const [entries, subs] = await Promise.all([registerCollection(o).list(), submissionsCollection(o).list()]);
+  return boardIndex(entries, subs);
+}
+function scoreboardHandler(req, res, next) {
+  if ((req.url ?? "").split("?")[0] !== "/api/scoreboard") return next();
+  res.setHeader("content-type", "application/json");
+  if (req.method !== "GET") {
+    res.statusCode = 405;
+    res.end(JSON.stringify({ error: "method not allowed" }));
+    return;
+  }
+  liveIndex().then(
+    (ix) => res.end(JSON.stringify(ix)),
+    (e) => {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }));
     }
-    if (req.method !== "POST") return send(405, { error: "method not allowed" });
-    if (READ_ONLY3) return send(405, { error: "The hosted register is read-only. Run Fire Septum locally to seal or score a forecast; entries are published with the code." });
-    const body = await readJson4(req);
-    if (path === "/api/register") {
-      const e = body.entry;
-      const hash2 = String(e?.record?.receiptSha256 ?? "");
-      if (e?.kind !== "fireseptum.preregistered-forecast" && e?.kind !== "sekatapi.preregistered-forecast" || !HEX644.test(hash2) || !e.issuedAt || Number.isNaN(Date.parse(e.issuedAt))) return send(400, { error: "not a register entry" });
-      if (createHash4("sha256").update(canonical3(e.record.receipt)).digest("hex") !== hash2) return send(400, { error: "receipt does not match its hash" });
-      if (fileFor2(hash2)) return send(409, { error: "already registered" });
-      const name = `${e.issuedAt.slice(0, 13).replace(/[-:T]/g, "")}_${hash2.slice(0, 16)}.json`;
-      writeFileSync5(join6(DIR3, name), JSON.stringify(e, null, 1));
-      return send(200, { ok: true, file: `data/register/${name}` });
-    }
-    const hash = String(body.receiptSha256 ?? "");
-    const f = HEX644.test(hash) ? fileFor2(hash) : void 0;
-    if (!f) return send(404, { error: "unknown forecast" });
-    const entry = JSON.parse(readFileSync6(join6(DIR3, f), "utf8"));
-    if (entry.score) return send(409, { error: "already scored", score: entry.score });
-    entry.score = body.score;
-    writeFileSync5(join6(DIR3, f), JSON.stringify(entry, null, 1));
-    return send(200, { ok: true });
-  })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
+  );
 }
 
 // api/_entry.ts
@@ -752,6 +1133,8 @@ var chain = [
   osmHandler(),
   receiptHandler(() => process.env.RECEIPT_ED25519_KEY),
   registerHandler,
+  submissionsHandler,
+  scoreboardHandler,
   decisionsHandler,
   evidenceHandler,
   bmkgHandler(() => process.env.SIPONGI_PERMISSION),

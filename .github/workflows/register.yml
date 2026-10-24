@@ -1,0 +1,73 @@
+name: Forecast register (daily)
+
+# Scores the forecasts whose 24 h window is in FIRMS, seals today's forecasts (top 3 FIRMS clusters
+# per island), seals yesterday's Merkle batch, attests it on Base when EAS_PRIVATE_KEY is set, and
+# commits the new records back to main (scripts/register-daily.ts).
+#
+# 10:00 UTC = 17:00 WIB / 18:00 WITA. The afternoon VIIRS passes (S-NPP, NOAA-20, NOAA-21, about
+# 13:30 local solar time) cross Kalimantan around 05:30-06:30 UTC and Sumatra around 06:00-07:00 UTC;
+# FIRMS near-real-time data follows within about 3 h, so the day's detections are in by ~10:00 UTC.
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (compute and print; nothing signed, anchored, written or committed)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forecast-register
+  cancel-in-progress: false
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Cache map tiles, archive weather and OSM answers
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: register-cache-${{ github.run_id }}
+          restore-keys: register-cache-
+      - name: Score, seal, batch, attest
+        id: daily
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          RECEIPT_ED25519_KEY: ${{ secrets.RECEIPT_ED25519_KEY }}
+          EAS_PRIVATE_KEY: ${{ secrets.EAS_PRIVATE_KEY }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        run: npx tsx scripts/register-daily.ts ${{ inputs.dry_run && '--dry-run' || '' }}
+      - name: Commit the new records
+        # Runs even when a step above reported a problem (for example no OpenTimestamps calendar
+        # answered for the batch), so scores and forecasts that were written are not lost.
+        if: ${{ always() && !inputs.dry_run }}
+        run: |
+          git config user.name 'fire-septum-register[bot]'
+          git config user.email 'fire-septum-register[bot]@users.noreply.github.com'
+          git add data/register data/batches data/submissions proofs
+          if git diff --cached --quiet; then
+            echo 'Nothing new to commit.'
+            exit 0
+          fi
+          git commit -m "Forecast register: daily run $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 10
+          done
+          exit 1

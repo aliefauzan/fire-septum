@@ -2,6 +2,8 @@
 // (OpenTimestamps) BEFORE the satellites see what happens next, then scored against
 // the NASA FIRMS detections of the following 24 h. A hindcast can be tuned after the
 // fact; a pre-registered forecast cannot, because the timestamp proves when it was made.
+import type { RawHotspot } from '../data/firms';
+import type { ForecastScore } from './forecast';
 import type { HindcastScore } from './hindcast';
 import type { RunRecord } from './receipt';
 import type { Hotspot, Landscape } from './types';
@@ -17,6 +19,23 @@ export interface RegisterScore {
   /** Detections in the 6.4 km box during the window (before the "new fire only" filter). */
   detections: number;
   result: HindcastScore;
+  /**
+   * The same box on the open benchmark's terms (src/sim/forecast.ts): the register's forecast as
+   * model 'fire-septum-ca' plus the two reference models, all scored by scoreForecast with the
+   * same fire-at-t0 mask and detections. Absent in scores written before 24 Oct 2026.
+   */
+  benchmark?: BoxBenchmark;
+}
+
+/** Everything needed to score any other forecast for this box and window. */
+export interface BoxBenchmark {
+  /** Blocks on fire at t0, 256 "0"/"1" characters, row-major from the NW block. */
+  fireAtT0: string;
+  /** FIRMS detections in the box during the window (as fetched at scoring time). */
+  observed: Pick<RawHotspot, 'lat' | 'lon' | 'acquired' | 'frp' | 'satellite' | 'confidence'>[];
+  /** FIRMS products read. */
+  sources: string[];
+  models: Record<string, ForecastScore>;
 }
 
 /** Entry formats. Version 1 entries were written under the project's first name, SekatApi. */
@@ -32,6 +51,8 @@ export interface RegisterEntry {
   windowH: number;
   /** How this place was picked, fixed before any outcome was known. */
   rule: string;
+  /** Island the fixed rule picked from (entries sealed by scripts/register-daily.ts). */
+  region?: string;
   /** The sealed forecast (no actions): receipt, signature, OpenTimestamps proof and the inputs to re-run it. */
   record: RunRecord;
   score?: RegisterScore;

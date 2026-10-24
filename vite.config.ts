@@ -10,6 +10,7 @@ import { evidenceStore } from './server/evidence.ts';
 import { firmsProxy } from './server/firmsProxy.ts';
 import { receiptProxy } from './server/receipt.ts';
 import { registerStore } from './server/register.ts';
+import { scoreboardData, submissionsStore } from './server/plugins.ts';
 
 // Node's fetch gives each address family 250 ms to connect; FIRMS is often slower than that from
 // Asia, and without an IPv6 route the proxies then fail with "fetch failed". Allow 3 s.
@@ -25,6 +26,8 @@ export default defineConfig(({ mode }) => {
       briefProxy(() => ({ baseUrl: get('LLM_BASE_URL'), apiKey: get('LLM_API_KEY'), model: get('LLM_MODEL') })),
       receiptProxy(() => get('RECEIPT_ED25519_KEY')),
       registerStore(),
+      submissionsStore(),
+      scoreboardData(),
       decisionsStore(),
       evidenceStore(),
       bmkgProxy(() => get('SIPONGI_PERMISSION')),
