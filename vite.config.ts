@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
+import { bmkgProxy } from './server/bmkg.ts';
 import { briefProxy } from './server/brief.ts';
 import { evidenceStore } from './server/evidence.ts';
 import { firmsProxy } from './server/firmsProxy.ts';
@@ -18,6 +19,7 @@ export default defineConfig(({ mode }) => {
       receiptProxy(() => get('RECEIPT_ED25519_KEY')),
       registerStore(),
       evidenceStore(),
+      bmkgProxy(() => get('SIPONGI_PERMISSION')),
     ],
     worker: { format: 'es' },
     test: { environment: 'node' },

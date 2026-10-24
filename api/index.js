@@ -1,3 +1,179 @@
+// server/bmkg.ts
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+var UA = "FireSeptum/0.2 (IEEE ClimateChain hackathon prototype)";
+var lookup = null;
+function loadLookup() {
+  if (lookup) return lookup;
+  for (const p of [join(process.cwd(), "public", "data", "bmkg-adm4.json"), join(process.cwd(), "dist", "data", "bmkg-adm4.json")]) {
+    if (existsSync(p)) return lookup = JSON.parse(readFileSync(p, "utf8"));
+  }
+  throw new Error("public/data/bmkg-adm4.json not found (node scripts/bmkg-adm4.mjs)");
+}
+var kmBetween = (lat1, lon1, lat2, lon2) => Math.hypot((lat2 - lat1) * 110.574, (lon2 - lon1) * 111.32 * Math.cos((lat1 + lat2) / 2 * Math.PI / 180));
+function nearestAdm4(lat, lon, rows) {
+  let best = null;
+  for (const [adm4, la, lo] of rows) {
+    if (Math.abs(la - lat) > 1 || Math.abs(lo - lon) > 1) continue;
+    const km = kmBetween(lat, lon, la, lo);
+    if (!best || km < best.km) best = { adm4, km };
+  }
+  return best && best.km <= 75 ? best : null;
+}
+var calls = [];
+function allowCall(limit = 40) {
+  const now = Date.now();
+  while (calls.length && now - calls[0] > 6e4) calls.shift();
+  if (calls.length >= limit) return false;
+  calls.push(now);
+  return true;
+}
+var forecastCache = /* @__PURE__ */ new Map();
+var FORECAST_TTL = 60 * 60 * 1e3;
+async function bmkgForecast(adm4) {
+  const hit = forecastCache.get(adm4);
+  if (hit && Date.now() - hit.at < FORECAST_TTL) return hit.body;
+  if (!allowCall()) throw Object.assign(new Error("BMKG rate limit reached here, try again in a minute"), { status: 429 });
+  const r = await fetch(`https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4=${adm4}`, { headers: { "User-Agent": UA, Accept: "application/json" }, signal: AbortSignal.timeout(12e3) });
+  if (!r.ok) throw Object.assign(new Error(`BMKG HTTP ${r.status}`), { status: 502 });
+  const j = await r.json();
+  const steps = (j.data?.[0]?.cuaca ?? []).flat();
+  const l = j.lokasi ?? {};
+  const body = JSON.stringify({
+    adm4,
+    lokasi: { desa: l.desa, kecamatan: l.kecamatan, kotkab: l.kotkab, provinsi: l.provinsi, lat: l.lat, lon: l.lon, timezone: l.timezone },
+    analysisDate: steps[0]?.analysis_date ?? null,
+    // BMKG documents ws in km/h, wd_deg as the direction the wind comes from, tp in mm, hu in %.
+    hours: steps.map((s) => ({
+      utc: s.datetime,
+      local: s.local_datetime ?? null,
+      tempC: s.t,
+      rh: s.hu ?? null,
+      windKmh: s.ws ?? null,
+      windFromDeg: s.wd_deg ?? null,
+      precipMm: s.tp ?? null,
+      cloudPct: s.tcc ?? null,
+      weather: s.weather_desc_en ?? null
+    })),
+    fetchedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    attribution: "BMKG (Badan Meteorologi, Klimatologi, dan Geofisika), api.bmkg.go.id"
+  });
+  forecastCache.set(adm4, { at: Date.now(), body });
+  return body;
+}
+var FDRS_REGIONS = ["36_indonesia", "37_sumatera", "38_kalimantan", "20_kalbar", "21_kalsel", "22_kalteng", "04_riau", "06_jambi", "08_sumsel"];
+var FDRS_VARS = ["ffmc", "dmc", "dc", "bui", "isi", "fwi"];
+var FDRS_DAYS = ["obs", "00", "01", "02", "03", "04", "05", "06", "07"];
+var fdrsCache = /* @__PURE__ */ new Map();
+var FDRS_TTL = 3 * 60 * 60 * 1e3;
+var SIPONGI = "https://opsroom.sipongidata.my.id/api";
+var sipongiCache = /* @__PURE__ */ new Map();
+var SIPONGI_TTL = 10 * 60 * 1e3;
+var SIPONGI_DENIED = "SiPongi (Kementerian Kehutanan) does not allow access to its data without written permission from the Ministry. This adapter stays off until an operator who holds that permission sets SIPONGI_PERMISSION=granted on the server.";
+var pick = (p, ...keys) => {
+  for (const k of keys) {
+    const v = p[k] ?? p[k.toLowerCase()] ?? p[k.toUpperCase()];
+    if (v !== void 0 && v !== null && v !== "") return v;
+  }
+  return null;
+};
+var num = (v) => v === null || v === void 0 || v === "" ? null : Number(v);
+function normalizeHotspots(j) {
+  return (j.features ?? []).filter((f) => f.geometry?.type === "Point" && f.geometry.coordinates).map((f) => {
+    const p = f.properties ?? {};
+    const [lon, lat] = f.geometry.coordinates;
+    return {
+      lat,
+      lon,
+      desa: pick(p, "desa"),
+      kecamatan: pick(p, "kecamatan"),
+      kabkota: pick(p, "kabkota", "kabupaten"),
+      provinsi: pick(p, "provinsi"),
+      kawasan: pick(p, "kawasan"),
+      satellite: pick(p, "satelit", "satellite", "sumber"),
+      confidence: pick(p, "confidence", "kepercayaan"),
+      time: pick(p, "date_hotspot", "tanggal", "waktu", "acq_date")
+    };
+  });
+}
+function normalizeTmat(j) {
+  const rows = Array.isArray(j) ? j : Array.isArray(j?.features) ? j.features.map((f) => ({ ...f.properties ?? {}, lon: f.geometry?.coordinates?.[0], lat: f.geometry?.coordinates?.[1] })) : Array.isArray(j?.data) ? j.data : [];
+  return rows.map((r) => ({
+    id: String(pick(r, "id", "kode", "station_id") ?? ""),
+    name: pick(r, "nama", "name", "station", "nama_stasiun"),
+    company: pick(r, "konsesi", "perusahaan", "company"),
+    lat: num(pick(r, "lat", "latitude", "Latitude")),
+    lon: num(pick(r, "lon", "lng", "longitude", "Longitude")),
+    waterLevelCm: num(pick(r, "WaterLevel", "water_level", "tmat")),
+    time: pick(r, "tanggal", "waktu", "datetime", "updated_at")
+  })).filter((s) => Number.isFinite(s.lat) && Number.isFinite(s.lon));
+}
+async function sipongi(path, query, normalize) {
+  const k = `${path}?${query}`;
+  const hit = sipongiCache.get(k);
+  if (hit && Date.now() - hit.at < SIPONGI_TTL) return hit.body;
+  const r = await fetch(`${SIPONGI}/${k}`, { headers: { "User-Agent": UA, Accept: "application/json" }, signal: AbortSignal.timeout(15e3) });
+  if (!r.ok) throw Object.assign(new Error(`SiPongi HTTP ${r.status}`), { status: 502 });
+  const body = JSON.stringify({ items: normalize(await r.json()), fetchedAt: (/* @__PURE__ */ new Date()).toISOString(), attribution: "SiPongi, Kementerian Kehutanan Republik Indonesia (used with permission)" });
+  sipongiCache.set(k, { at: Date.now(), body });
+  return body;
+}
+function bmkgHandler(getSipongi) {
+  return async (req, res, next) => {
+    const u = new URL(req.url ?? "/", "http://local");
+    const path = u.pathname;
+    if (path !== "/api/bmkg" && path !== "/api/bmkg-fdrs" && !path.startsWith("/api/sipongi/")) return next();
+    const json = (status, body) => {
+      res.statusCode = status;
+      res.setHeader("content-type", "application/json");
+      res.end(typeof body === "string" ? body : JSON.stringify(body));
+    };
+    if (req.method !== "GET") return json(405, { error: "method not allowed" });
+    try {
+      if (path === "/api/bmkg") {
+        const lat = Number(u.searchParams.get("lat")), lon = Number(u.searchParams.get("lon"));
+        if (!(lat >= -11 && lat <= 6.5 && lon >= 94 && lon <= 141.5)) return json(400, { error: "lat/lon must be in Indonesia" });
+        const near = nearestAdm4(lat, lon, loadLookup().rows);
+        if (!near) return json(404, { error: "No BMKG forecast point here: the lookup covers the peat provinces of Sumatra and Kalimantan." });
+        const body = JSON.parse(await bmkgForecast(near.adm4));
+        const ll = body.lokasi;
+        body.distanceKm = Number.isFinite(ll?.lat) ? Math.round(kmBetween(lat, lon, ll.lat, ll.lon) * 10) / 10 : null;
+        return json(200, body);
+      }
+      if (path === "/api/bmkg-fdrs") {
+        const region = u.searchParams.get("region") ?? "", v = u.searchParams.get("var") ?? "", day = u.searchParams.get("day") ?? "00";
+        if (!FDRS_REGIONS.includes(region) || !FDRS_VARS.includes(v) || !FDRS_DAYS.includes(day)) return json(400, { error: "unknown region, var or day" });
+        const name = `${region}_${v}_${day}`;
+        let hit = fdrsCache.get(name);
+        if (!hit || Date.now() - hit.at > FDRS_TTL) {
+          const r = await fetch(`https://dataweb.bmkg.go.id/cuaca/spartan/${name}.png`, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15e3) });
+          const type = r.headers.get("content-type") ?? "";
+          if (!r.ok || !type.startsWith("image/png")) return json(502, { error: `BMKG fire danger map HTTP ${r.status}` });
+          hit = { at: Date.now(), png: Buffer.from(await r.arrayBuffer()) };
+          fdrsCache.set(name, hit);
+        }
+        res.statusCode = 200;
+        res.setHeader("content-type", "image/png");
+        res.setHeader("cache-control", "public, max-age=3600");
+        res.setHeader("x-source", `BMKG SPARTAN ${name}.png, fetched ${new Date(hit.at).toISOString()}`);
+        res.end(hit.png);
+        return;
+      }
+      const enabled = getSipongi() === "granted";
+      if (path === "/api/sipongi/status") return json(200, { enabled, note: enabled ? "Enabled by the operator (SIPONGI_PERMISSION=granted)." : SIPONGI_DENIED });
+      if (!enabled) return json(403, { error: SIPONGI_DENIED });
+      if (path === "/api/sipongi/hotspots") {
+        return json(200, await sipongi("opsroom/indoHotspot", "wilayah=IN&filterperiode=false&late=24&satelit[]=NASA-SNPP&confidence[]=high", (j) => normalizeHotspots(j)));
+      }
+      if (path === "/api/sipongi/tmat") return json(200, await sipongi("tmat/konsesi", "", normalizeTmat));
+      return json(404, { error: "unknown endpoint" });
+    } catch (e) {
+      const status = e.status ?? 502;
+      return json(status, { error: e instanceof Error ? e.message : String(e) });
+    }
+  };
+}
+
 // server/brief.ts
 var SYSTEM = `You write short wildfire situation briefs for incident commanders (BPBD, Manggala Agni) from a simulation's output.
 Rules:
@@ -110,9 +286,9 @@ ${JSON.stringify(body.data)}` }
 
 // server/evidence.ts
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-var DIR = join(process.cwd(), "data", "evidence");
+import { existsSync as existsSync2, mkdirSync, readFileSync as readFileSync2, readdirSync, writeFileSync } from "node:fs";
+import { join as join2 } from "node:path";
+var DIR = join2(process.cwd(), "data", "evidence");
 var HEX64 = /^[0-9a-f]{64}$/;
 var READ_ONLY = !!process.env.VERCEL;
 function canonical(v) {
@@ -133,7 +309,7 @@ async function readJson(req) {
   }
   return JSON.parse(body || "{}");
 }
-var list = () => existsSync(DIR) ? readdirSync(DIR).filter((f) => f.endsWith(".json")).sort() : [];
+var list = () => existsSync2(DIR) ? readdirSync(DIR).filter((f) => f.endsWith(".json")).sort() : [];
 function evidenceHandler(req, res, next) {
   const path = (req.url ?? "").split("?")[0];
   if (path !== "/api/evidence") return next();
@@ -143,7 +319,7 @@ function evidenceHandler(req, res, next) {
     res.end(JSON.stringify(body));
   };
   (async () => {
-    if (req.method === "GET") return send(200, { entries: list().map((f) => JSON.parse(readFileSync(join(DIR, f), "utf8"))) });
+    if (req.method === "GET") return send(200, { entries: list().map((f) => JSON.parse(readFileSync2(join2(DIR, f), "utf8"))) });
     if (req.method !== "POST") return send(405, { error: "method not allowed" });
     if (READ_ONLY) return send(405, { error: "The hosted evidence store is read-only. Download the JSON, or run Fire Septum locally to keep evidence in data/evidence/." });
     const body = await readJson(req);
@@ -156,14 +332,14 @@ function evidenceHandler(req, res, next) {
     mkdirSync(DIR, { recursive: true });
     if (list().some((f) => f.endsWith(`_${hash.slice(0, 16)}.json`))) return send(409, { error: "already stored" });
     const name = `${e.createdAt.slice(0, 13).replace(/[-:T]/g, "")}_${pid}_${hash.slice(0, 16)}.json`;
-    writeFileSync(join(DIR, name), JSON.stringify(b, null, 1), { flag: "wx" });
+    writeFileSync(join2(DIR, name), JSON.stringify(b, null, 1), { flag: "wx" });
     return send(200, { ok: true, file: `data/evidence/${name}` });
   })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
 }
 
 // server/firmsProxy.ts
-import { mkdirSync as mkdirSync2, readFileSync as readFileSync2, writeFileSync as writeFileSync2, existsSync as existsSync2 } from "node:fs";
-import { join as join2 } from "node:path";
+import { mkdirSync as mkdirSync2, readFileSync as readFileSync3, writeFileSync as writeFileSync2, existsSync as existsSync3 } from "node:fs";
+import { join as join3 } from "node:path";
 var SOURCES = ["VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT"];
 var cache = /* @__PURE__ */ new Map();
 var TTL_MS = 10 * 60 * 1e3;
@@ -217,12 +393,12 @@ var OVERPASS = [
   "https://overpass.private.coffee/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter"
 ];
-var OSM_DIR = join2(process.cwd(), ".cache", "osm");
+var OSM_DIR = join3(process.cwd(), ".cache", "osm");
 var osmCache = /* @__PURE__ */ new Map();
-var diskKey = (bb) => join2(OSM_DIR, `${bb.replace(/[^0-9.,-]/g, "")}.json`);
+var diskKey = (bb) => join3(OSM_DIR, `${bb.replace(/[^0-9.,-]/g, "")}.json`);
 async function overpass(q, key, timeoutMs, deadlineMs = Infinity) {
   const until = Date.now() + deadlineMs;
-  const hit = osmCache.get(key) ?? (existsSync2(diskKey(key)) ? readFileSync2(diskKey(key), "utf8") : void 0);
+  const hit = osmCache.get(key) ?? (existsSync3(diskKey(key)) ? readFileSync3(diskKey(key), "utf8") : void 0);
   if (hit) {
     osmCache.set(key, hit);
     return hit;
@@ -254,8 +430,8 @@ async function overpass(q, key, timeoutMs, deadlineMs = Infinity) {
 }
 var SNAPSHOT = "data/osm-facilities.json";
 function snapshotNear(lat, lon, radiusKm) {
-  if (!existsSync2(SNAPSHOT)) return null;
-  const snap = JSON.parse(readFileSync2(SNAPSHOT, "utf8"));
+  if (!existsSync3(SNAPSHOT)) return null;
+  const snap = JSON.parse(readFileSync3(SNAPSHOT, "utf8"));
   const kmPerDeg = 111.32;
   const elements = snap.elements.filter((e) => Math.hypot((e.lat - lat) * kmPerDeg, (e.lon - lon) * kmPerDeg * Math.cos(lat * Math.PI / 180)) <= radiusKm).map((e) => ({ type: e.id.split("/")[0], id: Number(e.id.split("/")[1]), lat: e.lat, lon: e.lon, tags: e.tags }));
   return { origin: "snapshot", snapshotAt: snap.fetchedAt, elements };
@@ -328,9 +504,9 @@ function osmHandler() {
 
 // server/receipt.ts
 import { createHash as createHash2, createPrivateKey, createPublicKey, generateKeyPairSync, sign } from "node:crypto";
-import { existsSync as existsSync3, mkdirSync as mkdirSync3, readFileSync as readFileSync3, writeFileSync as writeFileSync3 } from "node:fs";
-import { dirname, join as join3 } from "node:path";
-var KEY_FILE = join3(process.cwd(), ".cache", "receipt-ed25519.pem");
+import { existsSync as existsSync4, mkdirSync as mkdirSync3, readFileSync as readFileSync4, writeFileSync as writeFileSync3 } from "node:fs";
+import { dirname, join as join4 } from "node:path";
+var KEY_FILE = join4(process.cwd(), ".cache", "receipt-ed25519.pem");
 var KeyMissing = class extends Error {
   constructor() {
     super("RECEIPT_ED25519_KEY not set");
@@ -338,7 +514,7 @@ var KeyMissing = class extends Error {
 };
 function loadKey(pem) {
   if (pem) return createPrivateKey(pem.replace(/\\n/g, "\n"));
-  if (existsSync3(KEY_FILE)) return createPrivateKey(readFileSync3(KEY_FILE, "utf8"));
+  if (existsSync4(KEY_FILE)) return createPrivateKey(readFileSync4(KEY_FILE, "utf8"));
   if (process.env.VERCEL) throw new KeyMissing();
   const { privateKey } = generateKeyPairSync("ed25519");
   mkdirSync3(dirname(KEY_FILE), { recursive: true });
@@ -418,9 +594,9 @@ function receiptHandler(getPem) {
 
 // server/register.ts
 import { createHash as createHash3 } from "node:crypto";
-import { mkdirSync as mkdirSync4, readFileSync as readFileSync4, readdirSync as readdirSync2, writeFileSync as writeFileSync4 } from "node:fs";
-import { join as join4 } from "node:path";
-var DIR2 = join4(process.cwd(), "data", "register");
+import { mkdirSync as mkdirSync4, readFileSync as readFileSync5, readdirSync as readdirSync2, writeFileSync as writeFileSync4 } from "node:fs";
+import { join as join5 } from "node:path";
+var DIR2 = join5(process.cwd(), "data", "register");
 var HEX643 = /^[0-9a-f]{64}$/;
 function canonical2(v) {
   if (Array.isArray(v)) return `[${v.map(canonical2).join(",")}]`;
@@ -453,7 +629,7 @@ function registerHandler(req, res, next) {
   (async () => {
     if (!READ_ONLY2) mkdirSync4(DIR2, { recursive: true });
     if (req.method === "GET" && path === "/api/register") {
-      const entries = readdirSync2(DIR2).filter((f2) => f2.endsWith(".json")).sort().map((f2) => JSON.parse(readFileSync4(join4(DIR2, f2), "utf8")));
+      const entries = readdirSync2(DIR2).filter((f2) => f2.endsWith(".json")).sort().map((f2) => JSON.parse(readFileSync5(join5(DIR2, f2), "utf8")));
       return send(200, { entries });
     }
     if (req.method !== "POST") return send(405, { error: "method not allowed" });
@@ -466,16 +642,16 @@ function registerHandler(req, res, next) {
       if (createHash3("sha256").update(canonical2(e.record.receipt)).digest("hex") !== hash2) return send(400, { error: "receipt does not match its hash" });
       if (fileFor(hash2)) return send(409, { error: "already registered" });
       const name = `${e.issuedAt.slice(0, 13).replace(/[-:T]/g, "")}_${hash2.slice(0, 16)}.json`;
-      writeFileSync4(join4(DIR2, name), JSON.stringify(e, null, 1));
+      writeFileSync4(join5(DIR2, name), JSON.stringify(e, null, 1));
       return send(200, { ok: true, file: `data/register/${name}` });
     }
     const hash = String(body.receiptSha256 ?? "");
     const f = HEX643.test(hash) ? fileFor(hash) : void 0;
     if (!f) return send(404, { error: "unknown forecast" });
-    const entry = JSON.parse(readFileSync4(join4(DIR2, f), "utf8"));
+    const entry = JSON.parse(readFileSync5(join5(DIR2, f), "utf8"));
     if (entry.score) return send(409, { error: "already scored", score: entry.score });
     entry.score = body.score;
-    writeFileSync4(join4(DIR2, f), JSON.stringify(entry, null, 1));
+    writeFileSync4(join5(DIR2, f), JSON.stringify(entry, null, 1));
     return send(200, { ok: true });
   })().catch((err) => send(500, { error: err instanceof Error ? err.message : String(err) }));
 }
@@ -487,6 +663,7 @@ var chain = [
   receiptHandler(() => process.env.RECEIPT_ED25519_KEY),
   registerHandler,
   evidenceHandler,
+  bmkgHandler(() => process.env.SIPONGI_PERMISSION),
   briefHandler(() => ({ baseUrl: process.env.LLM_BASE_URL, apiKey: process.env.LLM_API_KEY, model: process.env.LLM_MODEL }))
 ];
 function handler(req, res) {

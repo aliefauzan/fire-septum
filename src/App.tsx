@@ -25,6 +25,7 @@ import { reducedMotion } from './ui/motion';
 import { PlanPanel, RecPanel, TOOLS, ZoneTable } from './ui/Panels';
 import { RecordPanel } from './ui/Record';
 import { RegisterPanel } from './ui/Register';
+import { SourcesCard, useTmatStations } from './ui/Sources';
 import { ResourcesPanel, type LogiStatus } from './ui/Resources';
 import type { FireView } from './ui/render';
 import { fmtHa, isProtected, zoneProbAt, zoneStatus } from './ui/status';
@@ -386,6 +387,7 @@ export default function App() {
     });
 
   const boundaries = useProjectBoundaries(eff);
+  const stations = useTmatStations(eff);
   const sampleIdx = base ? medianRunIndex(base) : 0;
   const noUseful = !!rec && !rec.strategy && !rec.draft && !rec.recommendations.some((r) => r.saved.mean >= 1 && r.evidence !== 'speculative');
   const hasPlan = actions.length > 0;
@@ -395,7 +397,7 @@ export default function App() {
     scn: eff, ens: base, t, view, sampleRun: base?.runs[sampleIdx] ?? null,
     actions: [], ghost: [], hotspots: eff.hotspots, satellite,
     zoneLabels: zoneLabels(base), tool: tool === 'ignite' ? 'ignite' : 'inspect', interactive: tool === 'ignite',
-    onPlace, busy: !base, accent: 'base', showObserved, boundaries,
+    onPlace, busy: !base, accent: 'base', showObserved, boundaries, stations,
   };
   const mapB: React.ComponentProps<typeof MapView> = {
     title: hasPlan ? 'With your plan' : '',
@@ -404,7 +406,7 @@ export default function App() {
     actions, ghost, hotspots: eff.hotspots, satellite,
     zoneLabels: zoneLabels(plan, hasPlan ? base : undefined), tool, interactive: true,
     onPlace, busy: planBusy || !plan, accent: 'plan', showObserved,
-    savedFrom: hasPlan ? base : null, flashKey, boundaries,
+    savedFrom: hasPlan ? base : null, flashKey, boundaries, stations,
   };
   const burnNow = base && plan && hasPlan && !planBusy ? { base: burnedBy(base, t).mean, plan: burnedBy(plan, t).mean } : null;
   const isLive = presetId === 'live' || presetId === 'hindcast' || presetId === 'recorded';
@@ -556,6 +558,8 @@ export default function App() {
           </section>
 
           <ZoneTable scn={eff} base={base} plan={plan} hasPlan={hasPlan} />
+
+          <SourcesCard scn={eff} />
 
           <details className="card disclosure">
             <summary>What if conditions change?</summary>

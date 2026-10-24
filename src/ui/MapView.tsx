@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FUEL_LIST } from '../sim/fuels';
 import { slopeAspect } from '../sim/landscape';
+import type { TmatStation } from '../data/bmkg';
 import type { ProjectBoundary } from '../sim/reversal';
 import type { Action, EnsembleResult, Hotspot, RunResult, Scenario } from '../sim/types';
 import { drawMap, drawSavedLayer, type FireView } from './render';
@@ -33,6 +34,27 @@ interface Props {
   flashKey?: number;
   /** Carbon-project boundaries that overlap the map (drawn as dashed outlines). */
   boundaries?: ProjectBoundary[];
+  /** SiPongi peat water-table stations (only when the operator enabled SiPongi). */
+  stations?: TmatStation[];
+}
+
+/** SiPongi TMAT stations: a white square with the latest water-table depth. */
+function drawStations(ctx: CanvasRenderingContext2D, size: number, scn: Scenario, st: TmatStation[]) {
+  const g = scn.landscape.geo;
+  if (!g || !st.length) return;
+  ctx.save();
+  ctx.font = '600 10px system-ui, sans-serif';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  for (const s of st) {
+    const x = ((s.lon - g.west) / (g.east - g.west)) * size, y = ((g.north - s.lat) / (g.north - g.south)) * size;
+    ctx.fillStyle = 'rgba(29, 29, 31, 0.85)'; ctx.fillRect(x - 5, y - 5, 10, 10);
+    ctx.fillStyle = '#fff'; ctx.fillRect(x - 3, y - 3, 6, 6);
+    const label = `TMAT ${s.waterLevelCm === null ? '?' : `${Math.round(s.waterLevelCm)} cm`}`;
+    const w = ctx.measureText(label).width + 8;
+    ctx.fillStyle = 'rgba(29, 29, 31, 0.78)'; ctx.fillRect(x + 8, y - 8, w, 16);
+    ctx.fillStyle = '#fff'; ctx.fillText(label, x + 12, y);
+  }
+  ctx.restore();
 }
 
 /** Dashed outlines of carbon-project boundaries over a geo-referenced map, with each project's name. */
@@ -93,6 +115,7 @@ export function MapView(p: Props) {
       zoneLabels: p.zoneLabels, hoverCell: p.interactive && p.tool !== 'inspect' ? hover : null, draft: drag,
     });
     if (p.boundaries?.length) drawBoundaries(ctx, size, p.scn, p.boundaries);
+    if (p.stations?.length) drawStations(ctx, size, p.scn, p.stations);
     const sc = saved.current;
     if (sc) {
       sc.width = size * dpr; sc.height = size * dpr;
