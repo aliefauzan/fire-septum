@@ -6,7 +6,7 @@ name: Forecast register
 #
 # Run by hand (Actions -> Forecast register -> Run workflow). The daily schedule is switched off
 # until the repository secrets FIRMS_MAP_KEY and RECEIPT_ED25519_KEY are set; without them every
-# run would fail. To switch it on, add back under `on:`
+# run would fail. Setup: docs/setup.md, step 6. To switch it on, add back under `on:`
 #   schedule:
 #     - cron: '0 10 * * *'
 #
@@ -56,6 +56,8 @@ jobs:
           RECEIPT_ED25519_KEY: ${{ secrets.RECEIPT_ED25519_KEY }}
           EAS_PRIVATE_KEY: ${{ secrets.EAS_PRIVATE_KEY }}
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          # Attestations point at this repository's own batch files (forks included).
+          EAS_BATCH_URI_BASE: https://raw.githubusercontent.com/${{ github.repository }}/main/data/batches/
         run: npx tsx scripts/register-daily.ts ${{ inputs.dry_run && '--dry-run' || '' }}
       - name: Commit the new records
         # Runs even when a step above reported a problem (for example no OpenTimestamps calendar

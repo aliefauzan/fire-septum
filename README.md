@@ -43,6 +43,8 @@ node scripts/determinism.mjs        # same output hash in Node, Chromium, Firefo
 npx tsx scripts/gen-docs.ts --check  # every number between <!-- gen --> markers matches the data files
 ```
 
+**Setting up every feature on your own copy** (live hotspots, hosting, hosted writes, the daily register on GitHub Actions, attestations on Base, the AI brief): see [docs/setup.md](docs/setup.md). The public demo does not run the daily register or post attestations.
+
 Requires Node 20 or newer. There is no other backend. The Vite dev/preview server also runs a few small middlewares:
 - `/api/firms` keeps the FIRMS key on the server (`server/firmsProxy.ts`).
 - `/api/osm` calls Overpass with an identifying User-Agent and caches results in `.cache/osm`.
@@ -265,7 +267,7 @@ A hindcast is easy to fool yourself with: the model can be tuned until the past 
 
 **Why the timestamp matters.** The proof shows that the forecast existed before the Bitcoin block that confirms it, usually within a few hours of sealing. VIIRS satellites pass over Indonesia about twice a day per satellite, mostly around 01:30 and 13:30 local time. A forecast sealed soon after a pass is in a block before the next pass observes anything. A strict auditor can start the window at the block time instead.
 
-**One command runs the register.** `npx tsx scripts/register-daily.ts` scores every forecast whose window has closed, seals the top 3 clusters per island, seals yesterday's Merkle batch, attests it on Base when a key is set, and writes the new files. Every step is idempotent; `--dry-run` signs and writes nothing. It needs `FIRMS_MAP_KEY` and `RECEIPT_ED25519_KEY` (and optionally `EAS_PRIVATE_KEY`, `BLOB_READ_WRITE_TOKEN`). `.github/workflows/register.yml` runs it on GitHub Actions and commits the result to `main`. It is started by hand for now; its daily schedule (10:00 UTC, after the afternoon VIIRS passes are in FIRMS) is switched off until those secrets are set as repository secrets, and switching it on is one line in the workflow.
+**One command runs the register.** `npx tsx scripts/register-daily.ts` scores every forecast whose window has closed, seals the top 3 clusters per island, seals yesterday's Merkle batch, attests it on Base when a key is set, and writes the new files. Every step is idempotent; `--dry-run` signs and writes nothing. It needs `FIRMS_MAP_KEY` and `RECEIPT_ED25519_KEY` (and optionally `EAS_PRIVATE_KEY`, `BLOB_READ_WRITE_TOKEN`). `.github/workflows/register.yml` runs it on GitHub Actions and commits the result to `main`. It is started by hand for now; its daily schedule (10:00 UTC, after the afternoon VIIRS passes are in FIRMS) is switched off until those secrets are set as repository secrets, and switching it on is one line in the workflow ([step by step](docs/setup.md#6-the-daily-forecast-register-github-actions)).
 
 **The forecaster is on the board too.** On the same run, the job computes the statistical forecaster for the same boxes from each entry's sealed scenario and seals it as a submission (model `fire-septum-gbm`, issued after the register entries), so the two models are scored against each other prospectively.
 
