@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fire Septum: judge pack</title>
+<style>
+  @page { size: A4; margin: 16mm 16mm 18mm; }
+  :root { --ink:#141416; --muted:#5b5b63; --line:#dcdce0; --soft:#f2f2f4; --green:#1f8a3b; --fire:#c2410c; }
+  * { box-sizing: border-box; }
+  body { font: 10.4pt/1.45 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; }
+  h1 { font-size: 30pt; line-height: 1.05; margin: 0 0 6pt; letter-spacing: -0.5pt; }
+  h2 { font-size: 15pt; margin: 0 0 8pt; letter-spacing: -0.2pt; }
+  h3 { font-size: 11pt; margin: 12pt 0 4pt; }
+  p { margin: 0 0 7pt; }
+  ul { margin: 0 0 8pt; padding-left: 15pt; }
+  li { margin-bottom: 3pt; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .muted { color: var(--muted); }
+  .kicker { text-transform: uppercase; letter-spacing: 1.2pt; font-size: 8pt; color: var(--muted); margin-bottom: 8pt; }
+  .pitch { font-size: 13pt; line-height: 1.4; color: #2a2a2e; margin: 6pt 0 14pt; }
+  .links { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8pt; margin: 12pt 0 14pt; }
+  .links div { background: var(--soft); border-radius: 6pt; padding: 7pt 9pt; font-size: 9pt; }
+  .links b { display: block; font-size: 8pt; text-transform: uppercase; letter-spacing: .8pt; color: var(--muted); margin-bottom: 2pt; }
+  img.full { width: 100%; border: 1px solid var(--line); border-radius: 6pt; display: block; }
+  figure { margin: 0 0 12pt; }
+  figcaption { font-size: 8.8pt; color: var(--muted); margin-top: 4pt; }
+  .pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 9pt; margin: 8pt 0 10pt; }
+  .pillar { border: 1px solid var(--line); border-radius: 6pt; padding: 9pt 10pt; }
+  .pillar h3 { margin: 0 0 3pt; }
+  .pillar .n { color: var(--fire); font-weight: 700; margin-right: 4pt; }
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9pt; margin: 8pt 0 12pt; }
+  .stat { background: var(--soft); border-radius: 6pt; padding: 9pt 10pt; }
+  .stat .v { font-size: 18pt; font-weight: 700; letter-spacing: -0.4pt; }
+  .stat .l { font-size: 8.6pt; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 10pt; font-size: 9pt; }
+  th, td { text-align: left; padding: 4pt 6pt; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 8pt; text-transform: uppercase; letter-spacing: .6pt; color: var(--muted); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.us td { font-weight: 600; }
+  code, pre { font-family: "SF Mono", Menlo, monospace; font-size: 8.6pt; }
+  pre { background: var(--soft); border-radius: 6pt; padding: 8pt 10pt; margin: 4pt 0 10pt; white-space: pre-wrap; }
+  .note { border-left: 3pt solid var(--fire); padding: 2pt 0 2pt 9pt; margin: 8pt 0; color: #2a2a2e; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; }
+  .qa td:first-child { width: 34%; font-weight: 600; }
+  .footer { font-size: 8pt; color: var(--muted); margin-top: 10pt; }
+</style>
+</head>
+<body>
+
+<!-- 1. Cover -->
+<section class="page">
+  <div class="kicker">IEEE ClimateChain Global Hackathon 2026 · Track: Climate Data &amp; Environmental Monitoring</div>
+  <h1>Fire Septum</h1>
+  <p class="pitch">Peat-fire forecasts you can hold to account. We predict where Indonesia's fires spread next, seal each forecast on Bitcoin before it happens, then score it in public against NASA satellites.</p>
+  <div class="links">
+    <div><b>Live app</b>fire-septum.vercel.app</div>
+    <div><b>Code</b>github.com/aliefauzan/fire-septum</div>
+    <div><b>Demo video</b>youtu.be/dcFxrvgIWsQ</div>
+  </div>
+  <figure>
+    <img class="full" src="../gallery/01-live-fire-plan.jpg">
+    <figcaption>A real fire in Kalimantan, seen by NASA satellites on 25 Oct 2026. Left: what the simulation expects with no action. Right: with the plan it picked (control lines, a water drop, hand crews). Everything on this page is live data.</figcaption>
+  </figure>
+  <p class="muted"><i>Sekat api</i> is Indonesian for "fire barrier". This pack is for judges: the problem, what we built, what we measured, and how you can check it yourself without trusting us. The last page is a real commander brief exported by the app.</p>
+</section>
+
+<!-- 2. Problem and solution -->
+<section class="page">
+  <h2>The problem: nobody keeps score of fire forecasts</h2>
+  <p>In 2015, Indonesia's peat fires released more CO₂ per day than the whole US economy (WRI, from GFED estimates). Drained tropical peat releases about <b>800 t CO₂e per hectare</b> when it burns (IPCC Tier 1), and it can smoulder underground for weeks.</p>
+  <p>Every dry season, BPBD and Manggala Agni commanders decide where to send crews, dozers and helicopters. The data they need is scattered across NASA satellites, weather services, terrain, peat maps, canals and roads. And no one keeps score of the forecasts they act on:</p>
+  <ul>
+    <li>You cannot prove what a model said <b>before</b> the fire spread.</li>
+    <li>A model can always be tuned afterwards to look good on past fires.</li>
+    <li>So no one knows which forecasts deserve trust, and decisions leave no record anyone can check.</li>
+  </ul>
+  <p>This is the track's problem: environmental data that is <b>fragmented and hard to verify</b>.</p>
+
+  <h2 style="margin-top:14pt">Our answer: one forecast, made accountable</h2>
+  <div class="pillars">
+    <div class="pillar"><h3><span class="n">1</span>Forecast</h3>A gradient-boosted model gives the chance of new fire tomorrow in every 400 m block (trained on 2015 and 2019, tested on fires it never saw). A 40-run simulation shows how the fire spreads over 24–48 h, with the uncertainty visible.</div>
+    <div class="pillar"><h3><span class="n">2</span>Plan and count the carbon</h3>Control lines, helicopter drops, hand crews and peat injection are simulated at several start times and ranked by hectares saved, using only resources the commander says exist. CO₂e avoided is shown as a range.</div>
+    <div class="pillar"><h3><span class="n">3</span>Seal before the outcome</h3>Every forecast and decision is hashed (SHA-256), signed (Ed25519) and timestamped on Bitcoin with OpenTimestamps. Daily Merkle roots can be attested on Base (EAS). Re-running a record gives bit-identical numbers.</div>
+    <div class="pillar"><h3><span class="n">4</span>Score in public</h3>After 24 h, each sealed forecast is scored against NASA VIIRS detections and stays on a public scoreboard, good or bad, next to two fixed reference models. Anyone can submit a model in the open format.</div>
+  </div>
+  <p>It also watches fire in and around <b>REDD+ peat carbon projects</b> and seals the satellite evidence, and it exports a <b>one-page PDF brief</b> for commanders in Bahasa Indonesia or English.</p>
+  <div class="note"><b>Why a blockchain, and only this much.</b> The one trust question is "was this said before the fire spread?". A Bitcoin timestamp answers exactly that, with no wallet, fee or token. Fire data never goes on chain; a smart contract could not make a simulation more correct. Re-running does that.</div>
+</section>
+
+<!-- 3. Evidence -->
+<section class="page">
+  <h2>What we measured, not claimed</h2>
+  <p>The train / validation / test split was fixed by a stated rule and <b>timestamped on Bitcoin before any model was trained</b> (<code>data/validation/events.json.ots</code>): 1,492 fire events plus 2,700 training boxes.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="v">AUC 0.79</div><div class="l">next-day forecaster on held-out 2023 Sumatra fires (184 boxes)</div></div>
+    <div class="stat"><div class="v">4 engines</div><div class="l">identical output hash: V8 (Node, Chromium), JavaScriptCore, SpiderMonkey</div></div>
+    <div class="stat"><div class="v">191 tests</div><div class="l">run in CI on every push, with the cross-engine check</div></div>
+  </div>
+
+  <h3>Next-day forecaster vs simple references, same rows (test set: 2023 Sumatra)</h3>
+  <table>
+    <tr><th>Model</th><th class="num">Brier skill [95% CI]</th><th class="num">CSI</th><th class="num">AUC</th></tr>
+    <tr class="us"><td>Fire Septum forecaster (calibrated)</td><td class="num">+0.036 [+0.026, +0.045]</td><td class="num">0.08</td><td class="num">0.79</td></tr>
+    <tr><td>Distance to fire</td><td class="num">+0.022 [+0.016, +0.028]</td><td class="num">0.06</td><td class="num">0.76</td></tr>
+    <tr><td>Persistence</td><td class="num">+0.020 [+0.015, +0.026]</td><td class="num">0.05</td><td class="num">0.72</td></tr>
+    <tr><td>Climatology</td><td class="num">0.000</td><td class="num">0.02</td><td class="num">0.50</td></tr>
+  </table>
+
+  <h3>Spread simulation hindcast, 12 real fires, 8–18 Oct 2026</h3>
+  <table>
+    <tr><th>Region</th><th class="num">Events</th><th class="num">New-fire blocks</th><th class="num">CSI, model</th><th class="num">CSI, distance only</th></tr>
+    <tr><td>Pooled</td><td class="num">12</td><td class="num">114</td><td class="num">0.23</td><td class="num">0.18</td></tr>
+    <tr><td>Kalimantan</td><td class="num">6</td><td class="num">90</td><td class="num">0.35</td><td class="num">0.25</td></tr>
+    <tr><td>Sumatra (held out)</td><td class="num">6</td><td class="num">24</td><td class="num">0.12</td><td class="num">0.11</td></tr>
+  </table>
+
+  <h3>Pre-registered forecasts: sealed before the outcome, scored after</h3>
+  <table>
+    <tr><th>Model</th><th class="num">Boxes</th><th class="num">CSI</th><th class="num">POD</th><th class="num">FAR</th></tr>
+    <tr><td>Distance (reference)</td><td class="num">6</td><td class="num">0.18</td><td class="num">0.72</td><td class="num">0.80</td></tr>
+    <tr class="us"><td>Fire Septum simulation</td><td class="num">6</td><td class="num">0.13</td><td class="num">0.68</td><td class="num">0.86</td></tr>
+    <tr><td>Climatology (reference)</td><td class="num">6</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td></tr>
+  </table>
+  <div class="note">On the register our simulation currently scores <b>below</b> the distance reference. We publish that. It is the point of the register: a sealed forecast cannot be tuned after the fact, so the scoreboard tells the truth.</div>
+
+  <h3>Carbon cross-checks</h3>
+  <ul>
+    <li>Satellite (FRP) CO₂ vs GFED4.1s in the five most-burned peat cells: 3.04× (2015), 1.21× (2019), 1.02× (2023).</li>
+    <li>Burned area measured afterwards from Sentinel-2 (dNBR) and Sentinel-1 (SAR) for 9 of the October 2026 fires: 81–100% lies inside the FIRMS footprints.</li>
+    <li>Every emission number is a Monte Carlo 5–95% range; peat burn depth comes from each cell's fire history (Konecny et al. 2016).</li>
+  </ul>
+  <p class="footer">Sources: <code>docs/validation-scale.json</code>, <code>docs/hindcast-rerun-2026-10-24-barriers.json</code>, <code>data/register/</code>, <code>docs/determinism.json</code>. These numbers are generated from the data files and checked in CI.</p>
+</section>
+
+<!-- 4. Features -->
+<section class="page">
+  <h2>Features that matter for the climate</h2>
+  <div class="two">
+    <figure><img class="full" src="../gallery/10-carbon-at-stake.jpg"><figcaption>Carbon at stake: CO₂e the plan avoids as a 5–95% range, and what satellites saw burn in the last 48 h.</figcaption></figure>
+    <figure><img class="full" src="../gallery/02-tomorrow-forecast.jpg"><figcaption>Tomorrow view: chance of new fire in every 400 m block in the next 24 h.</figcaption></figure>
+    <figure><img class="full" src="../gallery/11-receipt.jpg"><figcaption>Sealed on Bitcoin before the outcome. Change one byte of input and the hash changes.</figcaption></figure>
+    <figure><img class="full" src="../gallery/12-scoreboard-closeup.jpg"><figcaption>Public scoreboard against NASA VIIRS, next to two fixed reference models.</figcaption></figure>
+    <figure><img class="full" src="../gallery/13-carbon-projects.jpg"><figcaption>Fire watch for REDD+ peat carbon projects: reversal-risk evidence for buffer pools and insurers.</figcaption></figure>
+    <figure><img class="full" src="../gallery/03-3d-terrain.jpg"><figcaption>The same forecast on 3D terrain from real elevation and satellite imagery.</figcaption></figure>
+  </div>
+</section>
+
+<!-- 5. Verify -->
+<section class="page">
+  <h2>Check it yourself, without trusting us</h2>
+  <h3>In the browser (2 minutes)</h3>
+  <ol>
+    <li>Open <b>fire-septum.vercel.app</b>. It loads today's most active fire in Kalimantan from NASA FIRMS.</li>
+    <li>Open the <b>Record</b> tab and press <b>Seal and sign</b>, then <b>Timestamp on Bitcoin</b>.</li>
+    <li>Press <b>Check by re-running</b>: the app re-runs all 40 simulations and recomputes every hash.</li>
+    <li>Press <b>Download proof</b> to get the receipt and a standard <code>.ots</code> file.</li>
+    <li>Open <b>Scoreboard</b> to see every pre-registered forecast and its score.</li>
+  </ol>
+  <h3>With the reference OpenTimestamps client (no Fire Septum code involved)</h3>
+<pre>pip install opentimestamps-client
+ots upgrade fireseptum-&lt;hash&gt;.receipt.json.ots   # once the Bitcoin block is confirmed
+ots verify  fireseptum-&lt;hash&gt;.receipt.json.ots</pre>
+  <h3>From the code</h3>
+<pre>git clone https://github.com/aliefauzan/fire-septum && cd fire-septum
+npm install && npm test              # 191 tests
+node scripts/determinism.mjs         # same output hash in Node, Chromium, Firefox, WebKit
+node scripts/export-proofs.mjs       # every register receipt + .ots proof, for ots verify
+npx tsx scripts/gen-docs.ts --check  # every number in the docs matches the data files</pre>
+
+  <h2 style="margin-top:12pt">Questions a skeptical judge may ask</h2>
+  <table class="qa">
+    <tr><td>Isn't OpenTimestamps trivial?</td><td>The cryptography is simple on purpose. What is new is what gets sealed: a full reproducible forecast (inputs and every simulated cell), sealed before the outcome exists and scored after. That is pre-registration for climate models.</td></tr>
+    <tr><td>Couldn't you pick the fires you predict well?</td><td>No. The register picks the top 3 FIRMS clusters per island by a fixed rule at issue time, and keeps every forecast.</td></tr>
+    <tr><td>Couldn't you edit a forecast later?</td><td>Its hash is in a Bitcoin block. Changing one input, rate or simulated cell changes the hash, and <i>Check by re-running</i> fails.</td></tr>
+    <tr><td>Is the model any good?</td><td>The next-day forecaster beats persistence and distance on held-out fires. The spread simulation is only slightly better than distance in hindcast and below it on the register so far. We show both.</td></tr>
+    <tr><td>Are the CO₂ numbers credits?</td><td>No. They are IPCC 2013 Wetlands factors with per-cell burn depth, shown as ranges and cross-checked against GFED and Sentinel burned area. Not credits, not claimable avoided emissions.</td></tr>
+    <tr><td>What about AI?</td><td>The core is a physical-statistical model, not a black box. An optional LLM only rewrites the simulated numbers into a brief, and it is off by default.</td></tr>
+    <tr><td>Who has used it?</td><td>Nobody operational yet. Next step is testing the planning view and PDF brief with one Daops Manggala Agni unit.</td></tr>
+  </table>
+</section>
+
+<!-- 6. Limits and next -->
+<section class="page">
+  <h2>Honest limits</h2>
+  <ul>
+    <li>Peat fires smoulder and creep, so a flame-front cellular automaton fits them poorly. Its skill over distance-only is small and its raw probabilities are not calibrated. This is why we added the separate statistical forecaster.</li>
+    <li>Peat burn depth is inferred from satellite fire history, not measured in the field.</li>
+    <li>The satellite (FRP) emission number runs 1–3× GFED and can disagree with the forecast number by orders of magnitude. Both are shown with their method.</li>
+    <li>OpenStreetMap canals are patchy, so the drainage effect is an assumption.</li>
+    <li>SiPongi (Kemenhut) data needs written permission, so that adapter is off.</li>
+    <li>It has not yet been tested with BPBD or Manggala Agni staff.</li>
+  </ul>
+  <h2 style="margin-top:12pt">Who it is for</h2>
+  <ul>
+    <li><b>BPBD and Manggala Agni commanders:</b> where fire is likely tomorrow and what acting would change, with uncertainty visible and no invented resources.</li>
+    <li><b>Provincial governments:</b> when to request aircraft, on a record that shows what was known at the time.</li>
+    <li><b>Researchers and agencies:</b> a public, pre-registered scoreboard where any fire model can be compared.</li>
+    <li><b>Carbon-project verifiers, buffer pools and auditors:</b> proof of what was forecast, decided and observed, and when.</li>
+  </ul>
+  <h2 style="margin-top:12pt">What's next</h2>
+  <ul>
+    <li>Run the register through the 2026 dry season and invite other models onto the scoreboard.</li>
+    <li>Add peat-moisture data (SMAP / SiPALAGA) to the forecaster.</li>
+    <li>Test the planning view and the PDF brief with one Daops unit.</li>
+  </ul>
+  <h2 style="margin-top:12pt">Built with</h2>
+  <p class="muted">TypeScript, React, Vite, three.js, Web Workers · Python, scikit-learn · NASA FIRMS, ERA5 / Open-Meteo, AWS Terrain Tiles, Global Forest Watch peat, ESA WorldCover, OpenStreetMap, Sentinel-1/2, BMKG · OpenTimestamps (Bitcoin), Ethereum Attestation Service (Base), Ed25519, RFC 6962 Merkle trees · GitHub Actions, Vercel, Vitest, Playwright.</p>
+  <p class="footer">Research prototype using a simplified fire model. Not firefighting guidance: follow BPBD, Manggala Agni and incident command. Emission numbers are model or satellite estimates, not measurements and not carbon credits. Next page: a real situation brief exported by the app on 25 Oct 2026.</p>
+</section>
+
+</body>
+</html>
