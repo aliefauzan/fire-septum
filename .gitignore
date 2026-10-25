@@ -1,14 +1,41 @@
+# Dependencies and build output
 node_modules
 dist
-.cache
-.env
-.env.local
-.remember
+tsconfig.tsbuildinfo
 .vitest
+
+# Secrets: never commit keys (see .env.example)
+.env
+.env.*
+!.env.example
+
+# Local caches and tool state
+.cache
+.vercel
+.remember
 .impeccable
 .claude/hook.cache.json
-tsconfig.tsbuildinfo
-video/hf/.hyperframes
-.vercel
-.env*
 .claude/worktrees
+
+# Python (ml/*)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# OS and editor junk
+.DS_Store
+*.log
+
+# Video production: keep the sources, not the renders or scratch frames
+video/out/
+video/showcase/
+showcase/
+video/hf/.hyperframes
+video/**/.thumbnails/
+video/**/.waveform-cache/
+video/hf/audio/*.aiff
+video/motion/diff/
+video/motion/diff-480/
+video/motion/study/frames/
+video/motion/tools/shots/
